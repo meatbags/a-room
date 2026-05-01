@@ -10,9 +10,9 @@ export default {
   Player: {
     speed: 2.1,
     height: 1.75,
-    speedRunning: 3.8,
+    speedRunning: 4.5,
     shape: 'cylinder',
-    playerLight: null,
+    playerLight: new THREE.PointLight(0xEEEEFF, 0.15),
   },
   Physics: {
   },
@@ -33,7 +33,7 @@ export default {
         mapping: THREE.EquirectangularReflectionMapping,
         colorSpace: THREE.SRGBColorSpace
       }
-    }
+    },
   },
   History: {
     disabled: false,

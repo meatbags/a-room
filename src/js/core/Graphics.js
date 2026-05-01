@@ -111,14 +111,15 @@ export default class Graphics extends SceneNode {
       //   ssgiAccumulatorPass.disableJitter = Config.Renderer.forceWebGL;
 
       // blend, bloom, tonemapping
-      const blendFactor = Config.Renderer.forceWebGL ? 0.7 : 0.05;
-      const mixed = vec4( mix(traaPass.rgb, scenePassColor.rgb, blendFactor), scenePassColor.a );
-      const strength = 0.5;
-      const radius = 0.75;
-      const threshold = 0.5;
+      const blendFactor = Config.Renderer.forceWebGL ? 0.7 : 0;
+      const mixed = blendFactor > 0
+        ? vec4( mix(traaPass.rgb, scenePassColor.rgb, blendFactor), scenePassColor.a )
+        : vec4( traaPass.rgb, scenePassColor.a );
+      const strength = 0.3;
+      const radius = 0.35;
+      const threshold = 0.95;
       const final = acesFilmicToneMapping(
         mixed.add(bloom(scenePassColor, strength, radius, threshold)), 1.5);
-      //  ;
       postProcessing.outputNode = final;
     
     // fallback to WebGL
