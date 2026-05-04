@@ -22,11 +22,12 @@ class Lighting extends SceneNode {
     scene.add(this._lights.directional);
 
     // rect light
+    /*
     WebGPU.RectAreaLightNode.setLTC( RectAreaLightTexturesLib.init() );
 
     this.rectLights = [];
     const rectLightsGroup = new THREE.Group();
-    rectLightsGroup.position.y = .75;
+    rectLightsGroup.position.y = 0.75;
     const size = 0.25;
     const offset = 0.5;
     for (let x=-offset; x<=offset; x+=offset) {
@@ -55,15 +56,18 @@ class Lighting extends SceneNode {
       }
     }
     scene.add(rectLightsGroup);
+    */
   }
 
   update(delta) {
+    /*
     this.rectLights.forEach(light => {
       light.userData.age += delta;
       const t = Math.sin(light.userData.age * light.userData.hz * Math.PI * 2) * 0.5 + 0.5;
       light.userData.rect.material.opacity = t;
       light.intensity = t * light.userData.amp;
     });
+    */
   }
 }
 

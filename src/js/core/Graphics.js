@@ -7,7 +7,7 @@ import { pass, mrt, output, normalView, diffuseColor, velocity,
   add, vec3, vec4, directionToColor, colorToDirection, sample,
   blendDodge, blendOverlay, blendScreen, blendBurn, mix, acesFilmicToneMapping
 } from 'three/tsl';
-// import { ssgi } from 'three/addons/tsl/display/SSGINode.js';
+import { ssgi } from 'three/addons/tsl/display/SSGINode.js';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { denoise } from 'three/addons/tsl/display/DenoiseNode.js';
 import Config from '../config/Config';
@@ -20,10 +20,11 @@ import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // modify existing nodes
-import { ssgi } from '../shader/SSGINode';
-import { ssgiAccumulator } from '../shader/SSGIAccumulator';
+//import { ssgi } from '../shader/SSGINode';
+// import { ssgiAccumulator } from '../shader/SSGIAccumulator';
+// import { traa } from 'three/addons/tsl/display/TRAANode.js';
 import { traa } from '../shader/TRAANode.js';
-import { SSGIPass } from '../shader/SSGIPass';
+// import { SSGIPass } from '../shader/SSGIPass';
 
 export default class Graphics extends SceneNode {
   constructor() {
@@ -78,7 +79,7 @@ export default class Graphics extends SceneNode {
       // nb: total iterations = sliceCount * stepCount * 2
       giPass.sliceCount.value = 2;
       giPass.stepCount.value = 2;
-      giPass.aoIntensity.value = 1.25; // default=1, [0, 4]
+      giPass.aoIntensity.value = 1.0; // default=1, [0, 4]
       giPass.giIntensity.value = 3.5;
       giPass.radius.value = 3; // default=12, [1, 25]
       giPass.useScreenSpaceSampling.value = true;
@@ -124,7 +125,6 @@ export default class Graphics extends SceneNode {
     
     // fallback to WebGL
     } else {
-      // const ssgiPass = new SSGIPass( scene, camera );
       const renderPass = new RenderPass(scene, camera);
       const gtaoPass = new GTAOPass(scene, camera, 512, 512, {
         radius: 0.25,

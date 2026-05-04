@@ -1,7 +1,7 @@
 /** Map */
 
 import * as THREE from 'three';
-import { SceneNode } from 'engine';
+import { SceneNode, Carryable, CentrePivot } from 'engine';
 
 class Map extends SceneNode {
   constructor() {
@@ -9,6 +9,7 @@ class Map extends SceneNode {
 
     this.load('map', './models/map.fbx');
     this.load('background', './models/background.fbx');
+    this.load('interactive', './models/interactive.fbx');
   }
 
   _init() {
@@ -20,6 +21,21 @@ class Map extends SceneNode {
     const collision = this.getAsset('map').clone();
     this._addObjectToPhysicsWorld(collision);
 
+    // test
+    const interactive = [];
+    this.getAsset('interactive').traverse(child => {
+      if (child.isMesh) {
+        interactive.push(child);
+      }
+    });
+    interactive.forEach(mesh => {
+      CentrePivot(mesh);
+      const carryable = new Carryable({ mesh: mesh });
+      this._addToScene(mesh);
+      this.add(carryable);
+    });
+
+    /*
     const radius = 0.1;
     const circ = radius * 2 * Math.PI;
     const globe = new THREE.Mesh(
@@ -41,6 +57,7 @@ class Map extends SceneNode {
       const rot = Math.sqrt(dx*dx + dz*dz) / circ * Math.PI * 2 * 0.1;
       globe.rotateOnWorldAxis(axis, rot);
     });
+    */
   }
 
   reset() {
