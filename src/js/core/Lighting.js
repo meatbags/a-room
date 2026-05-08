@@ -1,6 +1,6 @@
 /** SceneNode */
 
-import { SceneNode } from 'engine';
+import { SceneNode, SpotLightFog } from 'engine';
 import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 import { RectAreaLightTexturesLib } from 'three/addons/lights/RectAreaLightTexturesLib.js';
 import * as WebGPU from 'three/webgpu';
@@ -20,6 +20,10 @@ class Lighting extends SceneNode {
     this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.5);
     this._lights.directional.position.set(1, 0.5, 1);
     scene.add(this._lights.directional);
+    const spotlight = new SpotLightFog(0xFFFFFF, 5, 10, Math.PI/8, 0.5, 2, 0.125);
+    spotlight.position.set(0, 4, 0);
+    spotlight.target.position.set(0, 0, 0);
+    scene.add(spotlight, spotlight.target);    
 
     // rect light
     /*
@@ -56,17 +60,6 @@ class Lighting extends SceneNode {
       }
     }
     scene.add(rectLightsGroup);
-    */
-  }
-
-  update(delta) {
-    /*
-    this.rectLights.forEach(light => {
-      light.userData.age += delta;
-      const t = Math.sin(light.userData.age * light.userData.hz * Math.PI * 2) * 0.5 + 0.5;
-      light.userData.rect.material.opacity = t;
-      light.intensity = t * light.userData.amp;
-    });
     */
   }
 }

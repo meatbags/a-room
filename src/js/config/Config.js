@@ -12,10 +12,11 @@ export default {
     height: 1.75,
     speedRunning: 4.5,
     shape: 'cylinder',
+    positionDampingVertical: 0.12,
     playerLight: null, // new THREE.PointLight(0xEEEEFF, 0.15),
   },
   Physics: {
-    stepHeight: 0.7,
+    stepHeight: 0.5,
   },
   Camera: {
     fov: 60,
