@@ -8,19 +8,22 @@ class Map extends SceneNode {
     super({ name: 'Map' });
 
     this.load('map', './models/map.fbx');
-    this.load('collision', './models/collision.fbx');
+    // this.load('collision', './models/collision.fbx');
     this.load('background', './models/background.fbx');
     this.load('interactive', './models/interactive.fbx');
+    this.load('cosmetic', './models/cosmetic.fbx');
   }
 
   _init() {
     // create scene
     this._addToScene(this.getAsset('map'));
+    this._addToScene(this.getAsset('cosmetic'));
     this._addToScene(this.getAsset('background'));
 
     // collisions
-    const collision = this.getAsset('collision').clone();
+    const collision = this.getAsset('map').clone();
     this._addObjectToPhysicsWorld(collision);
+    this._addToScene(collision);
 
     // test
     const interactive = [];

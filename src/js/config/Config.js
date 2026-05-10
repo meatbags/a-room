@@ -11,6 +11,7 @@ export default {
     speed: 2.1,
     height: 1.75,
     speedRunning: 4.5,
+    speedNoclip: 20,
     shape: 'cylinder',
     positionDampingVertical: 0.12,
     playerLight: null, // new THREE.PointLight(0xEEEEFF, 0.15),
