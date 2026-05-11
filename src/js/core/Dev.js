@@ -24,7 +24,7 @@ class Dev extends SceneNode {
     SceneNode.getSceneNode('Scene').getScene().traverse(obj => {
       if (obj.material && obj.material.wireframe) {
         obj.visible = this.settings.wireframe;
-        obj.material.depthWrite = false;
+        // obj.material.depthWrite = false;
       }
     });
   }

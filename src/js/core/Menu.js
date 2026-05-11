@@ -11,7 +11,7 @@ export default class Menu extends SceneNode {
     // create menu screens
     const overlay = root.getModule('Overlay');
     overlay.createScreen('home', {
-      title: '(a)(room)',
+      title: 'ruins',
       buttons: {
         'continue': () => root.resumeGame()
       },

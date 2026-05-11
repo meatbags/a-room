@@ -13,7 +13,9 @@ export default {
     speedRunning: 4.5,
     speedNoclip: 20,
     shape: 'cylinder',
-    positionDampingVertical: 0.12,
+    positionDampingVertical: 0.2,
+    jumpEnabled: false,
+    crouchEnabled: false,
     playerLight: null, // new THREE.PointLight(0xEEEEFF, 0.15),
   },
   Physics: {

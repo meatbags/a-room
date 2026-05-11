@@ -20,10 +20,16 @@ class Lighting extends SceneNode {
     this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.5);
     this._lights.directional.position.set(1, 0.5, 1);
     scene.add(this._lights.directional);
-    const spotlight = new SpotLightFog(0xFF0000, 5, 5, Math.PI/3, 0.5, 2, 0.125);
+
+    /*
+    const spotlight = new SpotLightFog(0xFFFFFF, 5, 5, Math.PI/4, 0.5, 2, 0.25);
     spotlight.position.set(0, 5, 0);
+    const spotLightSrc = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), new THREE.MeshBasicMaterial({color:0xFFFFFF}));
+    spotLightSrc.position.copy(spotlight.position);
     spotlight.target.position.set(0, 0, 0);
-    scene.add(spotlight, spotlight.target);    
+    scene.add(spotlight, spotlight.target);
+    scene.add(spotLightSrc);
+    */
 
     // rect light
     /*
