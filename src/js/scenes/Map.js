@@ -8,20 +8,27 @@ class Map extends SceneNode {
     super({ name: 'Map' });
 
     this.load('map', './models/map.fbx');
-    this.load('collision', './models/collision.fbx');
+    //this.load('collision', './models/collision.fbx');
     this.load('background', './models/background.fbx');
     this.load('interactive', './models/interactive.fbx');
-    this.load('cosmetic', './models/cosmetic.fbx');
+    //this.load('cosmetic', './models/cosmetic.fbx');
   }
 
   _init() {
     // create scene
-    this._addToScene(this.getAsset('map'));
-    this._addToScene(this.getAsset('cosmetic'));
+    const map = this.getAsset('map');
+    this._addToScene(map);
+    map.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+    //this._addToScene(this.getAsset('cosmetic'));
     this._addToScene(this.getAsset('background'));
 
     // collisions
-    const collision = this.getAsset('collision').clone();
+    const collision = this.getAsset('map').clone();
     this._addObjectToPhysicsWorld(collision);
     this._addToScene(collision);
 
@@ -29,6 +36,7 @@ class Map extends SceneNode {
     const interactive = [];
     this.getAsset('interactive').traverse(child => {
       if (child.isMesh) {
+        child.castShadow = true;
         interactive.push(child);
       }
     });

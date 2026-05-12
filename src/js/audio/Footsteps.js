@@ -46,8 +46,8 @@ class Footsteps extends SceneNode {
       lastOffset: -1,
       reverb: this.refAudioHandler.getReverbInput({
         name: 'footsteps_reverb',
-        wet: 0.5,
-        duration: 0.5,
+        wet: 0.75,
+        duration: 2.5,
       })
     };
 

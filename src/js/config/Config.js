@@ -6,16 +6,17 @@ export default {
   Renderer: {
     localClippingEnabled: false,
     useWebGPU: true,
+    useShadows: true,
   },
   Player: {
-    speed: 2.1,
     height: 1.75,
+    speed: 2.2,
     speedRunning: 4.5,
     speedNoclip: 20,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
     jumpEnabled: false,
-    crouchEnabled: false,
+    // crouchEnabled: false,
     playerLight: null, // new THREE.PointLight(0xEEEEFF, 0.15),
   },
   Physics: {

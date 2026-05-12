@@ -9,6 +9,8 @@ import Map from '../scenes/Map';
 import Lighting from './Lighting';
 
 const FALL_THRESHOLD = -10;
+const RESET_POSITION = {x:0, y:0.125, z:8};
+const RESET_DIRECTION = {pitch:0, yaw:0};
 
 class Game extends SceneNode {
   constructor() {
@@ -52,8 +54,8 @@ class Game extends SceneNode {
   }
 
   resetPlayer() {
-    SceneNode.getSceneNode('Player').setPosition(0, 0, 0);
-    SceneNode.getSceneNode('Camera').setRotation(0, 0);
+    SceneNode.getSceneNode('Player').setPosition(RESET_POSITION.x, RESET_POSITION.y, RESET_POSITION.z);
+    SceneNode.getSceneNode('Camera').setRotation(RESET_DIRECTION.pitch, RESET_DIRECTION.yaw);
     SceneNode.getSceneNode('Map').reset();
   }
 
