@@ -358,16 +358,26 @@ class SSGINode extends TempNode {
 		// const MAX_RAY = uint( 32 );
 		const MAX_RAY = uint( 16 );
 		const globalOccludedBitfield = uint( 0 );
+    const BLEND_START = -12;
+    const BLEND_STOP = -18;
+    const BLEND_RANGE = BLEND_STOP - BLEND_START;
     //const globalTravelled = float( 0 );
+
+    const getViewZ = ( uv ) => {
+			const depth = this.depthNode.sample( uv ).r;
+			if ( builder.renderer.logarithmicDepthBuffer === true ) {
+				return logarithmicDepthToViewZ( depth, this._cameraNear, this._cameraFar );
+			} else {
+        return perspectiveDepthToViewZ( depth, this._cameraNear, this._cameraFar );
+      }
+		};
 
 		const sampleDepth = ( uv ) => {
 			const depth = this.depthNode.sample( uv ).r;
-
 			if ( builder.renderer.logarithmicDepthBuffer === true ) {
 				const viewZ = logarithmicDepthToViewZ( depth, this._cameraNear, this._cameraFar );
 				return viewZToPerspectiveDepth( viewZ, this._cameraNear, this._cameraFar );
 			}
-
 			return depth;
 		};
 
@@ -524,75 +534,85 @@ class SSGINode extends TempNode {
 
 		const gi = Fn( () => {
 
-			const depth = sampleDepth( uvNode ).toVar();
+      const ao = float( 0 );
+      const color = vec3( 0 );
+      const viewZ = getViewZ( uvNode ).toVar();
+      
+      If( viewZ.greaterThanEqual( BLEND_STOP ), () => {
 
-			depth.greaterThanEqual( 1.0 ).discard();
+        const depth = sampleDepth( uvNode ).toVar();
+        depth.greaterThanEqual( 1.0 ).discard();
 
-			const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
-			const viewNormal = sampleNormal( uvNode ).toVar();
-			const viewDir = normalize( viewPosition.xyz.negate() ).toVar();
+        const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
+        const viewNormal = sampleNormal( uvNode ).toVar();
+        const viewDir = normalize( viewPosition.xyz.negate() ).toVar();
 
-			//
+        //
+        const noiseOffset = spatialOffsets( screenCoordinate );
+        const noiseDirection = interleavedGradientNoise( screenCoordinate );
+        const noiseJitterIdx = this._temporalDirection.mul( 0.02 );
+        // Port: Add noiseJitterIdx here for slightly better noise convergence with TRAA (see #31890 for more details)
+        const initialRayStep = fract( noiseOffset.add( this._temporalOffset ) ).add( rand( uvNode.add( noiseJitterIdx ).mul( 2 ).sub( 1 ) ) );
 
-			const noiseOffset = spatialOffsets( screenCoordinate );
-			const noiseDirection = interleavedGradientNoise( screenCoordinate );
-			const noiseJitterIdx = this._temporalDirection.mul( 0.02 );
-      // Port: Add noiseJitterIdx here for slightly better noise convergence with TRAA (see #31890 for more details)
-			const initialRayStep = fract( noiseOffset.add( this._temporalOffset ) ).add( rand( uvNode.add( noiseJitterIdx ).mul( 2 ).sub( 1 ) ) );
+        const ROTATION_COUNT = this.sliceCount.toConst();
+        const AO_INTENSITY = this.aoIntensity.toConst();
+        const GI_INTENSITY = this.giIntensity.toConst();
+        const RADIUS = this.radius.toConst();
 
-			const ao = float( 0 );
-			const color = vec3( 0 );
+        Loop( { start: uint( 0 ), end: ROTATION_COUNT, type: 'uint', condition: '<' }, ( { i } ) => {
+          const rotationAngle = mul( float( i ).add( noiseDirection ).add( this._temporalDirection ), PI.div( float( ROTATION_COUNT ) ) ).toConst();
+          const sliceDir = vec3( vec2( cos( rotationAngle ), sin( rotationAngle ) ), 0 ).toConst();
+          const slideDirTexelSize = sliceDir.xy.mul( float( 1 ).div( this._resolution ) ).toConst();
 
-			const ROTATION_COUNT = this.sliceCount.toConst();
-			const AO_INTENSITY = this.aoIntensity.toConst();
-			const GI_INTENSITY = this.giIntensity.toConst();
-			const RADIUS = this.radius.toConst();
+          const planeNormal = normalize( cross( sliceDir, viewDir ) ).toConst();
+          const tangent = cross( viewDir, planeNormal ).toConst();
+          const projectedNormal = viewNormal.sub( planeNormal.mul( dot( viewNormal, planeNormal ) ) ).toConst();
+          const projectedNormalNormalized = normalize( projectedNormal ).toConst();
 
-			Loop( { start: uint( 0 ), end: ROTATION_COUNT, type: 'uint', condition: '<' }, ( { i } ) => {
-				const rotationAngle = mul( float( i ).add( noiseDirection ).add( this._temporalDirection ), PI.div( float( ROTATION_COUNT ) ) ).toConst();
-				const sliceDir = vec3( vec2( cos( rotationAngle ), sin( rotationAngle ) ), 0 ).toConst();
-				const slideDirTexelSize = sliceDir.xy.mul( float( 1 ).div( this._resolution ) ).toConst();
+          const cos_n = clamp( dot( projectedNormalNormalized, viewDir ), - 1, 1 ).toConst();
+          const n = sign( dot( projectedNormal, tangent ) ).negate().mul( acos( cos_n ) ).toConst();
 
-				const planeNormal = normalize( cross( sliceDir, viewDir ) ).toConst();
-				const tangent = cross( viewDir, planeNormal ).toConst();
-				const projectedNormal = viewNormal.sub( planeNormal.mul( dot( viewNormal, planeNormal ) ) ).toConst();
-				const projectedNormalNormalized = normalize( projectedNormal ).toConst();
+          globalOccludedBitfield.assign( 0 );
+          //globalTravelled.assign( 0 );
 
-				const cos_n = clamp( dot( projectedNormalNormalized, viewDir ), - 1, 1 ).toConst();
-				const n = sign( dot( projectedNormal, tangent ) ).negate().mul( acos( cos_n ) ).toConst();
+          color.addAssign( horizonSampling( bool( true ), RADIUS, viewPosition, slideDirTexelSize, initialRayStep, uvNode, viewDir, viewNormal, n ) );
+          color.addAssign( horizonSampling( bool( false ), RADIUS, viewPosition, slideDirTexelSize, initialRayStep, uvNode, viewDir, viewNormal, n ) );
 
-				globalOccludedBitfield.assign( 0 );
-        //globalTravelled.assign( 0 );
+          // hack to remove visual artifacts on smooth meshes
+          ao.addAssign( float( bitCount( globalOccludedBitfield ) ).div( float( MAX_RAY ) ) );
+          /*
+          If(
+            globalTravelled.greaterThan( 1 ), 
+            () => {
+            }
+          );
+          */
+        } );
 
-				color.addAssign( horizonSampling( bool( true ), RADIUS, viewPosition, slideDirTexelSize, initialRayStep, uvNode, viewDir, viewNormal, n ) );
-				color.addAssign( horizonSampling( bool( false ), RADIUS, viewPosition, slideDirTexelSize, initialRayStep, uvNode, viewDir, viewNormal, n ) );
+        ao.divAssign( float( ROTATION_COUNT ) );
+        ao.assign( pow( ao.clamp().oneMinus(), AO_INTENSITY ).clamp() );
 
-        // hack to remove visual artifacts on smooth meshes
-        ao.addAssign( float( bitCount( globalOccludedBitfield ) ).div( float( MAX_RAY ) ) );
-        /*
-        If(
-          globalTravelled.greaterThan( 1 ), 
-          () => {
-          }
-        );
-        */
-			} );
+        color.divAssign( float( ROTATION_COUNT ) );
+        color.mulAssign( GI_INTENSITY );
 
-			ao.divAssign( float( ROTATION_COUNT ) );
-			ao.assign( pow( ao.clamp().oneMinus(), AO_INTENSITY ).clamp() );
+        // scale color based on luminance
+        const maxLuminance = float( 7 ).toConst(); // 7 represent a HDR luminance value
+        const currentLuminance = luminance( color );
+        const scale = currentLuminance.greaterThan( maxLuminance )
+          .select( maxLuminance.div( currentLuminance ), float( 1 ) );
+        color.mulAssign( scale );
 
-			color.divAssign( float( ROTATION_COUNT ) );
-			color.mulAssign( GI_INTENSITY );
+        If( viewZ.lessThan( BLEND_START ), () => {
+          const fade = pow( viewZ.sub( BLEND_START ).div( BLEND_RANGE ), 2.0 );
+          color.mulAssign( fade.oneMinus() );
+          ao.assign( ao.add( float( 1.0 ).sub( ao ).mul( fade ) ) );
+        });
 
-			// scale color based on luminance
+      }).Else(() => {
+        ao.assign( 1.0 );
+      });
 
-			const maxLuminance = float( 7 ).toConst(); // 7 represent a HDR luminance value
-			const currentLuminance = luminance( color );
-			const scale = currentLuminance.greaterThan( maxLuminance ).select( maxLuminance.div( currentLuminance ), float( 1 ) );
-			color.mulAssign( scale );
-
-			return vec4( color, ao );
-
+      return vec4( color, ao );
 		} );
 
 		this._material.fragmentNode = gi().context( builder.getSharedContext() );

@@ -3,7 +3,8 @@
 import { SceneNode, SpotLightFog } from 'engine';
 import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 import { RectAreaLightTexturesLib } from 'three/addons/lights/RectAreaLightTexturesLib.js';
-import { CSMShadowNode } from '../shader/CSMShadowNode.js';
+// import { CSMShadowNode } from '../shader/CSMShadowNode.js';
+import { CSMShadowNode } from 'three/addons/csm/CSMShadowNode';
 import * as WebGPU from 'three/webgpu';
 import * as THREE from 'three';
 
@@ -20,14 +21,12 @@ class Lighting extends SceneNode {
     scene.add(this._lights.ambient);
     this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 1);
 
-    // directional light
+    // directional light + cascade shadow map
     const offset = new THREE.Vector3(-1, 1, -1);
     this._lights.directional.position.copy(offset);
-
-    // direction light shadow with CSM
     const size = 20;
     const maxFar = 200; // 200
-    const res = 2048;
+    const res = 1024;
     const cascades = 3;
     const mode = 'practical'; // practical, logarithmic, uniform
     this._lights.directional.castShadow = true;
@@ -58,9 +57,9 @@ class Lighting extends SceneNode {
         p.y + offset.y * maxFar,
         p.z + offset.z * maxFar
       );
-      //if (csm.camera) {
-      //  csm.updateFrustums();
-      //}
+      if (this._lights.directional.shadow.shadowNode.camera) {
+        this._lights.directional.shadow.shadowNode.updateFrustums();
+      }
     });
 
     /*
