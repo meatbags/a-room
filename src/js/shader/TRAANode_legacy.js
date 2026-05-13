@@ -1,11 +1,10 @@
-import { HalfFloatType, Vector2, RenderTarget, RendererUtils, QuadMesh, NodeMaterial, TempNode, NodeUpdateType, Matrix4, DepthTexture, FloatType } from 'three/webgpu';
-import { add, float, If, Fn, max, texture, uniform, uv, vec2, vec4, luminance, convertToTexture, passTexture, velocity, getViewPosition, viewZToPerspectiveDepth, struct, ivec2, mix, logarithmicDepthToViewZ, viewZToOrthographicDepth } from 'three/tsl';
+import { HalfFloatType, Vector2, RenderTarget, RendererUtils, QuadMesh, NodeMaterial, TempNode, NodeUpdateType, Matrix4, DepthTexture } from 'three/webgpu';
+import { add, float, If, Fn, max, nodeObject, texture, uniform, uv, vec2, vec4, luminance, convertToTexture, passTexture, velocity, getViewPosition, viewZToPerspectiveDepth, struct, ivec2, mix } from 'three/tsl';
 
 const _quadMesh = /*@__PURE__*/ new QuadMesh();
 const _size = /*@__PURE__*/ new Vector2();
 
 let _rendererState;
-
 
 /**
  * A special node that applies TRAA (Temporal Reprojection Anti-Aliasing).
@@ -13,8 +12,6 @@ let _rendererState;
  * References:
  * - {@link https://alextardif.com/TAA.html}
  * - {@link https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/}
- *
- * Note: MSAA must be disabled when TRAA is in use.
  *
  * @augments TempNode
  * @three_import import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -92,6 +89,7 @@ class TRAANode extends TempNode {
 		 * @type {number}
 		 * @default 0.0005
 		 */
+		// this.depthThreshold = 0.0005;
 		this.depthThreshold = 0.0005;
 
 		/**
@@ -100,6 +98,7 @@ class TRAANode extends TempNode {
 		 * @type {number}
 		 * @default 0.001
 		 */
+		// this.edgeDepthDiff = 0.001;
 		this.edgeDepthDiff = 0.001;
 
 		/**
@@ -237,19 +236,10 @@ class TRAANode extends TempNode {
 
 		/**
 		 * Sync the post processing stack with the TRAA node.
-		 *
 		 * @private
 		 * @type {boolean}
 		 */
 		this._needsPostProcessingSync = false;
-
-		/**
-		 * The node used to render the scene's velocity.
-		 *
-		 * @private
-		 * @type {?VelocityNode}
-		 */
-		this._velocityNode = null;
 
 	}
 
@@ -287,37 +277,32 @@ class TRAANode extends TempNode {
 	 * @param {number} height - The height of the effect.
 	 */
 	setViewOffset( width, height ) {
-
 		// save original/unjittered projection matrix for velocity pass
-
 		this.camera.updateProjectionMatrix();
 		this._originalProjectionMatrix.copy( this.camera.projectionMatrix );
-
-		this._velocityNode.setProjectionMatrix( this._originalProjectionMatrix );
+		velocity.setProjectionMatrix( this._originalProjectionMatrix );
 
 		//
-
 		const viewOffset = {
-
 			fullWidth: width,
 			fullHeight: height,
 			offsetX: 0,
 			offsetY: 0,
 			width: width,
 			height: height
-
 		};
 
-		const jitterOffset = _haltonOffsets[ this._jitterIndex ];
+    const jitterOffset = _haltonOffsets[ this._jitterIndex ];
+    // const jitterScale = 0.25;
 
 		this.camera.setViewOffset(
-			viewOffset.fullWidth, 
+			viewOffset.fullWidth,
       viewOffset.fullHeight,
-			viewOffset.offsetX + jitterOffset[ 0 ] - 0.5,
-      viewOffset.offsetY + jitterOffset[ 1 ] - 0.5,
-			viewOffset.width, viewOffset.height
+			viewOffset.offsetX,  //+ (jitterOffset[ 0 ] - 0.5) ,
+      viewOffset.offsetY, // + (jitterOffset[ 1 ] - 0.5) ,
+			viewOffset.width,
+      viewOffset.height
 		);
-
 	}
 
 	/**
@@ -327,7 +312,7 @@ class TRAANode extends TempNode {
 
 		this.camera.clearViewOffset();
 
-		this._velocityNode.setProjectionMatrix( null );
+		velocity.setProjectionMatrix( null );
 
 		// update jitter index
 
@@ -342,11 +327,10 @@ class TRAANode extends TempNode {
 	 * @param {NodeFrame} frame - The current node frame.
 	 */
 	updateBefore( frame ) {
-
 		const { renderer } = frame;
 
 		// store previous frame matrices before updating current ones
-
+    
 		this._previousCameraWorldMatrix.value.copy( this._cameraWorldMatrix.value );
 		this._previousCameraProjectionMatrixInverse.value.copy( this._cameraProjectionMatrixInverse.value );
 
@@ -358,47 +342,36 @@ class TRAANode extends TempNode {
 		this._cameraProjectionMatrixInverse.value.copy( this.camera.projectionMatrixInverse );
 
 		// keep the TRAA in sync with the dimensions of the beauty node
-
 		const beautyRenderTarget = ( this.beautyNode.isRTTNode ) ? this.beautyNode.renderTarget : this.beautyNode.passNode.renderTarget;
-
 		const width = beautyRenderTarget.texture.width;
 		const height = beautyRenderTarget.texture.height;
 
 		//
-
 		if ( this._needsPostProcessingSync === true ) {
-
 			this.setViewOffset( width, height );
-
 			this._needsPostProcessingSync = false;
-
 		}
 
 		_rendererState = RendererUtils.resetRendererState( renderer, _rendererState );
 
 		//
-
 		const needsRestart = this._historyRenderTarget.width !== width || this._historyRenderTarget.height !== height;
 		this.setSize( width, height );
 
 		// every time when the dimensions change we need fresh history data
-
 		if ( needsRestart === true ) {
-
-			// make sure render targets are initialized after the resize which triggers a dispose()
-
-			renderer.initRenderTarget( this._historyRenderTarget );
-			renderer.initRenderTarget( this._resolveRenderTarget );
+			// bind and clear render target to make sure they are initialized after the resize which triggers a dispose()
+			renderer.setRenderTarget( this._historyRenderTarget );
+			renderer.clear();
+			renderer.setRenderTarget( this._resolveRenderTarget );
+			renderer.clear();
 
 			// make sure to reset the history with the contents of the beauty buffer otherwise subsequent frames after the
 			// resize will fade from a darker color to the correct one because the history was cleared with black.
-
 			renderer.copyTextureToTexture( beautyRenderTarget.texture, this._historyRenderTarget.texture );
-
 		}
 
 		// resolve
-
 		renderer.setRenderTarget( this._resolveRenderTarget );
 		_quadMesh.material = this._resolveMaterial;
 		_quadMesh.name = 'TRAA';
@@ -406,11 +379,9 @@ class TRAANode extends TempNode {
 		renderer.setRenderTarget( null );
 
 		// update history
-
 		renderer.copyTextureToTexture( this._resolveRenderTarget.texture, this._historyRenderTarget.texture );
 
 		// Copy current depth to previous depth buffer
-
 		const size = renderer.getDrawingBufferSize( _size );
 
 		// only allow the depth copy if the dimensions of the history render target match with the drawing
@@ -419,17 +390,13 @@ class TRAANode extends TempNode {
 		// resizing the browser window. This does not happen with the WebGL backend
 
 		if ( this._historyRenderTarget.height === size.height && this._historyRenderTarget.width === size.width ) {
-
 			const currentDepth = this.depthNode.value;
 			renderer.copyTextureToTexture( currentDepth, this._historyRenderTarget.depthTexture );
 			this._previousDepthNode.value = this._historyRenderTarget.depthTexture;
-
 		}
 
 		// restore
-
 		RendererUtils.restoreRendererState( renderer, _rendererState );
-
 	}
 
 	/**
@@ -440,50 +407,24 @@ class TRAANode extends TempNode {
 	 */
 	setup( builder ) {
 
-		const renderPipeline = builder.context.renderPipeline;
+		const postProcessing = builder.context.postProcessing;
 
-		if ( renderPipeline ) {
+		if ( postProcessing ) {
 
 			this._needsPostProcessingSync = true;
 
-			renderPipeline.context.onBeforeRenderPipeline = () => {
-
+			postProcessing.context.onBeforePostProcessing = () => {
 				const size = builder.renderer.getDrawingBufferSize( _size );
 				this.setViewOffset( size.width, size.height );
-
 			};
 
-			renderPipeline.context.onAfterRenderPipeline = () => {
+			postProcessing.context.onAfterPostProcessing = () => {
 
 				this.clearViewOffset();
 
 			};
 
 		}
-
-		if ( builder.renderer.reversedDepthBuffer === true ) {
-
-			this._historyRenderTarget.depthTexture.type = FloatType;
-
-		}
-
-		if ( builder.context.velocity !== undefined ) {
-
-			this._velocityNode = builder.context.velocity;
-
-		} else {
-
-			this._velocityNode = velocity;
-
-		}
-
-		const logarithmicToPerspectiveDepth = ( depth ) => {
-
-			const { x: near, y: far } = this._cameraNearFar;
-			const viewZ = logarithmicDepthToViewZ( depth, near, far );
-			return viewZToPerspectiveDepth( viewZ, near, far );
-
-		};
 
 		const currentDepthStruct = struct( {
 
@@ -505,10 +446,7 @@ class TRAANode extends TempNode {
 				for ( let y = - 1; y <= 1; ++ y ) {
 
 					const neighbor = positionTexel.add( vec2( x, y ) ).toVar();
-					let depth = this.depthNode.load( neighbor ).r;
-					if ( builder.renderer.reversedDepthBuffer ) depth = depth.oneMinus();
-					if ( builder.renderer.logarithmicDepthBuffer ) depth = logarithmicToPerspectiveDepth( depth );
-					depth = depth.toVar();
+					const depth = this.depthNode.load( neighbor ).r.toVar();
 
 					If( depth.lessThan( closestDepth ), () => {
 
@@ -534,14 +472,11 @@ class TRAANode extends TempNode {
 		// Samples a previous depth and reproject it using the current camera matrices.
 		const samplePreviousDepth = ( uv ) => {
 
-			let depth = this._previousDepthNode.sample( uv ).r;
-			if ( builder.renderer.logarithmicDepthBuffer ) depth = logarithmicToPerspectiveDepth( depth );
+			const depth = this._previousDepthNode.sample( uv ).r;
 			const positionView = getViewPosition( uv, depth, this._previousCameraProjectionMatrixInverse );
 			const positionWorld = this._previousCameraWorldMatrix.mul( vec4( positionView, 1 ) ).xyz;
 			const viewZ = this._cameraWorldMatrixInverse.mul( vec4( positionWorld, 1 ) ).z;
-			return this.camera.isOrthographicCamera
-				? viewZToOrthographicDepth( viewZ, this._cameraNearFar.x, this._cameraNearFar.y )
-				: viewZToPerspectiveDepth( viewZ, this._cameraNearFar.x, this._cameraNearFar.y );
+			return viewZToPerspectiveDepth( viewZ, this._cameraNearFar.x, this._cameraNearFar.y );
 
 		};
 
@@ -638,67 +573,60 @@ class TRAANode extends TempNode {
 			currentWeight.mulAssign( float( 1 ).div( luminanceCurrent.add( 1 ) ) );
 			historyWeight.mulAssign( float( 1 ).div( luminanceHistory.add( 1 ) ) );
 
-			return add( currentColor.mul( currentWeight ), historyColor.mul( historyWeight ) ).div( max( currentWeight.add( historyWeight ), 0.00001 ) ).toVar();
-
+			return add( 
+        currentColor.mul( currentWeight ), 
+        historyColor.mul( historyWeight ) ).div( 
+          max( currentWeight.add( historyWeight ), 0.00001 ) ).toVar(); // default 0.00001
 		} );
 
 		const historyNode = texture( this._historyRenderTarget.texture );
 
 		const resolve = Fn( () => {
-
 			const uvNode = uv();
 			const textureSize = this.beautyNode.size(); // Assumes all the buffers share the same size.
 			const positionTexel = uvNode.mul( textureSize );
 
 			// sample the closest and farthest depths in the current buffer
-
 			const currentDepth = sampleCurrentDepth( positionTexel );
 			const closestDepth = currentDepth.get( 'closestDepth' );
 			const closestPositionTexel = currentDepth.get( 'closestPositionTexel' );
 			const farthestDepth = currentDepth.get( 'farthestDepth' );
 
 			// convert the NDC offset to UV offset
-
 			const offsetUV = this.velocityNode.load( closestPositionTexel ).xy.mul( vec2( 0.5, - 0.5 ) );
 
 			// sample the previous depth
-
 			const historyUV = uvNode.sub( offsetUV );
 			const previousDepth = samplePreviousDepth( historyUV );
 
 			// history is considered valid when the UV is in range and there's no disocclusion except on edges
-
 			const isValidUV = historyUV.greaterThanEqual( 0 ).all().and( historyUV.lessThanEqual( 1 ).all() );
 			const isEdge = farthestDepth.sub( closestDepth ).greaterThan( this.edgeDepthDiff );
 			const isDisocclusion = closestDepth.sub( previousDepth ).greaterThan( this.depthThreshold );
 			const hasValidHistory = isValidUV.and( isEdge.or( isDisocclusion.not() ) );
 
 			// sample the current and previous colors
-
 			const currentColor = this.beautyNode.sample( uvNode );
 			const historyColor = historyNode.sample( uvNode.sub( offsetUV ) );
 
 			// increase the weight towards the current frame under motion
-
 			const motionFactor = uvNode.sub( historyUV ).mul( textureSize ).length().div( this.maxVelocityLength ).saturate();
-			const currentWeight = float( 0.05 ).toVar(); // A minimum weight
+			const currentWeight = float( 0.05 ).toVar(); // A minimum weight, default = 0.05
 
 			if ( this.useSubpixelCorrection ) {
-
 				// Increase the minimum weight towards the current frame when the velocity is more subpixel.
+        // default mul( 0.25 )
 				currentWeight.addAssign( subpixelCorrection( offsetUV, textureSize ).mul( 0.25 ) );
-
 			}
 
 			currentWeight.assign( hasValidHistory.select( currentWeight.add( motionFactor ).saturate(), 1 ) );
 
 			// Perform neighborhood clipping/clamping. We use variance clipping here.
-
-			const varianceGamma = mix( 0.5, 1, motionFactor.oneMinus().pow2() ); // Reasonable gamma range is [0.75, 2]
+      // Reasonable gamma range is [0.75, 2]
+			const varianceGamma = mix( 0.5, 1, motionFactor.oneMinus().pow2() ); 
 			const clippedHistoryColor = varianceClipping( positionTexel, currentColor, historyColor, varianceGamma );
 
 			// flicker reduction based on luminance weighing
-
 			const output = flickerReduction( currentColor, clippedHistoryColor, currentWeight );
 
 			return output;
@@ -731,19 +659,14 @@ class TRAANode extends TempNode {
 export default TRAANode;
 
 function _halton( index, base ) {
-
 	let fraction = 1;
 	let result = 0;
 	while ( index > 0 ) {
-
 		fraction /= base;
 		result += fraction * ( index % base );
 		index = Math.floor( index / base );
-
 	}
-
 	return result;
-
 }
 
 const _haltonOffsets = /*@__PURE__*/ Array.from(
@@ -762,4 +685,4 @@ const _haltonOffsets = /*@__PURE__*/ Array.from(
  * @param {Camera} camera - The camera the scene is rendered with.
  * @returns {TRAANode}
  */
-export const traa = ( beautyNode, depthNode, velocityNode, camera ) => new TRAANode( convertToTexture( beautyNode ), depthNode, velocityNode, camera );
+export const traa = ( beautyNode, depthNode, velocityNode, camera ) => nodeObject( new TRAANode( convertToTexture( beautyNode ), depthNode, velocityNode, camera ) );
