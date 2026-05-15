@@ -10,14 +10,13 @@ export default {
   },
   Player: {
     height: 1.75,
-    speed: 2.2,
-    speedRunning: 4.5,
+    speed: 2.25,
+    speedRunning: 4.75,
     speedNoclip: 20,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
     jumpEnabled: false,
-    // crouchEnabled: false,
-    playerLight: null, // new THREE.PointLight(0xEEEEFF, 0.15),
+    playerLight: new THREE.PointLight(0xDDFFFF, 0.25, 5),
   },
   Physics: {
     stepHeight: 0.5,
@@ -29,8 +28,8 @@ export default {
   },
   Graphics: {
     fog: {
-      hex: 0x222222,
-      density: 0.002,
+      hex: 0x888888,
+      density: 0.0225,
     },
     backgroundBlurriness: 0,
     skybox: {
@@ -54,6 +53,6 @@ export default {
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: .25,
+    envMapIntensityDefault: 0.1,
   }
 };

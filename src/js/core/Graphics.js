@@ -90,12 +90,12 @@ export default class Graphics extends SceneNode {
     giPass.stepCount.value = 2;
     giPass.aoIntensity.value = 1.0; // default=1, [0, 4]
     giPass.giIntensity.value = 3.5;
-    giPass.radius.value = 6; // default=12, [1, 25]
+    giPass.radius.value = 3; // default=12, [1, 25]
     giPass.useScreenSpaceSampling.value = true;
     giPass.expFactor.value = 2;
     giPass.thickness.value = 1;
     giPass.useLinearThickness.value = false;
-    giPass.backfaceLighting.value = 0.3;
+    giPass.backfaceLighting.value = 0.5;
     giPass.useTemporalFiltering = true;
     
     // change settings for webgl
