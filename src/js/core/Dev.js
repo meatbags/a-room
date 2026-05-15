@@ -16,6 +16,16 @@ class Dev extends SceneNode {
       if (e.code === 'Digit1') {
         this.settings.wireframe = ! this.settings.wireframe;
         this._toggleWireframes();
+      } else if (e.code === 'Digit2') {
+        SceneNode.getSceneNode('Game').traverse(child => {
+          if (child.getState()) {
+            child.setState(child.getInitialState());
+          }
+          if (typeof child.reset === 'function') {
+            child.reset();
+          }
+        });
+        console.log('Dev: reset states');
       }
     });
   }

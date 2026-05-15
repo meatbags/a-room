@@ -1,7 +1,7 @@
 /** Map */
 
 import * as THREE from 'three';
-import { SceneNode, Carryable, CentrePivot } from 'engine';
+import { SceneNode, Carryable, CentrePivot, Door, MapObjectByName } from 'engine';
 
 class Map extends SceneNode {
   constructor() {
@@ -30,8 +30,14 @@ class Map extends SceneNode {
     });
     this._addToScene(this.getAsset('background'));
 
-    // collisions
-    const collision = this.getAsset('map').clone();
+    // get mapped
+    const mapped = MapObjectByName(map);
+    if (mapped.elevator_door_group) {
+      this.add( new Door(mapped.elevator_door_group) );
+    }
+
+    // collision maps
+    const collision = this.getAsset('map').clone();    
     this._addObjectToPhysicsWorld(collision);
     this._addToScene(collision);
 

@@ -32,18 +32,6 @@ class Game extends SceneNode {
     this.resetPlayer();
 
     if (SceneNode.getSceneNode('Dev').isDev) {
-      // add reset state hotkey
-      SceneNode.getSceneNode('Dev').addFunction('Reset game state', '1', () => {
-        this.traverse(child => {
-          if (child.getState()) {
-            child.setState(child.getInitialState());
-          }
-          if (typeof child.reset === 'function') {
-            child.reset();
-          }
-        });
-      });
-
       // FPS
       this.stats = new Stats();
       document.body.appendChild(this.stats.dom);

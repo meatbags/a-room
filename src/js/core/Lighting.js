@@ -100,51 +100,8 @@ class Lighting extends SceneNode {
   }
 
   _init() {
-    // add lights
-    const scene = SceneNode.getSceneNode('Scene').getScene();
-    this._lights = {};
-    this._lights.ambient = new THREE.AmbientLight(0xFFFFFF, 0.025);
-    scene.add(this._lights.ambient);
-
-    // directional light constant
-    const offset = new THREE.Vector3(-1, 1, -1);
-    this._lights.directionalConstant = new THREE.DirectionalLight(0xFFFFFF, 0.0);
-    this._lights.directionalConstant.position.copy(offset);
-    scene.add(this._lights.directionalConstant);
-
-    // directional light + cascade shadow map
-    this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.0);
-    this._lights.directional.position.copy(offset);
-    const size = 5;
-    const far = 512;
-    const maxFar = 40;
-    const res = 2048;
-    const cascades = 4;
-    const mode = 'uniform'; // practical, logarithmic, uniform
-    this._lights.directional.userData.offset = offset;
-    this._lights.directional.castShadow = true;
-    this._lights.directional.shadow.mapSize.width = res;
-    this._lights.directional.shadow.mapSize.height = res;
-    this._lights.directional.shadow.radius = 1;
-    this._lights.directional.shadow.intensity = 1.5;
-    this._lights.directional.shadow.bias = 0;
-    this._lights.directional.shadow.camera.left = -size;
-    this._lights.directional.shadow.camera.right = size;
-    this._lights.directional.shadow.camera.top = size;
-    this._lights.directional.shadow.camera.bottom = -size;
-    this._lights.directional.shadow.camera.near = 0.5;
-    this._lights.directional.shadow.camera.far = far;
-    const csm = new CSMShadowNode(this._lights.directional, {
-      cascades: cascades,
-      maxFar: maxFar,
-      mode: mode
-    });
-    this._lights.directional.shadow.shadowNode = csm;
-    scene.add(this._lights.directional, this._lights.directional.target);
-
-    this._lights.point = new THREE.PointLight(0x00DDFF, 1.5, 5, 2);
-    this._lights.point.position.set(0, 3.4065, -5.8);
-    scene.add(this._lights.point);
+    // lights
+    this._initLights();
 
     // create lighting zone/s
     this._initLightingZones();
@@ -224,6 +181,54 @@ class Lighting extends SceneNode {
     */
   }
 
+  _initLights() {
+    // add lights
+    const scene = SceneNode.getSceneNode('Scene').getScene();
+    this._lights = {};
+    this._lights.ambient = new THREE.AmbientLight(0xFFFFFF, 0.025);
+    scene.add(this._lights.ambient);
+
+    // directional light constant
+    const offset = new THREE.Vector3(-0.5, 1, -1);
+    this._lights.directionalConstant = new THREE.DirectionalLight(0xFFFFFF, 0.0);
+    this._lights.directionalConstant.position.copy(offset);
+    scene.add(this._lights.directionalConstant);
+
+    // directional light + cascade shadow map
+    this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.0);
+    this._lights.directional.position.copy(offset);
+    const size = 5;
+    const far = 512;
+    const maxFar = 40;
+    const res = 2048;
+    const cascades = 4;
+    const mode = 'uniform'; // practical, logarithmic, uniform
+    this._lights.directional.userData.offset = offset;
+    this._lights.directional.castShadow = true;
+    this._lights.directional.shadow.mapSize.width = res;
+    this._lights.directional.shadow.mapSize.height = res;
+    this._lights.directional.shadow.radius = 1;
+    this._lights.directional.shadow.intensity = 1.5;
+    this._lights.directional.shadow.bias = 0;
+    this._lights.directional.shadow.camera.left = -size;
+    this._lights.directional.shadow.camera.right = size;
+    this._lights.directional.shadow.camera.top = size;
+    this._lights.directional.shadow.camera.bottom = -size;
+    this._lights.directional.shadow.camera.near = 0.5;
+    this._lights.directional.shadow.camera.far = far;
+    const csm = new CSMShadowNode(this._lights.directional, {
+      cascades: cascades,
+      maxFar: maxFar,
+      mode: mode
+    });
+    this._lights.directional.shadow.shadowNode = csm;
+    scene.add(this._lights.directional, this._lights.directional.target);
+
+    this._lights.point = new THREE.PointLight(0x00DDFF, 1.5, 5, 2);
+    this._lights.point.position.set(0, 3.4065, -5.8);
+    scene.add(this._lights.point);
+  }
+
   _initLightingZones() {
     // indoors dark zone 1
     const origin = new THREE.Vector3();
@@ -244,11 +249,11 @@ class Lighting extends SceneNode {
 
     // indoors to outdoors
     const box1 = new THREE.Box3().setFromCenterAndSize(
-      new THREE.Vector3(0, 1.35, -8), 
-      new THREE.Vector3(1.5, 3, 4)
+      new THREE.Vector3(0, 1.35, -7.5), 
+      new THREE.Vector3(1.5, 3, 3)
     );
-    const zMin = -8 + 2;
-    const zMax = -8 - 2;
+    const zMin = -7.5 + 1.5;
+    const zMax = -7.5 - 1.5;
     LightingZone.addTransitionZone(
       'indoors_dark_to_outdoors',
       'indoors_dark',
