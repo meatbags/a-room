@@ -11,16 +11,16 @@ class Map extends SceneNode {
     //this.load('collision', './models/collision.fbx');
     this.load('background', './models/background.fbx');
     this.load('interactive', './models/interactive.fbx');
-    this.load('cosmetic', './models/cosmetic.fbx');
+    //this.load('cosmetic', './models/cosmetic.fbx');
   }
 
   _init() {
     // create scene
     const map = this.getAsset('map');
     this._addToScene(map);
-    const cosmetic = this.getAsset('cosmetic');
-    this._addToScene(cosmetic);
-    [map, cosmetic].forEach(g => {
+    //const cosmetic = this.getAsset('cosmetic');
+    //this._addToScene(cosmetic);
+    [map /** , cosmetic */].forEach(g => {
       g.traverse(obj => {
         if (obj.isMesh) {
           obj.castShadow = true;

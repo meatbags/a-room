@@ -46,13 +46,13 @@ export default {
   Environment: {
     textures: [{
       name: 'envMap',
-      src: './images/env/default-grey.jpg',
+      src: './images/env/default-grey-contrast.jpg',
       props: {
         mapping: THREE.EquirectangularReflectionMapping,
         colorSpace: THREE.SRGBColorSpace
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: 0.1,
+    envMapIntensityDefault: 0.0,
   }
 };

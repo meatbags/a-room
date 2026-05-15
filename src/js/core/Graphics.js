@@ -82,11 +82,9 @@ export default class Graphics extends SceneNode {
     // gi pass
     // const giPass = ssgi( scenePassColor, scenePassDepth, sceneNormal, camera );
     const giPass = ssgi_extended( scenePassColor, scenePassDepth, sceneNormal, camera );
-    
     giPass.rangeStart.value = 5;
     giPass.rangeStop.value = 10;
-    
-    giPass.sliceCount.value = 3; // NB: iter = sliceCount * stepCount * 2
+    giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
     giPass.stepCount.value = 2;
     giPass.aoIntensity.value = 1.0; // default=1, [0, 4]
     giPass.giIntensity.value = 3.5;
