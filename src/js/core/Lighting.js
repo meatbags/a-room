@@ -10,6 +10,7 @@ import * as THREE from 'three';
 
 class LightingZone {
   static zones = [];
+  static defaultZone = null;
 
   /** add zone */
   static addZone(name, lighting, callback) {
@@ -80,6 +81,13 @@ class LightingZone {
     })
   }
 
+  /** add default lighting zone */
+  static addDefaultZone(name, lighting) {
+    const zone = { name, lighting, callback: () => false };
+    LightingZone.zones.push(zone);
+    LightingZone.defaultZone = zone;
+  }
+
   /** get lighting by position */
   static getZoneLighting(position) {
     for (let i=0; i<LightingZone.zones.length; i++) {
@@ -87,7 +95,7 @@ class LightingZone {
         return LightingZone.zones[i];
       }
     }
-    return null;
+    return LightingZone.defaultZone;
   }
 }
 
@@ -185,11 +193,15 @@ class Lighting extends SceneNode {
     // add lights
     const scene = SceneNode.getSceneNode('Scene').getScene();
     this._lights = {};
-    this._lights.ambient = new THREE.AmbientLight(0xFFFFFF, 0.025);
+    this._lights.ambient = new THREE.AmbientLight(0xFFFFFF, 0);
     scene.add(this._lights.ambient);
 
+    const tmp = new THREE.DirectionalLight(0xFF0000, 0.2);
+    tmp.position.set(1, 0.125, 1);
+    scene.add(tmp);
+
     // directional light constant
-    const offset = new THREE.Vector3(-0.5, 1, -1);
+    const offset = new THREE.Vector3(-1, 1, -1);
     this._lights.directionalConstant = new THREE.DirectionalLight(0xFFFFFF, 0.0);
     this._lights.directionalConstant.position.copy(offset);
     scene.add(this._lights.directionalConstant);
@@ -198,9 +210,9 @@ class Lighting extends SceneNode {
     this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.0);
     this._lights.directional.position.copy(offset);
     const size = 5;
-    const far = 512;
-    const maxFar = 40;
-    const res = 2048;
+    const far = 256;
+    const maxFar = 20;
+    const res = 4096;
     const cascades = 4;
     const mode = 'uniform'; // practical, logarithmic, uniform
     this._lights.directional.userData.offset = offset;
@@ -208,7 +220,7 @@ class Lighting extends SceneNode {
     this._lights.directional.shadow.mapSize.width = res;
     this._lights.directional.shadow.mapSize.height = res;
     this._lights.directional.shadow.radius = 1;
-    this._lights.directional.shadow.intensity = 1.5;
+    this._lights.directional.shadow.intensity = 1;
     this._lights.directional.shadow.bias = 0;
     this._lights.directional.shadow.camera.left = -size;
     this._lights.directional.shadow.camera.right = size;
@@ -219,28 +231,30 @@ class Lighting extends SceneNode {
     const csm = new CSMShadowNode(this._lights.directional, {
       cascades: cascades,
       maxFar: maxFar,
-      mode: mode
+      mode: mode,
+      fade: true,
     });
     this._lights.directional.shadow.shadowNode = csm;
     scene.add(this._lights.directional, this._lights.directional.target);
 
     this._lights.point = new THREE.PointLight(0x00DDFF, 1.5, 5, 2);
-    this._lights.point.position.set(0, 3.4065, -5.8);
+    this._lights.point.position.set(0, 3.4065 - 3, -5.8);
     scene.add(this._lights.point);
   }
 
   _initLightingZones() {
     // indoors dark zone 1
+    /*
     const origin = new THREE.Vector3();
     const dsqr = Math.pow(6.25, 2);
 
     LightingZone.addZone(
       'indoors_dark', {
         ambient: { intensity: 0.025 },
-        directionalConstant: { intensity: 0 },
-        directional: { intensity: 0 },
-        point: { intensity: 1.5 },
-        envMapIntensity: 0.02,
+        directionalConstant: { intensity: 0.05 },
+        directional: { intensity: 0.375 },
+        point: { intensity: 1.0 },
+        envMapIntensity: 0.125,
       },
       p => {
         return Math.pow(origin.x - p.x, 2) + Math.pow(origin.z - p.z, 2) < dsqr;
@@ -263,16 +277,17 @@ class Lighting extends SceneNode {
         return (p.z - zMin) / (zMax - zMin);
       },
     );
+    */
 
-    // outdoors -- default
-    LightingZone.addZone(
-      'outdoors', {
-        ambient: { intensity: 0.05 },
-        directionalConstant: { intensity: 0.2 },
-        directional: { intensity: 0.2 },
+    // default zone
+    LightingZone.addDefaultZone(
+      'default', {
+        ambient: { intensity: 0.025 },
+        directionalConstant: { intensity: 0.05 },
+        directional: { intensity: 0.375 },
+        point: { intensity: 1.0 },
         envMapIntensity: 0.2,
       },
-      p => true,
     );
   }
 
@@ -318,6 +333,11 @@ class Lighting extends SceneNode {
   }
 
   _update( /** delta */ ) {
+    if (!this._lightingConfigInitialised) {
+      this._onCameraMove(SceneNode.getSceneNode('Camera').getCamera().position);
+      this._lightingConfigInitialised = true;
+    }
+
     if (this._lightingConfig && this._lightingNeedsUpdate) {
       const lighting = this._lightingConfig.lighting;
       const eps = 0.005;
