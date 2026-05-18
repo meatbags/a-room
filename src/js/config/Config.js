@@ -76,7 +76,7 @@ export default {
     speedNoclip: 20,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
-    jumpEnabled: false,
+    // jumpEnabled: false,
     playerLight: new THREE.PointLight(0xDDFFFF, 0.25, 5),
   },
   Renderer: {
