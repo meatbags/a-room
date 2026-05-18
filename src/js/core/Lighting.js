@@ -1,5 +1,6 @@
 /** SceneNode */
 
+import Config from '../config/Config';
 import { SceneNode, SpotLightFog, Blend } from 'engine';
 import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 import { RectAreaLightTexturesLib } from 'three/addons/lights/RectAreaLightTexturesLib.js';
@@ -43,11 +44,14 @@ class LightingZone {
             console.warn('No lighting zone found', from, a, to, b);
           }
 
+          const allowedKeys = ['intensity'];
+
           // set a -> b values
           for (const key in a.lighting) {
             if (typeof a.lighting[key] === 'object') {
               lighting[key] = {};
               for (const k in a.lighting[key]) {
+                if (!allowedKeys.includes(k)) continue;
                 const bVal = b.lighting[key] && b.lighting[key][k] !== undefined ? b.lighting[key][k] : 0;
                 lighting[key][k] = Blend(a.lighting[key][k], bVal, t);
                 justSet[`${key};${k}`] = true;
@@ -64,6 +68,7 @@ class LightingZone {
             if (typeof b.lighting[key] === 'object') {
               if (!lighting[key]) lighting[key] = {};
               for (const k in b.lighting[key]) {
+                if (!allowedKeys.includes(k)) continue;
                 if (justSet[`${key};${k}`]) continue;
                 const aVal = a.lighting[key] && a.lighting[key][k] !== undefined ? a.lighting[key][k] : 0;
                 lighting[key][k] = Blend(aVal, b.lighting[key][k], t);
@@ -112,7 +117,16 @@ class Lighting extends SceneNode {
     this._initLights();
 
     // create lighting zone/s
-    this._initLightingZones();
+    for (const key in Config.Lighting.zones) {
+      const zone = Config.Lighting.zones[key];
+      if (zone.type === 'default') {
+        LightingZone.addDefaultZone(key, zone.lighting);
+      } else if (zone.type === 'transition') {
+        LightingZone.addTransitionZone(key, zone.from, zone.to, zone.callback, zone.callbackT);
+      } else {
+        LightingZone.addZone(key, zone.lighting, zone.callback);
+      }
+    }
 
     // set directional light on camera move
     SceneNode.getSceneNode('Camera').addEventListener('move', p => this._onCameraMove(p));
@@ -190,56 +204,69 @@ class Lighting extends SceneNode {
   }
 
   _initLights() {
-    // add lights
     const scene = SceneNode.getSceneNode('Scene').getScene();
-    this._lights = {};
-    this._lights.ambient = new THREE.AmbientLight(0xFFFFFF, 0);
-    scene.add(this._lights.ambient);
 
-    const tmp = new THREE.DirectionalLight(0xFF0000, 0.2);
-    tmp.position.set(1, 0.125, 1);
-    scene.add(tmp);
+    // setup lighting
+    this.lights = {};
+    this.shadowLights = [];
+    for (const key in Config.Lighting.zones) {
+      for (const k in Config.Lighting.zones[key].lighting) {
+        if (this.lights[k]) continue;
 
-    // directional light constant
-    const offset = new THREE.Vector3(-1, 1, -1);
-    this._lights.directionalConstant = new THREE.DirectionalLight(0xFFFFFF, 0.0);
-    this._lights.directionalConstant.position.copy(offset);
-    scene.add(this._lights.directionalConstant);
+        // create light
+        let light = null;
+        const conf = Config.Lighting.zones[key].lighting[k];
 
-    // directional light + cascade shadow map
-    this._lights.directional = new THREE.DirectionalLight(0xFFFFFF, 0.0);
-    this._lights.directional.position.copy(offset);
-    const size = 5;
-    const far = 256;
-    const maxFar = 20;
-    const res = 4096;
-    const cascades = 4;
-    const mode = 'uniform'; // practical, logarithmic, uniform
-    this._lights.directional.userData.offset = offset;
-    this._lights.directional.castShadow = true;
-    this._lights.directional.shadow.mapSize.width = res;
-    this._lights.directional.shadow.mapSize.height = res;
-    this._lights.directional.shadow.radius = 1;
-    this._lights.directional.shadow.intensity = 1;
-    this._lights.directional.shadow.bias = 0;
-    this._lights.directional.shadow.camera.left = -size;
-    this._lights.directional.shadow.camera.right = size;
-    this._lights.directional.shadow.camera.top = size;
-    this._lights.directional.shadow.camera.bottom = -size;
-    this._lights.directional.shadow.camera.near = 0.5;
-    this._lights.directional.shadow.camera.far = far;
-    const csm = new CSMShadowNode(this._lights.directional, {
-      cascades: cascades,
-      maxFar: maxFar,
-      mode: mode,
-      fade: true,
-    });
-    this._lights.directional.shadow.shadowNode = csm;
-    scene.add(this._lights.directional, this._lights.directional.target);
+        // ambient
+        if (conf.type === 'ambient') {
+          light = new THREE.AmbientLight(conf.color ?? 0xFFFFFF, conf.intensity ?? 0);
 
-    this._lights.point = new THREE.PointLight(0x00DDFF, 1.5, 5, 2);
-    this._lights.point.position.set(0, 3.4065 - 3, -5.8);
-    scene.add(this._lights.point);
+        // directional
+        } else if (conf.type === 'directional') {
+          light = new THREE.DirectionalLight(conf.color ?? 0xFFFFFF, conf.intensity ?? 0);
+          const offset = new THREE.Vector3().fromArray(conf.position ?? [0, 1, 0]);
+          light.position.copy(offset);
+          light.userData.offset = offset;
+
+        // point
+        } else if (conf.type === 'point') {
+          light = new THREE.PointLight(conf.color ?? 0xFFFFFF, conf.intensity ?? 0, conf.distance ?? 100, conf.decay ?? 2);
+          light.position.copy(new THREE.Vector3().fromArray(conf.position ?? [0, 1, 0]));
+        }
+
+        // create shadow / csm
+        if (light && conf.shadow) {
+          light.castShadow = true;
+          light.shadow.mapSize.width = conf.shadow.mapSize ?? 512;
+          light.shadow.mapSize.height = conf.shadow.mapSize ?? 512;
+          light.shadow.radius = conf.shadow.radius ?? 1;
+          light.shadow.intensity = conf.shadow.intensity ?? 1;
+          light.shadow.bias = conf.shadow.bias ?? 0;
+          light.shadow.camera.left = -(conf.shadow.cameraSize ?? 10);
+          light.shadow.camera.right = (conf.shadow.cameraSize ?? 10);
+          light.shadow.camera.top = (conf.shadow.cameraSize ?? 10);
+          light.shadow.camera.bottom = -(conf.shadow.cameraSize ?? 10);
+          light.shadow.camera.near = conf.shadow.cameraNear ?? 0.5;
+          light.shadow.camera.far = conf.shadow.cameraFar ?? 1000;
+          light.shadow.shadowNode = new CSMShadowNode(light, {
+            cascades: conf.shadow.csmCascades ?? 3,
+            maxFar: conf.shadow.csmMaxFar ?? 100,
+            mode: conf.shadow.csmMode ?? 'practical',
+            fade: conf.shadow.csmFade ?? false,
+          });;
+          this.shadowLights.push(light);
+        }
+
+        // add to scene
+        if (light) {
+          this.lights[k] = light;
+          scene.add(light);
+          if (conf.type === 'directional') {
+            scene.add(light.target);
+          }
+        }
+      }
+    }
   }
 
   _initLightingZones() {
@@ -278,34 +305,25 @@ class Lighting extends SceneNode {
       },
     );
     */
-
-    // default zone
-    LightingZone.addDefaultZone(
-      'default', {
-        ambient: { intensity: 0.025 },
-        directionalConstant: { intensity: 0.05 },
-        directional: { intensity: 0.375 },
-        point: { intensity: 1.0 },
-        envMapIntensity: 0.2,
-      },
-    );
   }
 
   /** on camera move */
   _onCameraMove(p) {
     // move directional shadow light camera
-    this._lights.directional.target.position.copy(p);
-    const dist = this._lights.directional.shadow.camera.far / 2;
-    this._lights.directional.position.set(
-      p.x + this._lights.directional.userData.offset.x * dist,
-      p.y + this._lights.directional.userData.offset.y * dist,
-      p.z + this._lights.directional.userData.offset.z * dist
-    );
+    this.shadowLights.forEach(light => {
+      light.target.position.copy(p);
+      const dist = light.shadow.camera.far / 2;
+      light.position.set(
+        p.x + light.userData.offset.x * dist,
+        p.y + light.userData.offset.y * dist,
+        p.z + light.userData.offset.z * dist
+      );
 
-    // update frustums
-    if (this._lights.directional.shadow.shadowNode.camera) {
-      this._lights.directional.shadow.shadowNode.updateFrustums();
-    }
+      // update frustums
+      if (light.shadow.shadowNode.camera) {
+        light.shadow.shadowNode.updateFrustums();
+      }
+    });
     
     // set lighting zone config
     const conf = LightingZone.getZoneLighting(p);
@@ -334,8 +352,10 @@ class Lighting extends SceneNode {
 
   _update( /** delta */ ) {
     if (!this._lightingConfigInitialised) {
-      this._onCameraMove(SceneNode.getSceneNode('Camera').getCamera().position);
       this._lightingConfigInitialised = true;
+      setTimeout(() => {
+        this._onCameraMove(SceneNode.getSceneNode('Camera').getCamera().position);
+      }, 250);
     }
 
     if (this._lightingConfig && this._lightingNeedsUpdate) {
@@ -362,12 +382,13 @@ class Lighting extends SceneNode {
       // adjust envmap intensity
       const envMapIntensity = lighting.envMapIntensity ?? 0;
       this._envMaps.forEach(mat => {
-        const di = envMapIntensity - mat.envMapIntensity;
+        const target = envMapIntensity * (mat.metalness ?? 0);
+        const di = target - mat.envMapIntensity;
         mat.envMapIntensity += di * blend;
         if (Math.abs(di) >= eps) {
           done = false;
         } else {
-          mat.envMapIntensity = envMapIntensity;
+          mat.envMapIntensity = target;
         }
       });
       

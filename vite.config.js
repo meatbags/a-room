@@ -18,7 +18,6 @@ export default {
   resolve: {
     alias: {
       'engine': path.resolve(__dirname, './../engine/src/index.js'),
-      // 'three/examples/jsm': path.resolve(__dirname, './../engine/node_modules/three/three/examples/jsm'),
       'three/addons': path.resolve(__dirname, './../engine/node_modules/three/examples/jsm'),
       'three/tsl': path.resolve(__dirname, './../engine/node_modules/three/build/three.tsl.js'),
       'three/webgpu':  path.resolve(__dirname, './../engine/node_modules/three/build/three.webgpu.js'),

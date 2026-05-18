@@ -7,6 +7,7 @@ import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
 import Map from '../scenes/Map';
 import Lighting from './Lighting';
+import Fog from '../scenes/Fog';
 
 const FALL_THRESHOLD = -10;
 const RESET_POSITION = {x:0, y:0.125, z:8};
@@ -23,6 +24,7 @@ class Game extends SceneNode {
 
     // environment
     this.add( new Lighting() );
+    this.add( new Fog() );
 
     // scene
     this.add( new Map() );
