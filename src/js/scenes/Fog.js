@@ -2,19 +2,12 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three/webgpu';
-
-/*
-import { 
-  If, Fn,
-  vec3, vec4, uniform, float, color,
-  dot, max, atan, clamp, length,
-  positionWorld, cameraPosition
-} from 'three/tsl';
-*/
 import * as tsl from 'three/tsl';
 import { RaymarchingBox } from 'three/addons/tsl/utils/Raymarching.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { depth } from 'three/src/nodes/display/ViewportDepthNode.js';
+
+import { RaySphereIntersectDistance, RaymarchingSphere, Raymarch } from '../shader/RaymarchingSphere';
 
 class Fog extends SceneNode {
   constructor() {
@@ -22,13 +15,145 @@ class Fog extends SceneNode {
   }
 
   _init() {
-    const fogLightWorldPosition = tsl.vec3(-25, 1.5, -25);
+    this._createComputeCloud();
+
+    const hex = 0xd0dee7;
+    const groundColor = tsl.color( hex );
+    const fogNoiseDistance = tsl.positionView.z.negate().smoothstep( 0, 100 ); // [0, 1]
+    const distance = fogNoiseDistance.mul( 20 ).max( 10 );
+		const alpha = 0.5;
+		const groundFogArea = tsl.float( distance )
+      .sub( tsl.positionWorld.y ).div( distance ).pow( 3 ).saturate().mul( alpha );
+    //const timer = tsl.uniform( 0 ).onFrameUpdate( ( frame ) => frame.time );
+    const fogNoiseA = tsl.triNoise3D( tsl.positionWorld.mul( .005 ), 0.2, tsl.time );
+    const fogNoiseB = tsl.triNoise3D( tsl.positionWorld.mul( .01 ), 0.2, tsl.time.mul( 1.2 ) );
+    const fogNoise = fogNoiseA.add( fogNoiseB ).mul( groundColor );
+    const fogFinal = tsl.fog(
+      fogNoiseDistance.oneMinus().mix( groundColor, fogNoise ), groundFogArea
+    ).toVar();
+
+    const volumetricFog2 = tsl.Fn(([
+      diffuse,
+      range = tsl.float( 0.14 ),
+      threshold = tsl.float( 0.08 ),
+      opacity = tsl.float( 0.18 ),
+      steps = tsl.float( 32 )
+    ]) => {
+      const alpha = tsl.float( 0 ).toVar();
+      const noiseMin = threshold.sub(range).toVar();
+      const noiseMax = threshold.add(range).toVar();
+
+      Raymarch( steps, ({ positionRay }) => {
+        const noise = tsl.mx_noise_vec3( positionRay ).r.toVar();
+        noise.assign( tsl.smoothstep( noiseMin, noiseMax, noise ).mul(opacity) );
+        
+        alpha.addAssign( alpha.oneMinus().mul( noise ) );
+        
+        tsl.If( alpha.greaterThanEqual(0.95), () => {
+          tsl.Break();
+        });
+      });
+      
+      return tsl.vec4( diffuse.rgb, diffuse.a.mul(alpha) );
+    });
+
+    const MAP_SCALE = 8;
+    const FOG_BREAK = 0.25; // 0.95
+    const volumetricFog = tsl.Fn( ( {
+      texture,
+      range = tsl.float( 0.12 ),
+      threshold = tsl.float( 0.08 ),
+      opacity = tsl.float( 0.1 ),
+      steps = tsl.float( 100 )
+    } ) => {
+      const finalColor = tsl.vec4( 0 ).toVar();
+      const positionOffsetBroad = tsl.mx_noise_vec3( tsl.positionWorld.mul(0.15) )
+        .mul(0.05).toVar();
+      const positionOffsetNarrow = tsl.mx_noise_vec3( tsl.positionWorld.mul(100) )
+        .fract().mul(0.05).toVar();
+      Raymarch( steps, ( { positionRay, travelled } ) => {
+        const p = positionRay
+          .add(positionOffsetBroad)
+          .add(positionOffsetNarrow)
+          .div( MAP_SCALE ).mod(0.5).toVar();
+        const mapValue = tsl.float( texture.sample( p.add( 0.5 ) ).r ).toVar();
+        mapValue.assign( 
+          tsl.smoothstep( threshold.sub( range ), threshold.add( range ), mapValue)
+            .mul( opacity.mul( travelled.div(2).clamp(0, 1) ) )
+        );
+        const shading = texture.sample( p.add( tsl.vec3( - 0.01 ) ) ).r
+          .sub( texture.sample( p.add( tsl.vec3( 0.01 ) ) ).r );
+        const col = shading.mul( 4.0 ).add( p.x.add( p.y ).mul( 0.5 ) ).add( 0.3 );
+        finalColor.rgb.addAssign( finalColor.a.oneMinus().mul( mapValue ).mul( col ) );
+        finalColor.a.addAssign( finalColor.a.oneMinus().mul( mapValue ) );
+        tsl.If( finalColor.a.greaterThanEqual( FOG_BREAK ), () => {
+          tsl.Break();
+        } );
+      } );
+      return finalColor;
+    } );
+    const threshold = tsl.uniform( 0.1 );
+    const range = tsl.uniform( 0.2 );
+    const opacity = tsl.uniform( 1 );
+    const steps = tsl.uniform( 24 );
+    const cloud3d = volumetricFog( {
+      texture: tsl.texture3D( this.storageTexture, null, 0 ),
+      range,
+      threshold,
+      opacity,
+      steps
+    } ).toVar();
+
+    const scene = SceneNode.getSceneNode('Scene').getScene();
+    scene.fogNode = tsl.fog( 
+      fogNoiseDistance.oneMinus().mix( groundColor, fogNoise ).add( cloud3d ),
+      groundFogArea
+    );
+    // scene.backgroundNode = cloud3d;
+
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), new THREE.MeshPhysicalMaterial());
+    mesh.position.set(-30, 5, -25);
+    scene.add(mesh);
+  }
+
+  _createComputeCloud() {
+    // cloud computation
+    const size = 100;
+    const TIME_SCALE = 0.5;
+    const PI2 = Math.PI * 2;
+    const NOISE_POSITION_SCALE = 0.05; // 0.035;
+
+    const computeCloud = tsl.Fn( ([ storageTexture ]) => {
+      const id = tsl.instanceIndex;
+      const x = id.mod( size ).toVar();
+      const y = id.div( size ).mod( size ).toVar();
+      const z = id.div( size * size ).toVar();
+      const coord3d = tsl.vec3( x, y, z ).toVar();
+      const centered = coord3d.sub( size / 2 ).div( size ).toVar(); // [-0.5, 0.5]
+      const d = tsl.float( 1.0 ).sub( centered.length() ).toVar();
+      const yGradient = centered.y.add(0.5).toVar(); // [0, 1]
+      const noiseOff = tsl.time.mul( TIME_SCALE );
+      const noiseCoord = coord3d.mul( NOISE_POSITION_SCALE ).mul( yGradient.mul(2).add(1) ).add( noiseOff ).toVar();
+      const noise = tsl.mx_noise_vec3( noiseCoord ).toConst( 'noise' );
+      const data = noise.mul( d ).mul( d ).toConst( 'data' );
+      tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), tsl.vec4( tsl.vec3(data.x), 1.0 ));
+    } );
+    this.storageTexture = new THREE.Storage3DTexture( size, size, size );
+    this.storageTexture.generateMipmaps = false;
+    this.storageTexture.name = 'cloud';
+    this.computeNode = computeCloud( this.storageTexture )
+      .compute( size * size * size ).setName( 'computeCloud' );
+    
+    SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
+  }
+
+  _init_BAK() {
+    const fogLightWorldPosition = tsl.vec3(-25, 1.25, -25);
     const density = 0.25;
     const intensity = 1;
-    const alphaStart = tsl.float(0.75).toConst();
-    const alphaStop = tsl.float(1.25).toConst();
-    const alphaRange = alphaStop.sub(alphaStart).toConst();
-    
+    const alphaStart = tsl.float(0.25).toConst();
+    const alphaStop = tsl.float(0.5).toConst();
+    const alphaRange = alphaStop.sub(alphaStart).toConst(); 
 
     // get fog alpha based on fog lights
     // input (vec4)
@@ -51,7 +176,7 @@ class Fog extends SceneNode {
       const fB = tsl.length(nearest.sub(b));
 
       // scale density
-      // fD.mulAssign( float(1).div(density) );
+      fD.mulAssign( tsl.float(1).div(density) );
 
       /*
       totalLight.add( diffuse.rgb.mul(intensity).mul(
@@ -60,6 +185,7 @@ class Fog extends SceneNode {
       ) );
       */
 
+      /*
       tsl.If( fD.lessThan(alphaStart), () => {
         alpha.assign( 
           tsl.atan(fB.div(fD)).div(fD).sub( tsl.atan(fA.div(fD)).div(fD) )
@@ -71,26 +197,51 @@ class Fog extends SceneNode {
           alpha.assign(1);
         });
       });
+      */
+      alpha.assign( 
+        tsl.clamp(
+          tsl.atan(fB.div(fD)).div(fD).sub( tsl.atan(fA.div(fD)).div(fD) ).oneMinus(), 0, 1
+        )
+      );
 
       return tsl.vec4(input.rgb, alpha.mul(input.a));
     });
 
     // cloud computation
-    const size = 128;
-    const TIME_SCALE = 0.25;
+    const size = 50;
+    const TIME_SCALE = 0.05;
+    const PI2 = Math.PI * 2;
+    const NOISE_POSITION_SCALE = 0.05; // 0.035;
+
     const computeCloud = tsl.Fn( ( { storageTexture } ) => {
-      const scale = tsl.float( 0.05 );
       const id = tsl.instanceIndex;
-      const x = id.mod( size );
-      const y = id.div( size ).mod( size );
-      const z = id.div( size * size );
-      const coord3d = tsl.vec3( x, y, z );
-      const centered = coord3d.sub( size / 2 ).div( size );
-      const d = tsl.float( 1.0 ).sub( centered.length() );
-      const noiseCoord = coord3d.mul( scale.div( 1.5 ) ).add( tsl.time.mul(TIME_SCALE) );
+      const x = id.mod( size ).toVar();
+      const y = id.div( size ).mod( size ).toVar();
+      const z = id.div( size * size ).toVar();
+      const coord3d = tsl.vec3( x, y, z ).toVar();
+      const centered = coord3d.sub( size / 2 ).div( size ).toVar(); // [-0.5, 0.5]
+      const d = tsl.float( 1.0 ).sub( centered.length() ).toVar();
+      const yGradient = centered.y.add(0.5).toVar(); // [0, 1]
+      const noiseOff = tsl.time.mul( TIME_SCALE );
+      const noiseCoord = coord3d.mul( NOISE_POSITION_SCALE ).mul( yGradient.mul(2).add(1) ).add( noiseOff ).toVar();
       const noise = tsl.mx_noise_vec3( noiseCoord ).toConst( 'noise' );
       const data = noise.mul( d ).mul( d ).toConst( 'data' );
-      tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), tsl.vec4( tsl.vec3( data.x ), 1.0 ) );
+      tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), tsl.vec4( tsl.vec3(data.x), 1.0 ));
+      /*
+      const noise = tsl.mx_noise_vec3( noiseCoord ).toConst( 'noise' );
+      const blendFactor = tsl.max(0, tsl.max(centered.x, tsl.max(centered.y, centered.z)).div(0.5));
+      const data = noise.mul( d ).mul( d ).toConst( 'data' );
+
+
+      tsl.If( centered.x.greaterThan(0), () => {
+        const data2 = noise2.mul( d ).mul( d ).toConst( 'data2' );
+        //const store = tsl.vec4( tsl.mix(tsl.vec3( data.x ), tsl.vec3( data2.x ), blendFactor), 1.0 );
+        //tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), store );
+        tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), tsl.vec4( tsl.vec3(1), 0.0 ));
+      }).Else(() => {
+        tsl.textureStore( storageTexture, tsl.vec3( x, y, z ), tsl.vec4( tsl.vec3(data.x), 1.0 ));
+      });
+      */
     } );
     const storageTexture = new THREE.Storage3DTexture( size, size, size );
     storageTexture.generateMipmaps = false;
@@ -100,20 +251,29 @@ class Fog extends SceneNode {
     SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
     
     // Shader
+
+    const MAP_SCALE = 6;
+
     const transparentRaymarchingTexture = tsl.Fn( ( {
       texture,
       range = tsl.float( 0.14 ),
       threshold = tsl.float( 0.08 ),
       opacity = tsl.float( 0.18 ),
-      steps = tsl.float( 64 )
+      steps = tsl.float( 100 )
     } ) => {
       const finalColor = tsl.vec4( 0 ).toVar();
-      RaymarchingBox( steps, ( { positionRay } ) => {
-        const mapValue = tsl.float( texture.sample( positionRay.add( 0.5 ) ).r ).toVar();
-        mapValue.assign( tsl.smoothstep( threshold.sub( range ), threshold.add( range ), mapValue ).mul( opacity ) );
-        const shading = texture.sample( positionRay.add( tsl.vec3( - 0.01 ) ) ).r
-          .sub( texture.sample( positionRay.add( tsl.vec3( 0.01 ) ) ).r );
-        const col = shading.mul( 4.0 ).add( positionRay.x.add( positionRay.y ).mul( 0.5 ) ).add( 0.3 );
+      const positionOffsetBase = tsl.mx_noise_vec3( tsl.positionWorld.mul(0.35) ).toVar();
+      const positionOffset = tsl.mx_noise_vec3( tsl.positionWorld.mul(50) )
+        .fract().mul(0.02).toVar();
+      RaymarchingSphere( steps, ( { positionRay } ) => {
+        const p = positionRay.add(positionOffsetBase).add(positionOffset).div( MAP_SCALE ).mod(0.5).toVar();
+        const mapValue = tsl.float( texture.sample( p.add( 0.5 ) ).r ).toVar();
+        mapValue.assign( 
+          tsl.smoothstep( threshold.sub( range ), threshold.add( range ), mapValue
+        ).mul( opacity ) );
+        const shading = texture.sample( p.add( tsl.vec3( - 0.01 ) ) ).r
+          .sub( texture.sample( p.add( tsl.vec3( 0.01 ) ) ).r );
+        const col = shading.mul( 4.0 ).add( p.x.add( p.y ).mul( 0.5 ) ).add( 0.3 );
         finalColor.rgb.addAssign( finalColor.a.oneMinus().mul( mapValue ).mul( col ) );
         finalColor.a.addAssign( finalColor.a.oneMinus().mul( mapValue ) );
         tsl.If( finalColor.a.greaterThanEqual( 0.95 ), () => {
@@ -123,41 +283,40 @@ class Fog extends SceneNode {
       return finalColor;
     } );
 
-    const rayMarchLogarithmic = tsl.Fn( ([]) => {
-      
-    });
-
     const range = tsl.uniform( 0.1 );
-    const threshold = tsl.uniform( 0.08 );
+    const threshold = tsl.uniform( 0.09 );
     const opacity = tsl.uniform( 0.8 );
-    const steps = tsl.uniform( 100 );
+    const steps = tsl.uniform( 32 );
     const cloud3d = transparentRaymarchingTexture( {
       texture: tsl.texture3D( storageTexture, null, 0 ),
       range,
       threshold,
       opacity,
       steps
-    } );
+    } ).toVar();
 
     const material = new THREE.NodeMaterial();
-
     const baseColor = tsl.uniform( new THREE.Color(0x888888) );
     const finalCloud = cloud3d.setRGB( cloud3d.rgb.add( baseColor ) );
     material.side = THREE.BackSide;
 		material.transparent = true;
-    material.colorNode = fogFunc( finalCloud );
+    material.depthWrite = false;
+    material.colorNode = finalCloud; // fogFunc( finalCloud );
 
     // material.backdropNode = tsl.viewportSharedTexture().rgb.oneMinus();
-
-    const mesh = new THREE.Mesh( new THREE.SphereGeometry(1, 32, 32), material );
+    const mesh = new THREE.Mesh( new THREE.SphereGeometry(1.5, 32, 32), material);
+    const mesh2 = new THREE.Mesh( new THREE.BoxGeometry(2, 2, 2), material);
     mesh.position.set(-25, 1.5, -25);
-    mesh.scale.setScalar(1.5);
+    mesh2.position.set(-22, 1.001, -25);
+    // mesh.castShadow = true;
 
-    SceneNode.getSceneNode('Scene').getScene().add( mesh );
+    SceneNode.getSceneNode('Scene').getScene().add( mesh, mesh2 );
   }
 
   update() {
-    SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
+    if (this.computeNode) {
+      SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
+    }
   }
 }
 
