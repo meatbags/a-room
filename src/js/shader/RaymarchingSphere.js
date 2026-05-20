@@ -59,7 +59,7 @@ export const RaymarchingSphere = ( steps, callback ) => {
 
 /** Raymarch */
 const MAX_ITER = 256;
-const RAY_START = 0;
+const RAY_START = 0.5;
 const RAY_DEFAULT_STEP = 0.05;
 export const Raymarch = ( steps, callback ) => {
   const vOrigin = varying( cameraPosition );
