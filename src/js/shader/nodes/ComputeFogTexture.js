@@ -4,9 +4,8 @@ import { Storage3DTexture, RepeatWrapping } from 'three/webgpu';
 import { Fn, If, instanceIndex, float, vec3, vec4, mx_noise_vec3, time, textureStore, length } from 'three/tsl';
 
 export const ComputeFogTexture = () => {
-  const size = 48;
-  const TIME_SCALE = 0.1;
-  const PI2 = Math.PI * 2;
+  const size = 50;
+  const TIME_SCALE = 0.05;
   const NOISE_POSITION_SCALE = 0.05; // 0.035;
 
   const computeCloud = Fn( ([ storageTexture ]) => {

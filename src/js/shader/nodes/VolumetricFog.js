@@ -17,27 +17,29 @@ export const VolumetricFog = Fn(({
   range = float( 0.1 ),
   threshold = float( 0.25 ),
   opacity = float( 0.25 ),
-  steps = float( 32 ),
+  steps = float( 64 ),
   alphaCutoff = float( 0.95 ),
   textureScale = float( 1 ),
   fadeRange = float( 2 ),
-  fadeStart = float( 8 ),
+  fadeStart = float( 3 ),
+  fadeStop = float( 8 ),
 }) => {
   const finalColor = vec4( 0 ).toVar();
-  //const offsetLarge = mx_noise_vec3( positionWorld.mul(0.1) ).mul(0.25).toVar();
-  const offsetSmall = mx_noise_vec3( positionWorld.mul(100) ).fract().mul(0.05).toVar();
+  const positionOffset = mx_noise_vec3( positionWorld.mul(100) ).fract().mul(0.2).toVar();
+  const kn = vec3(-0.01).toConst();
+  const kp = vec3(0.01).toConst();
+
   Raymarch( steps, ( { positionRay, distanceTravelled } ) => {
-    const p = positionRay.add( offsetSmall ).div( textureScale ).mod(1).toVar();
-    const mapValue = float( texture.sample( p ).r ).toVar();
+    const samp = positionRay.div( textureScale ).mod(1).toVar();
+    const mapValue = float( texture.sample(samp).r ).toVar();
     mapValue.assign( 
       smoothstep( threshold.sub( range ), threshold.add( range ), mapValue)
         .mul( opacity )
-        .mul( distanceTravelled.div( fadeRange ).clamp(0, 1) )
-        .mul( distanceTravelled.sub( fadeStart ).div( fadeRange ).clamp(0, 1).oneMinus() )
+        .mul( fadeStart.sub(distanceTravelled).div( fadeRange ).saturate().oneMinus() )
+        .mul( distanceTravelled.sub( fadeStop ).div( fadeRange ).saturate().oneMinus() )
     );
-    const shading = texture.sample( p.add( vec3( - 0.01 ) ) ).r
-      .sub( texture.sample( p.add( vec3( 0.01 ) ) ).r );
-    const col = shading.mul( 4.0 ).add( p.x.add( p.y ).mul( 0.5 ) ).add( 0.3 );
+    const shading = texture.sample( samp.add(kn).mod(1) ).r.sub( texture.sample( samp.add(kp).mod(1) ).r );
+    const col = shading.mul( 4.0 ).add( samp.x.add( samp.y ).mul( 0.5 ) ).add( 0.3 );
     finalColor.rgb.addAssign( finalColor.a.oneMinus().mul( mapValue ).mul( col ) );
     finalColor.a.addAssign( finalColor.a.oneMinus().mul( mapValue ) );
     If( finalColor.a.greaterThanEqual( alphaCutoff ), () => {

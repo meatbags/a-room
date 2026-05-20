@@ -16,45 +16,56 @@ import { FogPoints } from '../shader/nodes/FogPoints';
 class Fog extends SceneNode {
   constructor() {
     super({ name: 'Fog' });
+
+    this._fogLights = [];
   }
 
   _init() {
+    // volume compute node
     const { computeNode, storageTexture } = ComputeFogTexture();
     this.computeNode = computeNode;
     this.storageTexture = storageTexture;
     SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
 
-    const hex = 0xd0dee7;
-    const groundColor = tsl.color( hex );
-    const fogNoiseDistance = tsl.positionView.z.negate().smoothstep( 0, 100 ); // [0, 1]
-    const FOG_HEIGHT = 25;
-    const distance = fogNoiseDistance.mul( 20 ).max( FOG_HEIGHT );
-		const alpha = 0.5;
-		const groundFogArea = tsl.float( distance )
-      .sub( tsl.positionWorld.y ).div( distance ).pow( 3 ).saturate().mul( alpha );
-    //const timer = tsl.uniform( 0 ).onFrameUpdate( ( frame ) => frame.time );
+    // fog range
+    const FOG_START = 0;
+    const FOG_STOP = 100;
+    const fogRange = tsl.positionView.z.negate().smoothstep( FOG_START, FOG_STOP ).toVar();
+
+    // height factor
+    const FOG_DISTANCE_MULTIPLIER = 20;
+    const FOG_HEIGHT = 100;
+    const uniformFogAlpha = tsl.uniform(0.3);
+    const distance = fogRange.mul( FOG_DISTANCE_MULTIPLIER ).max( FOG_HEIGHT ).toVar();
+		const fogHeightFactor = tsl.float(distance).sub(tsl.positionWorld.y).div(distance).pow(3).saturate().mul(uniformFogAlpha);
+
+    // fog surface noise
+    const fogDiffuse = tsl.color( 0xFF0000 ).toVar();
     const fogNoiseA = tsl.triNoise3D( tsl.positionWorld.mul( .005 ), 0.2, tsl.time );
     const fogNoiseB = tsl.triNoise3D( tsl.positionWorld.mul( .01 ), 0.2, tsl.time.mul( 1.2 ) );
-    const fogNoise = fogNoiseA.add( fogNoiseB ).mul( groundColor );
-    const fogPointsFactor = FogPoints();
+    const fogSurfaceNoise = fogNoiseA.add( fogNoiseB );
 
-    const fogVolume = VolumetricFog( {
+    // fog volumetric
+    const uniformRange = tsl.uniform( 0.2 );
+    const uniformThreshold = tsl.uniform( 0.3 ); 
+    const uniformOpacity = tsl.uniform( 0.5 );
+    const uniformAlphaCutoff = tsl.uniform( 0.95 );
+    const fogVolumetric = VolumetricFog( {
       texture: tsl.texture3D( this.storageTexture, null, 0 ),
-      range: tsl.uniform( 0.2 ) ,
-      threshold: tsl.uniform( 0.2 ),
-      opacity: tsl.uniform( 0.5 ),
-      steps: tsl.uniform( 32 ),
-      alphaCutoff: tsl.uniform( 0.95 ),
+      range: uniformRange,
+      threshold: uniformThreshold,
+      opacity: uniformOpacity,
+      steps: tsl.uniform( 50 ),
+      alphaCutoff: uniformAlphaCutoff,
       textureScale: tsl.uniform( 5.0 ),
     } ).toVar();
 
     const scene = SceneNode.getSceneNode('Scene').getScene();
-    scene.fogNode = tsl.fog( 
-      fogNoiseDistance.oneMinus()
-        .mix( groundColor, fogNoise )
-        .add( fogVolume )
-        .mul( fogPointsFactor )
-      , groundFogArea
+    scene.fogNode = tsl.fog(
+      fogRange.oneMinus()
+        .mix( tsl.color( 0xFF0000 ), fogSurfaceNoise )
+        .add( fogVolumetric )
+      , fogHeightFactor
     );
     // scene.backgroundNode = cloud3d;
 
@@ -65,6 +76,53 @@ class Fog extends SceneNode {
     const mesh2 = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), new THREE.MeshPhysicalMaterial({ side: THREE.BackSide }));
     mesh2.position.set(0, 0, 0);
     scene.add(mesh2);
+
+    // testing
+    this._addFogLight(new THREE.Vector3(-10, 3, -25), 6);
+    this._addFogLight(new THREE.Vector3(-18, 3, -30), 6);
+
+    SceneNode.getSceneNode('Camera').addEventListener('move', p => {
+      if (!this._fogLights.length) return;
+      let nearest = null;
+      let d = -1;
+      this._fogLights.forEach(light => {
+        const dist = light.position.distanceToSquared(p) / light.radiusSqr;
+        if (!nearest || dist < d) {
+          nearest = light;
+          d = dist;
+        }
+      });
+
+      // inv clamped distance factor
+      const ds = 1 - (1 / Math.max(d, 1));
+      uniformFogAlpha.value = 0.3 + 0.45 * ds;
+      uniformThreshold.value = 0.3 - 0.3 * ds;
+      uniformOpacity.value = 0.5 + 0.5 * ds;
+      // uniformAlphaCutoff.value = 0.2 + 0.75 * ds;
+    });
+  }
+
+  _addFogLight(position, radius) {
+    const scene = SceneNode.getSceneNode('Scene').getScene();
+    const light = new THREE.PointLight(0x00FFFF, 10, radius);
+    light.position.copy(position);
+    scene.add(light);
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.125, 32, 32), new THREE.MeshBasicMaterial({color:0xFFFFFF}));
+    const mesh2 = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 32), 
+      new THREE.MeshPhysicalNodeMaterial({
+        color:0x0000FF,
+        side:THREE.BackSide,
+        opacity: 0.5,
+        transparent: true,
+        depthWrite: false,
+      })
+    );
+    mesh.position.copy(position);
+    mesh2.position.copy(position);
+    // mesh2.material.backdropNode = tsl.viewportSharedTexture().rgb.mul(tsl.vec3(0, 0, 1));
+    scene.add(mesh, mesh2);
+    this._fogLights.push({ position, radius, radiusSqr: radius*radius });
   }
 
   _init_BAK() {
