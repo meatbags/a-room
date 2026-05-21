@@ -7,7 +7,7 @@ import { RaymarchingBox } from 'three/addons/tsl/utils/Raymarching.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { depth } from 'three/src/nodes/display/ViewportDepthNode.js';
 
-import { RaySphereIntersectDistance, RaymarchingSphere, Raymarch } from '../shader/RaymarchingSphere';
+// import { RaySphereIntersectDistance, RaymarchingSphere, Raymarch } from '../shader/references/RaymarchingSphere';
 
 import { ComputeFogTexture } from '../shader/nodes/ComputeFogTexture';
 import { VolumetricFog } from '../shader/nodes/VolumetricFog';
@@ -28,16 +28,16 @@ class Fog extends SceneNode {
     SceneNode.getSceneNode('Renderer').getRenderer().compute( this.computeNode );
 
     // fog range
-    const FOG_START = 0;
+    const FOG_START = 10;
     const FOG_STOP = 100;
     const fogRange = tsl.positionView.z.negate().smoothstep( FOG_START, FOG_STOP ).toVar();
 
     // height factor
     const FOG_DISTANCE_MULTIPLIER = 20;
-    const FOG_HEIGHT = 100;
-    const uniformFogAlpha = tsl.uniform(0.3);
+    const FOG_HEIGHT = 50;
+    const FOG_ALPHA = 0.25;
     const distance = fogRange.mul( FOG_DISTANCE_MULTIPLIER ).max( FOG_HEIGHT ).toVar();
-		const fogHeightFactor = tsl.float(distance).sub(tsl.positionWorld.y).div(distance).pow(3).saturate().mul(uniformFogAlpha);
+		const fogHeightFactor = tsl.float(distance).sub(tsl.positionWorld.y).div(distance).pow(3).saturate().mul(FOG_ALPHA);
 
     // fog surface noise
     const fogDiffuse = tsl.color( 0xFF0000 ).toVar();
@@ -46,24 +46,25 @@ class Fog extends SceneNode {
     const fogSurfaceNoise = fogNoiseA.add( fogNoiseB );
 
     // fog volumetric
-    const uniformRange = tsl.uniform( 0.2 );
-    const uniformThreshold = tsl.uniform( 0.3 ); 
+    const uniformThreshold = tsl.uniform( 0.1 ); 
     const uniformOpacity = tsl.uniform( 0.5 );
+    const uniformRange = tsl.uniform( 0.1 );
+    const uniformSteps = tsl.uniform( 50 );
     const uniformAlphaCutoff = tsl.uniform( 0.95 );
     const fogVolumetric = VolumetricFog( {
       texture: tsl.texture3D( this.storageTexture, null, 0 ),
       range: uniformRange,
       threshold: uniformThreshold,
       opacity: uniformOpacity,
-      steps: tsl.uniform( 50 ),
+      steps: uniformSteps,
       alphaCutoff: uniformAlphaCutoff,
-      textureScale: tsl.uniform( 5.0 ),
+      textureScale: tsl.uniform( 6.0 ),
     } ).toVar();
 
     const scene = SceneNode.getSceneNode('Scene').getScene();
     scene.fogNode = tsl.fog(
       fogRange.oneMinus()
-        .mix( tsl.color( 0xFF0000 ), fogSurfaceNoise )
+        .mix( tsl.color( 0x0000FF ), fogSurfaceNoise )
         .add( fogVolumetric )
       , fogHeightFactor
     );
@@ -78,9 +79,10 @@ class Fog extends SceneNode {
     scene.add(mesh2);
 
     // testing
-    this._addFogLight(new THREE.Vector3(-10, 3, -25), 6);
-    this._addFogLight(new THREE.Vector3(-18, 3, -30), 6);
+    //this._addFogLight(new THREE.Vector3(-10, 3, -25), 6);
+    //this._addFogLight(new THREE.Vector3(-18, 3, -30), 6);
 
+    /*
     SceneNode.getSceneNode('Camera').addEventListener('move', p => {
       if (!this._fogLights.length) return;
       let nearest = null;
@@ -100,11 +102,12 @@ class Fog extends SceneNode {
       uniformOpacity.value = 0.5 + 0.5 * ds;
       // uniformAlphaCutoff.value = 0.2 + 0.75 * ds;
     });
+    */
   }
 
   _addFogLight(position, radius) {
     const scene = SceneNode.getSceneNode('Scene').getScene();
-    const light = new THREE.PointLight(0x00FFFF, 10, radius);
+    const light = new THREE.PointLight(0xFFFFFF, 20, radius);
     light.position.copy(position);
     scene.add(light);
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.125, 32, 32), new THREE.MeshBasicMaterial({color:0xFFFFFF}));
@@ -121,7 +124,7 @@ class Fog extends SceneNode {
     mesh.position.copy(position);
     mesh2.position.copy(position);
     // mesh2.material.backdropNode = tsl.viewportSharedTexture().rgb.mul(tsl.vec3(0, 0, 1));
-    scene.add(mesh, mesh2);
+    scene.add(mesh);
     this._fogLights.push({ position, radius, radiusSqr: radius*radius });
   }
 
@@ -243,6 +246,7 @@ class Fog extends SceneNode {
       const positionOffsetBase = tsl.mx_noise_vec3( tsl.positionWorld.mul(0.35) ).toVar();
       const positionOffset = tsl.mx_noise_vec3( tsl.positionWorld.mul(50) )
         .fract().mul(0.02).toVar();
+      /*
       RaymarchingSphere( steps, ( { positionRay } ) => {
         const p = positionRay.add(positionOffsetBase).add(positionOffset).div( MAP_SCALE ).mod(0.5).toVar();
         const mapValue = tsl.float( texture.sample( p.add( 0.5 ) ).r ).toVar();
@@ -258,6 +262,7 @@ class Fog extends SceneNode {
           tsl.Break();
         } );
       } );
+      */
       return finalColor;
     } );
 

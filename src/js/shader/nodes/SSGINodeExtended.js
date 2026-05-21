@@ -274,4 +274,6 @@ class SSGINodeExtended extends SSGINode {
 
 export default SSGINodeExtended;
 
-export const ssgi_extended = ( beautyNode, depthNode, normalNode, camera ) => new SSGINodeExtended( convertToTexture( beautyNode ), depthNode, normalNode, camera );
+export const ssgi_extended = ( beautyNode, depthNode, normalNode, camera ) => {
+  return new SSGINodeExtended( convertToTexture( beautyNode ), depthNode, normalNode, camera );
+};

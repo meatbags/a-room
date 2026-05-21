@@ -17,8 +17,9 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { denoise } from 'three/addons/tsl/display/DenoiseNode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
 
-// pipeline override
-import { ssgi_extended } from '../shader/SSGINodeExtended.js';
+// pipeline extensions
+import { ssgi_extended } from '../shader/nodes/SSGINodeExtended.js';
+import { ssvf } from '../shader/nodes/ScreenSpaceVolumetricFogNode.js';
 
 // webgl fallback passes, todo: remove?
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -117,11 +118,14 @@ export default class Graphics extends SceneNode {
     // traa pass
     const traaPass = traa( compositePass, scenePassDepth, scenePassVelocity, camera );
 
+    // fog pass
+    const fogPass = ssvf( traaPass, scenePassDepth, camera );
+
     // bloom pass
     const strength = 0.3;
     const radius = 0.35;
     const threshold = 0.95;
-    const bloomPass = traaPass.add(bloom(scenePassColor, strength, radius, threshold))
+    const bloomPass = fogPass.add(bloom(scenePassColor, strength, radius, threshold))
 
     // tone mapping pass
     const toneMapping = acesFilmicToneMapping(bloomPass, 1.5);

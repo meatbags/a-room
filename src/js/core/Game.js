@@ -24,7 +24,7 @@ class Game extends SceneNode {
 
     // environment
     this.add( new Lighting() );
-    this.add( new Fog() );
+    // this.add( new Fog() );
 
     // scene
     this.add( new Map() );
