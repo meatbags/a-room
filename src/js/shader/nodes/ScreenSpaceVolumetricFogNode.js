@@ -1,6 +1,6 @@
 /** ScreenSpaceVolumetricFogNode */
 
-import { Vector2, TempNode, RenderTarget, QuadMesh, NodeMaterial, RendererUtils } from 'three/webgpu';
+import { HalfFloatType, Vector2, TempNode, RenderTarget, QuadMesh, NodeMaterial, RendererUtils } from 'three/webgpu';
 import { clamp, normalize, reference, Fn, NodeUpdateType, uniform, vec4, passTexture, uv, logarithmicDepthToViewZ, viewZToPerspectiveDepth, getViewPosition, screenCoordinate, float, sub, fract, dot, vec2, rand, vec3, Loop, mul, PI, cos, sin, uint, cross, acos, sign, pow, luminance, If, max, abs, Break, sqrt, HALF_PI, div, ceil, shiftRight, convertToTexture, bool, getNormalFromDepth, countOneBits, interleavedGradientNoise } from 'three/tsl';
 
 const _quadMesh = new QuadMesh();
@@ -12,11 +12,10 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     return 'ScreenSpaceVolumetricFogNode';
   }
 
-  constructor( inputNode, depthNode, camera ) {
+  constructor( depthNode, camera ) {
     super('vec4');
 
     // nodes
-    this.inputNode = inputNode;
     this.depthNode = depthNode;
     this.updateBeforeType = NodeUpdateType.FRAME;
 
@@ -26,10 +25,12 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     this._cameraFar = reference( 'far', 'float', camera );
     this._cameraProjectionMatrix = uniform( camera.projectionMatrix );
 		this._cameraProjectionMatrixInverse = uniform( camera.projectionMatrixInverse );
+    this._cameraWorldMatrix = uniform( camera.matrixWorld );
+    this._cameraWorldMatrixInverse = uniform( camera.matrixWorldInverse );
 
     // render props
     this._resolution = uniform( new Vector2() );
-    this._ssvfRenderTarget = new RenderTarget( 1, 1, { depthBuffer: false } );
+    this._ssvfRenderTarget = new RenderTarget( 1, 1, { depthBuffer: false, type: HalfFloatType } );
     this._ssvfRenderTarget.texture.name = 'SSVF';
     this._material = new NodeMaterial();
 		this._material.name = 'SSVF';
@@ -87,19 +88,35 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
 
     // ssvf
     const ssvf = Fn(() => {
+      const output = vec3().toVar();
+
       // get world position from depth
       const depth = sampleDepth( uvNode ).toVar();
-      depth.greaterThanEqual( 1.0 ).discard();
-      const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
 
-      return this.inputNode;
+      // infinite
+      If( depth.greaterThanEqual( 1.0 ), () => {
+        output.addAssign( vec3(0.0, 0.1, 0.0) );
+      }).Else(() => {
+        const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
+        const worldPosition = this._cameraWorldMatrix.mul(viewPosition).toVar();
+
+        If( viewPosition.x.lessThan(0), () => {
+          output.assign( vec3(0.05, 0.0, 0.0) );
+        });
+
+        If( worldPosition.x.lessThan(0), () => {
+          output.addAssign( vec3(0.0, 0.0, 0.1) );
+        });
+      });
+
+      return output;
     });
     
     // set material frag shader
     this._material.fragmentNode = ssvf().context( builder.getSharedContext() );
 		this._material.needsUpdate = true;
 
-    return this.inputNode.add(vec4(0.1, 0, 0, 0));
+    return this._textureNode;
   }
 
   /** dispose */
@@ -109,6 +126,6 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
 	}
 }
 
-export const ssvf = (inputNode, depthNode, camera) => {
-  return new ScreenSpaceVolumetricFogNode(inputNode, depthNode, camera);
+export const ssvf = (depthNode, camera) => {
+  return new ScreenSpaceVolumetricFogNode(depthNode, camera);
 };
