@@ -40,6 +40,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     this._camera = camera;
     this._cameraNear = reference( 'near', 'float', camera );
     this._cameraFar = reference( 'far', 'float', camera );
+    this._cameraPosition = uniform( camera.position );
     this._cameraProjectionMatrix = uniform( camera.projectionMatrix );
 		this._cameraProjectionMatrixInverse = uniform( camera.projectionMatrixInverse );
     this._cameraWorldMatrix = uniform( camera.matrixWorld );
@@ -93,7 +94,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
   }
 
   /** setup compute texture node */
-  setupComputeTexture({size=50, timeScale=1, positionScale=0.125}) {
+  setupComputeTexture({size=50, timeScale=1, positionScale=0.1}) {
     const sizeHalf = size / 2;
 
     // compute cloud node
@@ -116,18 +117,20 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     // storage texture node
     this.storageTexture = new Storage3DTexture(size, size, size);
     this.storageTexture.generateMipmaps = false;
+    this.storageTexture.wrapS = RepeatWrapping;
+    this.storageTexture.wrapT = RepeatWrapping;
     this.computeNode = computeCloud(this.storageTexture).compute(size * size * size);
   }
 
   /** setup fog node */
   setupFogNode() {
     // fog settings
-    const FOG_START = 10;
-    const FOG_STOP = 100;
+    const FOG_START = 1;
+    const FOG_STOP = 50;
     const FOG_DISTANCE_MULTIPLIER = 20;
-    const FOG_HEIGHT = 50;
-    const FOG_ALPHA = 0.25;
-    const fogDiffuse = color( 0xFF0000 ).toVar();    
+    const FOG_HEIGHT = 100;
+    const FOG_ALPHA = 0.75;
+    const FOG_NOISE_INFLUENCE = 0.1;
 
     // ray marcher
     const MAX_ITERATIONS = 100;
@@ -161,6 +164,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     };
 
     // volumetric fog node
+    const FOG_VOLUMETRIC_INFLUENCE = 0.25;
     const VolumetricFog = Fn(({
       rayOrigin,
       rayDirection,
@@ -171,13 +175,13 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       steps = float( 64 ),
       alphaCutoff = float( 0.95 ),
       textureScale = float( 1 ),
-      fadeRange = float( 0.5 ),
-      fadeStart = float( 1 ),
-      fadeStop = float( 10 ),
+      fadeRange = float( 1.25 ),
+      fadeStart = float( 1.5 ),
+      fadeStop = float( 12 ),
     }) => {
       const finalColor = vec4( 0 ).toVar();
-      const kn = vec3(-0.05).toConst();
-      const kp = vec3(0.05).toConst();
+      const kn = vec3(-0.01).toConst();
+      const kp = vec3(0.01).toConst();
       const rmin = threshold.sub(range).toVar();
       const rmax = threshold.add(range).toVar();
       const rayMin = max(0, fadeStart.sub(fadeRange)).toVar();
@@ -205,27 +209,34 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     });
 
     // fog volumetric
-    const uniformThreshold = uniform( 0.1 ); 
-    const uniformOpacity = uniform( 0.5 );
-    const uniformRange = uniform( 0.1 );
+    const uniformThreshold = uniform( 0.09 ); 
+    const uniformOpacity = uniform( 0.05 );
+    const uniformRange = uniform( 0.05 );
     const uniformSteps = uniform( 50 );
     const uniformAlphaCutoff = uniform( 0.95 );
-    const uniformTextureScale = uniform( 6.0 );
+    const uniformTextureScale = uniform( 7.0 );
     const uniformTexture3D = texture3D( this.storageTexture, null, 0 );
-
-    const rayOrigin = varying( cameraPosition );
 
     // p = world position
     this.fogNode = Fn(([ p ]) => {
-      const rayDirection = p.sub( rayOrigin );
-      const fogRange = length( rayDirection ).negate().smoothstep(FOG_START, FOG_STOP).toVar();
-      const distance = fogRange.mul(FOG_DISTANCE_MULTIPLIER).max(FOG_HEIGHT).toVar();
-      const fogHeightFactor = float(distance).sub( p.y ).div(distance).pow(3).saturate().mul(FOG_ALPHA);
+      // ray direction
+      const rayDirection = p.sub( this._cameraPosition );
+
+      // fog gradient 0->1
+      const fogGradient = length( rayDirection ).smoothstep(FOG_START, FOG_STOP).toVar();
+
+      // fog surface noise pattern
+      const fogDistanceFactor = fogGradient.mul(FOG_DISTANCE_MULTIPLIER).max(FOG_HEIGHT).toVar();
       const fogNoiseA = triNoise3D( p.mul( .005 ), 0.2, time );
       const fogNoiseB = triNoise3D( p.mul( .01 ), 0.2, time.mul( 1.2 ) );
-      const fogSurfaceNoise = fogNoiseA.add( fogNoiseB );
+      const fogSurfaceNoise = fogNoiseA.add( fogNoiseB ).mul( FOG_NOISE_INFLUENCE );
+
+      // fog height fade factor
+      const fogHeightFadeFactor = fogDistanceFactor.sub( p.y ).div(fogDistanceFactor).pow(3).saturate().mul(FOG_ALPHA);
+
+      // fog volumetric node
       const fogVolumetric =  VolumetricFog( {
-        rayOrigin,
+        rayOrigin: this._cameraPosition,
         rayDirection,
         texture: uniformTexture3D,
         range: uniformRange,
@@ -236,10 +247,10 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
         textureScale: uniformTextureScale,
       } );
 
-      return fogRange.oneMinus()
-        .mix( color( 0x0000FF ), fogSurfaceNoise )
-        .add( fogVolumetric )
-        .mul( fogHeightFactor );
+      return fogGradient.oneMinus()
+        .mix( color( 0x0 ), fogSurfaceNoise )
+        .add( fogVolumetric.mul( FOG_VOLUMETRIC_INFLUENCE ) )
+        .mul( fogHeightFadeFactor );
     });
   }
 
@@ -248,7 +259,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const uvNode = uv();
     
     // setup 3d texture
-    this.setupComputeTexture({});
+    this.setupComputeTexture({ size: 40, timeScale: 0.1, positionScale: 0.1 });
     builder.renderer.compute( this.computeNode );
 
     // setup fog node
@@ -269,16 +280,12 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       const output = vec3().toVar();
 
       // get world position from depth
-      const depth = sampleDepth( uvNode ).toVar();
+      const depth = sampleDepth( uvNode ).clamp(0, 0.999).toVar();
 
-      // infinite
-      If( depth.greaterThanEqual( 1.0 ), () => {
-        output.addAssign( vec3(0.0, 0.1, 0.0) );
-      }).Else(() => {
-        const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
-        const worldPosition = this._cameraWorldMatrix.mul(viewPosition).toVar();
-        output.addAssign( this.fogNode( worldPosition ) );
-      });
+
+      const viewPosition = getViewPosition( uvNode, depth, this._cameraProjectionMatrixInverse ).toVar();
+      const worldPosition = this._cameraWorldMatrix.mul(viewPosition).toVar();
+      output.addAssign( this.fogNode( worldPosition ) );
 
       return output;
     });

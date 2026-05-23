@@ -113,12 +113,13 @@ export default class Graphics extends SceneNode {
         scenePassDiffuse.rgb.mul(gi)
       ),
       scenePassColor.a
-    ).add(
-      ssvf( scenePassDepth, camera ) // add fog
     );
 
+    // volumetric fog pass
+    const fogPass = compositePass.add( ssvf( scenePassDepth, camera ) );
+
     // traa pass
-    const traaPass = traa( compositePass, scenePassDepth, scenePassVelocity, camera );
+    const traaPass = traa( fogPass, scenePassDepth, scenePassVelocity, camera );
 
     // bloom pass
     const strength = 0.3;
