@@ -114,18 +114,18 @@ export default class Graphics extends SceneNode {
       ),
       scenePassColor.a
     );
+    
+    // traa pass
+    const traaPass = traa( compositePass, scenePassDepth, scenePassVelocity, camera );
 
     // volumetric fog pass
-    const fogPass = compositePass.add( ssvf( scenePassDepth, camera ) );
-
-    // traa pass
-    const traaPass = traa( fogPass, scenePassDepth, scenePassVelocity, camera );
+    const fogPass = traaPass.add( ssvf( scenePassDepth, camera ) );
 
     // bloom pass
     const strength = 0.3;
     const radius = 0.35;
     const threshold = 0.95;
-    const bloomPass = traaPass.add(bloom(scenePassColor, strength, radius, threshold))
+    const bloomPass = fogPass.add(bloom(scenePassColor, strength, radius, threshold))
 
     // tone mapping pass
     const toneMapping = acesFilmicToneMapping(bloomPass, 1.5);
