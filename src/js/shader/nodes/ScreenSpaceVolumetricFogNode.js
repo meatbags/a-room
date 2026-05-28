@@ -16,7 +16,7 @@ import {
   reference, rand,
   sub, sin, smoothstep, 
   texture3D, textureStore, time, triNoise3D,
-  uniform, uv, vec2, vec3, vec4,
+  uniform, uv, vec2, vec3, vec4, uint,
   varying, viewZToPerspectiveDepth
 } from 'three/tsl';
 
@@ -105,10 +105,10 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       const z = id.div( size * size ).toVar();
       const samp = vec3( x, y, z ).toVar();
       const centered = samp.sub( sizeHalf ).div( size ).toVar(); // [-0.5, 0.5]   
-      const yFactor = centered.y.add(0.5).toVar(); // [0, 1]
+      //const yFactor = centered.y.add(0.5).toVar(); // [0, 1]
       const d = float( 1.0 ).sub( centered.length() ).toVar();
       const noiseCoord = samp.mul( positionScale )
-        .mul( yFactor.mul(3).add(1) )
+        //.mul( yFactor.mul(3).add(1) )
         .add( time.mul( timeScale ) );
       const noise = mx_noise_vec3(noiseCoord).mul(d).mul(d).toVar();
       textureStore( storageTexture, vec3( x, y, z ), vec4( vec3(noise.x), 1.0 ));
@@ -131,46 +131,53 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const FOG_HEIGHT = 100;
     const FOG_ALPHA = 0.75;
 
-    const RAY_MAX_ITERATIONS = 100;
-    const RAY_STEP_MIN = 0.02;
-    const RAY_STEP_MAX = 0.08;
+    const RAY_MAX_ITERATIONS = 75;
+    const RAY_STEP_MIN = 0.035;
+    const RAY_STEP_MAX = 0.095;
     const RAY_OFFSET_NOISE_SEED_SCALE = 90;
     
     const VOLUME_THRESHOLD = 0.09;
     const VOLUME_OPACITY = 0.05;
     const VOLUME_RANGE = 0.05;
-    const VOLUME_STEPS = 35;
-    const VOLUME_ALPHA_CUTOFF = 0.95;
-    const VOLUME_TEXTURE_SCALE = 7.0;
-    const VOLUME_START = 1;
-    const VOLUME_STOP = 9;
+    const VOLUME_STEPS = 25;
+    const VOLUME_ALPHA_CUTOFF = 0.75;
+    const VOLUME_TEXTURE_SCALE = 5.0;
+    const VOLUME_START = 2;
+    const VOLUME_STOP = 10;
     const VOLUME_PADDING = 1;
     
-    const INFLUENCE_FOG_NOISE = 0.25;
-    const INFLUENCE_VOLUMETRIC = 0.25;
+    const VOLUME_FIXED_STEP = 0.3;
+    const VOLUME_MAX_RANDOM_OFFSET = 0.3;
+
+    const INFLUENCE_FOG_NOISE = 0.1;
+    const INFLUENCE_VOLUMETRIC = 0.1;
 
     // ray marching node
     const Raymarch = ( worldPosition, rayOrigin, rayDirection, rayMin, rayMax, raySteps, callback ) => {
       // iteration
-      const start = rayMin.toVar();
-      const stop = min(rayMax, length(rayDirection)).toVar();
-      const step = (stop.sub(start).abs().div(raySteps)).clamp(RAY_STEP_MIN, RAY_STEP_MAX).toVar();
+      // const stop = min( rayMax, length(rayDirection) ).toVar();
+      const stop = length( rayDirection ).toVar();
+      const start = min( rayMin, stop ).toVar();
+      const step = float( VOLUME_FIXED_STEP ).toVar();
+      //const step = (stop.sub(start).abs().div(raySteps)).clamp(RAY_STEP_MIN, RAY_STEP_MAX).toVar();
 
       // normalized direction
       const rayDir = rayDirection.normalize().toVar();
       const rayStep = rayDir.mul(step).toVar();
 
       // add some noise to start position
-      //const rayOffset = mx_noise_vec3( rayOrigin.add(rayDirection).mul(100) ).fract().mul(step).toVar();
-      const offset = mx_noise_vec3( worldPosition.add(rayOrigin).mul( RAY_OFFSET_NOISE_SEED_SCALE ) ).fract().mul(step).toVar();
-      start.addAssign( offset )
+      const offset = rand( rayDirection.xy ).fract().mul( VOLUME_MAX_RANDOM_OFFSET ).toVar();
+      // const offset = mx_noise_vec3( rayDirection.xyz.mul( 100 ) ).mul( VOLUME_MAX_RANDOM_OFFSET ).abs().toVar();
+      start.addAssign( offset );
 
       // trackers
       const positionRay = rayOrigin.add(rayDir.mul(start)).toVar();
       const distanceTravelled = float(0).toVar();
       const iterations = float(0).toVar();
-      
-      Loop( { type: 'float', start: start, end: stop, update: step }, () => {
+
+      // loop
+      const count = uint( stop.sub(start).div(step) );
+      Loop(count, () => {
         // do callback
         callback( {
           positionRay,
@@ -206,19 +213,20 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       fadePadding = float( 1 ),
     }) => {
       const finalColor = vec4( 0 ).toVar();
-      const kn = vec3(-0.01).toConst();
-      const kp = vec3(0.01).toConst();
+      const kn = vec3(-0.02).toConst();
+      const kp = vec3(0.02).toConst();
       const rmin = threshold.sub(range).toVar();
       const rmax = threshold.add(range).toVar();
       const rayMin = fadeStart.toVar();
       const rayMax = fadeStop.toVar();
+      const rayPad = max( 0.001, fadePadding ).toVar();
     
       Raymarch( worldPosition, rayOrigin, rayDirection, rayMin, rayMax, steps, ( { positionRay, distanceTravelled } ) => {
         const samp = positionRay.div( textureScale ).mod(1).toVar();
         const mapValue = smoothstep(rmin, rmax, texture.sample(samp).r)
           .mul( opacity )
-          .mul( distanceTravelled.sub( fadeStart ).div( fadePadding ).saturate() )
-          .mul( distanceTravelled.sub( fadeStop ).div( fadePadding ).saturate().oneMinus() )
+          .mul( distanceTravelled.sub( rayMin ).div( rayPad ).saturate() )
+          .mul( distanceTravelled.sub( rayMax ).div( rayPad ).saturate().oneMinus() )
           .toVar();
         const shading = texture.sample( samp.add(kn).mod(1) ).r
           .sub( texture.sample( samp.add(kp).mod(1) ).r );
@@ -249,7 +257,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     // p = world position
     this.fogNode = Fn(([ p ]) => {
       // ray direction
-      const rayDirection = p.sub( this._cameraPosition );
+      const rayDirection = p.sub( this._cameraPosition ).toVar();
 
       // fog gradient 0->1
       const fogGradient = length( rayDirection ).smoothstep(FOG_START, FOG_STOP).toVar();
@@ -261,7 +269,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       const fogSurfaceNoise = fogNoiseA.add( fogNoiseB );
 
       // fog height fade factor
-      const fogHeightFadeFactor = fogDistanceFactor.sub( p.y ).div(fogDistanceFactor).pow(3).saturate().mul(FOG_ALPHA);
+      const fogHeightFadeFactor = fogDistanceFactor.sub( p.y ).abs().div(fogDistanceFactor).pow(3).saturate().mul(FOG_ALPHA);
 
       // fog volumetric node
       const fogVolumetric =  VolumetricFog( {
