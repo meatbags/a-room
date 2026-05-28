@@ -132,7 +132,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const FOG_ALPHA = 0.75;
 
     const RAY_MAX_ITERATIONS = 75;
-    const RAY_STEP_MIN = 0.035;
+    const RAY_STEP_MIN = 0.045;
     const RAY_STEP_MAX = 0.095;
     const RAY_OFFSET_NOISE_SEED_SCALE = 90;
     
@@ -146,7 +146,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const VOLUME_STOP = 10;
     const VOLUME_PADDING = 1;
     
-    const VOLUME_FIXED_STEP = 0.3;
+    const VOLUME_FIXED_STEP = 0.35;
     const VOLUME_MAX_RANDOM_OFFSET = 0.3;
 
     const INFLUENCE_FOG_NOISE = 0.1;
