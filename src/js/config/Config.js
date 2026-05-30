@@ -26,6 +26,7 @@ export default {
       density: 0.0225,
     },
     backgroundBlurriness: 0,
+    /*
     skybox: {
       src: './images/env/default-skybox.jpg',
       props: {
@@ -33,6 +34,7 @@ export default {
         colorSpace: THREE.SRGBColorSpace
       }
     },
+    */
   },
   History: {
     disabled: false,
