@@ -47,7 +47,7 @@ class Fog extends SceneNode {
 
     // fog volumetric
     const uniformThreshold = tsl.uniform( 0.1 ); 
-    const uniformOpacity = tsl.uniform( 0.5 );
+    const uniformOpacity = tsl.uniform( 0.8 );
     const uniformRange = tsl.uniform( 0.1 );
     const uniformSteps = tsl.uniform( 50 );
     const uniformAlphaCutoff = tsl.uniform( 0.95 );
@@ -233,7 +233,7 @@ class Fog extends SceneNode {
     
     // Shader
 
-    const MAP_SCALE = 6;
+    const MAP_SCALE = 3;
 
     const transparentRaymarchingTexture = tsl.Fn( ( {
       texture,

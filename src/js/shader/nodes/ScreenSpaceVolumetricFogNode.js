@@ -150,7 +150,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const VOLUME_MAX_RANDOM_OFFSET = 0.3;
 
     const INFLUENCE_FOG_NOISE = 0.1;
-    const INFLUENCE_VOLUMETRIC = 0.1;
+    const INFLUENCE_VOLUMETRIC = 0.15;
 
     // ray marching node
     const Raymarch = ( worldPosition, rayOrigin, rayDirection, rayMin, rayMax, raySteps, callback ) => {
@@ -272,7 +272,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       const fogHeightFadeFactor = fogDistanceFactor.sub( p.y ).abs().div(fogDistanceFactor).pow(3).saturate().mul(FOG_ALPHA);
 
       // fog volumetric node
-      const fogVolumetric =  VolumetricFog( {
+      const fogVolumetric = VolumetricFog( {
         worldPosition: p,
         rayOrigin: this._cameraPosition,
         rayDirection,
@@ -289,7 +289,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       } );
 
       return fogGradient.oneMinus()
-        .mix( color( 0x0 ), fogSurfaceNoise.mul( INFLUENCE_FOG_NOISE ) )
+        .mix( color( 0x0000FF ), fogSurfaceNoise.mul( INFLUENCE_FOG_NOISE ) )
         .add( fogVolumetric.mul( INFLUENCE_VOLUMETRIC ) )
         .mul( fogHeightFadeFactor );
     });
@@ -300,7 +300,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const uvNode = uv();
     
     // setup 3d texture
-    this.setupComputeTexture({ size: 40, timeScale: 0.1, positionScale: 0.12 });
+    this.setupComputeTexture({ size: 50, timeScale: 0.1, positionScale: 0.12 });
     builder.renderer.compute( this.computeNode );
 
     // setup fog node

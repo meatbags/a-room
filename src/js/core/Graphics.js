@@ -8,7 +8,7 @@ import * as WebGPU from 'three/webgpu';
 import { GetRoot, SceneNode } from 'engine';
 import { pass, mrt, output, normalView, diffuseColor, velocity, 
   add, vec3, vec4, directionToColor, colorToDirection, sample,
-  blendDodge, blendOverlay, blendScreen, blendBurn, mix, acesFilmicToneMapping, Fn, min, max
+  blendDodge, blendOverlay, blendScreen, blendBurn, mix, acesFilmicToneMapping, cineonToneMapping, Fn, min, max
 } from 'three/tsl';
 
 // three render pipeline nodes
@@ -87,14 +87,14 @@ export default class Graphics extends SceneNode {
     giPass.rangeStop.value = 9;
     giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
     giPass.stepCount.value = 2;
-    giPass.aoIntensity.value = 1.0; // default=1, [0, 4]
+    giPass.aoIntensity.value = 4.0; // default=1, [0, 4]
     giPass.giIntensity.value = 3.5;
     giPass.radius.value = 2.0; // default=12, [1, 25]
     giPass.useScreenSpaceSampling.value = true;
     giPass.expFactor.value = 2;
     giPass.thickness.value = 1;
     giPass.useLinearThickness.value = false;
-    giPass.backfaceLighting.value = 0.5;
+    giPass.backfaceLighting.value = 0.75;
     giPass.useTemporalFiltering = true;
     
     // change settings for webgl
@@ -128,7 +128,8 @@ export default class Graphics extends SceneNode {
     const bloomPass = fogPass.add(bloom(scenePassColor, strength, radius, threshold))
 
     // tone mapping pass
-    const toneMapping = acesFilmicToneMapping(bloomPass, 1.5);
+    //const toneMapping = acesFilmicToneMapping(bloomPass, 1.2);
+    const toneMapping = cineonToneMapping(bloomPass, 1.25);
     renderPipeline.outputNode = toneMapping;
   }
 }

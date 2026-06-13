@@ -26,7 +26,7 @@ export default {
       density: 0.0225,
     },
     backgroundBlurriness: 0,
-    /*
+
     skybox: {
       src: './images/env/default-skybox.jpg',
       props: {
@@ -34,7 +34,7 @@ export default {
         colorSpace: THREE.SRGBColorSpace
       }
     },
-    */
+
   },
   History: {
     disabled: false,
@@ -61,7 +61,8 @@ export default {
               csmMode: 'practical', // practical, uniform, logarithmic
             }
           },
-          envMapIntensity: 0.1,
+          point: { type: 'point', color: 0x0000FF, intensity: 10, position: [0, 3, 0] },
+          envMapIntensity: 0.35,
         }
       },
     }
