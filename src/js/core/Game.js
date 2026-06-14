@@ -6,6 +6,7 @@ import Footsteps from '../audio/Footsteps';
 import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
 import Map from '../scenes/Map';
+import Overworld from '../scenes/Overworld';
 import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
 
@@ -27,7 +28,8 @@ class Game extends SceneNode {
     // this.add( new Fog() );
 
     // scene
-    this.add( new Map() );
+    // this.add( new Map() );
+    this.add( new Overworld() );
   }
 
   _init() {
@@ -46,7 +48,7 @@ class Game extends SceneNode {
   resetPlayer() {
     SceneNode.getSceneNode('Player').setPosition(RESET_POSITION.x, RESET_POSITION.y, RESET_POSITION.z);
     SceneNode.getSceneNode('Camera').setRotation(RESET_DIRECTION.pitch, RESET_DIRECTION.yaw);
-    SceneNode.getSceneNode('Map').reset();
+    // SceneNode.getSceneNode('Map').reset();
   }
 
   _update() {

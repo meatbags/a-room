@@ -87,7 +87,7 @@ export default class Graphics extends SceneNode {
     giPass.rangeStop.value = 9;
     giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
     giPass.stepCount.value = 2;
-    giPass.aoIntensity.value = 4.0; // default=1, [0, 4]
+    giPass.aoIntensity.value = 2.0; // default=1, [0, 4]
     giPass.giIntensity.value = 3.5;
     giPass.radius.value = 2.0; // default=12, [1, 25]
     giPass.useScreenSpaceSampling.value = true;

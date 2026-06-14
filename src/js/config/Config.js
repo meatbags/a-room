@@ -2,6 +2,12 @@
 
 import * as THREE from 'three';
 
+const getPointLight = () => {
+  const light = new THREE.PointLight(0x0000FF, 0.25, 10);
+  //light.castShadow = true;
+  return light;
+}
+
 export default {
   Camera: {
     fov: 60,
@@ -22,7 +28,7 @@ export default {
   },
   Graphics: {
     fog: {
-      hex: 0x888888,
+      hex: 0x71757E,
       density: 0.0225,
     },
     backgroundBlurriness: 0,
@@ -80,7 +86,7 @@ export default {
     shape: 'cylinder',
     positionDampingVertical: 0.2,
     // jumpEnabled: false,
-    playerLight: new THREE.PointLight(0xDDFFFF, 0.25, 5),
+    playerLight: getPointLight(),
   },
   Renderer: {
     localClippingEnabled: false,
