@@ -28,13 +28,14 @@ export default {
   },
   Graphics: {
     fog: {
-      hex: 0x71757E,
-      density: 0.0225,
+      //hex: 0x71757E,
+      hex: 0x444249,
+      density: 0.0125,
     },
     backgroundBlurriness: 0,
 
     skybox: {
-      src: './images/env/default-skybox.jpg',
+      src: './images/env/skybox.jpg',
       props: {
         mapping: THREE.EquirectangularReflectionMapping,
         colorSpace: THREE.SRGBColorSpace
