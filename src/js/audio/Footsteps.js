@@ -1,10 +1,11 @@
 /** Footsteps */
 
+import Config from '../config/Config';
 import { SceneNode } from 'engine';
 import { Vector3 } from 'three';
 
-const FOOTSTEPS_STRIDE = 1.1;
-const FOOTSTEPS_STRIDE_RUNNING = FOOTSTEPS_STRIDE * 1.5;
+const FOOTSTEPS_STRIDE = 1.5;
+const FOOTSTEPS_STRIDE_RUNNING = FOOTSTEPS_STRIDE * 1.45;
 const FOOTSTEPS_STRIDE_CROUCHING = FOOTSTEPS_STRIDE * 0.42;
 const FOOTSTEPS_GAIN = 0.2;
 const FOOTSTEPS_GAIN_RUNNING = 0.35;
@@ -47,7 +48,7 @@ class Footsteps extends SceneNode {
       reverb: this.refAudioHandler.getReverbInput({
         name: 'footsteps_reverb',
         wet: 0.75,
-        duration: 2.5,
+        duration: 1.5,
       })
     };
 
