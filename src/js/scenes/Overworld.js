@@ -25,41 +25,34 @@ class Overworld extends SceneNode {
     this._addToScene(collision);
 
     // cosmetic background
-    this._addToScene( this.getAsset('background') );
-
-    // platform instanced
-    let platform = null;
-    this.getAsset('platform').traverse(child => {
-      if (child.isMesh) {
-        platform = child;
-      }
-    });
-    const positions = [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(64, 0, 0),
-      new THREE.Vector3(0, 0, 64),
-      new THREE.Vector3(-64, 0, 0),
-      new THREE.Vector3(0, 0, -64),
-      new THREE.Vector3(-64, 0, -64),
-      new THREE.Vector3(64, 0, -64),
-      new THREE.Vector3(64, 0, 64),
-      new THREE.Vector3(-64, 0, 64),
-      new THREE.Vector3(128, 0, 0),
-      new THREE.Vector3(-128, 0, 0),
-      new THREE.Vector3(0, 0, 128),
-      new THREE.Vector3(0, 0, -128),
-    ];
-    const instanced = new THREE.InstancedMesh(platform.geometry, platform.material, positions.length);
-    const helper = new THREE.Object3D();
-    positions.forEach((p, i) => {
-      helper.position.copy(p);
-      helper.updateMatrix();
-      instanced.setMatrixAt(i, helper.matrix);
-    });
-    this._addToScene(instanced);
+    // this._addToScene( this.getAsset('background') );
 
     // bridge instanced
+    this.createPlatforms();
     this.createBridges();
+  }
+
+  /** create platforms */
+  createPlatforms() {
+    // manifest
+    const transforms = [
+      [ new THREE.Vector3(0, 0, 0), 0 ], 
+      [ new THREE.Vector3(64, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, 64), 0 ], 
+      [ new THREE.Vector3(-64, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, -64), 0 ], 
+      [ new THREE.Vector3(-64, 0, -64), 0 ], 
+      [ new THREE.Vector3(64, 0, -64), 0 ], 
+      [ new THREE.Vector3(64, 0, 64), 0 ], 
+      [ new THREE.Vector3(-64, 0, 64), 0 ], 
+      [ new THREE.Vector3(128, 0, 0), 0 ], 
+      [ new THREE.Vector3(-128, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, 128), 0 ], 
+      [ new THREE.Vector3(0, 0, -128), 0 ],
+    ];
+
+    // create platforms
+    this._createInstancedMeshes(this.getAsset('platform'), transforms);   
   }
 
   /** create bridges */
@@ -68,19 +61,19 @@ class Overworld extends SceneNode {
     const halfPi = Math.PI / 2;
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const transforms = [
-      [ new THREE.Vector3(32, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(96, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(-32, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(-96, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(0, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(0, 0, -32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(0, 0, 96), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(0, 0, -96), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(-64, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(64, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(64, 0, -32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(32, 0, -64), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
-      [ new THREE.Vector3(-32, 0, -64), halfPi, [rand(1,3), rand(1,3), rand(1,3)]]
+      [ new THREE.Vector3(32, 0, 0), halfPi],
+      [ new THREE.Vector3(96, 0, 0), halfPi],
+      [ new THREE.Vector3(-32, 0, 0), halfPi],
+      [ new THREE.Vector3(-96, 0, 0), halfPi],
+      [ new THREE.Vector3(0, 0, 32), 0],
+      [ new THREE.Vector3(0, 0, -32), 0],
+      [ new THREE.Vector3(0, 0, 96), 0],
+      [ new THREE.Vector3(0, 0, -96), 0],
+      [ new THREE.Vector3(-64, 0, 32), 0],
+      [ new THREE.Vector3(64, 0, 32), 0],
+      [ new THREE.Vector3(64, 0, -32), 0],
+      [ new THREE.Vector3(32, 0, -64), halfPi],
+      [ new THREE.Vector3(-32, 0, -64), halfPi]
     ];
 
     // create bridge
