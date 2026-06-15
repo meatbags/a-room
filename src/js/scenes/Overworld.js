@@ -11,6 +11,10 @@ class Overworld extends SceneNode {
     this.load('collision', './models/overworld/collision.fbx');
     this.load('platform', './models/overworld/platform.fbx');
     this.load('bridge', './models/overworld/bridge.fbx');
+    this.load('pylon', './models/overworld/pylon.fbx');
+
+    // instance ref
+    this._instances = {};
   }
 
   /** override */
@@ -55,36 +59,62 @@ class Overworld extends SceneNode {
     this._addToScene(instanced);
 
     // bridge instanced
-    let bridge = null;
-    this.getAsset('bridge').traverse(child => {
+    this.createBridges();
+  }
+
+  /** create bridges */
+  createBridges() {
+    // manifest
+    const halfPi = Math.PI / 2;
+    const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
+    const transforms = [
+      [ new THREE.Vector3(32, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(96, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(-32, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(-96, 0, 0), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(0, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(0, 0, -32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(0, 0, 96), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(0, 0, -96), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(-64, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(64, 0, 32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(64, 0, -32), 0, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(32, 0, -64), halfPi, [rand(1,3), rand(1,3), rand(1,3)]],
+      [ new THREE.Vector3(-32, 0, -64), halfPi, [rand(1,3), rand(1,3), rand(1,3)]]
+    ];
+
+    // create bridge
+    this._createInstancedMeshes(this.getAsset('bridge'), transforms);   
+  }
+
+  /** create instanced meshes */
+  _createInstancedMeshes(group, transforms) {
+    // create instanced meshes
+    const instanced = {};
+    group.traverse(child => {
       if (child.isMesh) {
-        bridge = child;
+        const mesh = new THREE.InstancedMesh(
+          child.geometry, child.material, transforms.length);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true; 
+        instanced[child.name] = mesh;
+        this._addToScene(mesh);
       }
     });
-    const halfPi = Math.PI / 2;
-    const positionRotation = [
-      [ new THREE.Vector3(32, 0, 0), halfPi ],
-      [ new THREE.Vector3(96, 0, 0), halfPi ],
-      [ new THREE.Vector3(-32, 0, 0), halfPi ],
-      [ new THREE.Vector3(-96, 0, 0), halfPi ],
-      [ new THREE.Vector3(0, 0, 32), 0 ],
-      [ new THREE.Vector3(0, 0, -32), 0 ],
-      [ new THREE.Vector3(0, 0, 96), 0 ],
-      [ new THREE.Vector3(0, 0, -96), 0 ],
-      [ new THREE.Vector3(-64, 0, 32), 0 ],
-      [ new THREE.Vector3(64, 0, 32), 0 ],
-      [ new THREE.Vector3(64, 0, -32), 0 ],
-      [ new THREE.Vector3(32, 0, -64), halfPi ],
-      [ new THREE.Vector3(-32, 0, -64), halfPi ],
-    ];
-    const instanced2 = new THREE.InstancedMesh(bridge.geometry, bridge.material, positionRotation.length);
-    positionRotation.forEach((pr, i) => {
-      helper.position.copy(pr[0]);
-      helper.rotation.y = pr[1];
-      helper.updateMatrix();
-      instanced2.setMatrixAt(i, helper.matrix);
+
+    // apply transforms
+    const _tmp = new THREE.Object3D();
+    transforms.forEach((t, i) => {
+      // set transform
+      _tmp.position.copy(t[0]);
+      _tmp.rotation.y = t[1];
+      _tmp.updateMatrix();
+      
+      // set matrix
+      for (const key in instanced) {
+        instanced[key].setMatrixAt(i, _tmp.matrix);
+      }
     });
-    this._addToScene(instanced2);
   }
 }
 
