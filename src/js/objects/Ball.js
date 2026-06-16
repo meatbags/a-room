@@ -14,11 +14,24 @@ class Ball extends SceneNode {
     this.isBall = true;
     this._object = props.object;
     this._position = props.position || new THREE.Vector3();
+    this._emissiveTarget = 0;
   }
 
   _init() {
     // set up mesh
     this._mesh = ExtractMeshes( this._object )[0];
+    console.log( this._mesh.material );
+    
+    const mat = new THREE.MeshPhysicalMaterial();
+    for (const key in this._mesh.material) {
+      if (mat[key] !== undefined)
+        mat[key] = this._mesh.material[key];
+    }
+    mat.needsUpdate = true;
+
+    this._mesh.material = mat;
+
+
     this._mesh.position.copy(this._position);
     this._mesh.castShadow = true;
 
@@ -32,7 +45,7 @@ class Ball extends SceneNode {
             child.hasAttached() &&
             child.attached.id === this._carryable.id
           ) {
-            child.detach();
+            this.detach( child );
           }
         });
         this._carryable.carry();
@@ -71,6 +84,22 @@ class Ball extends SceneNode {
     this._carryable.attach( socket.position, null, true );
     if (warp) {
       this._carryable.warp( socket.position );
+    }
+    this._mesh.material.emissive = new THREE.Color(0xFFFFFF);
+    this._emissiveTarget = 1;
+  }
+
+  detach( socket ) {
+    socket.detach();
+    this._emissiveTarget = 0;
+  }
+
+  _update() {
+    if (this._mesh.material.emissiveIntensity !== this._emissiveTarget) {
+      this._mesh.material.emissiveIntensity += (this._emissiveTarget - this._mesh.material.emissiveIntensity) * 0.05;
+      if (Math.abs(this._emissiveTarget - this._mesh.material.emissiveIntensity) < 0.001) {
+        this._mesh.material.emissiveIntensity = this._emissiveTarget;
+      }
     }
   }
 

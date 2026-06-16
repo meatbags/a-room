@@ -24,11 +24,10 @@ export default {
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: 0.0,
+    envMapIntensityDefault: 0.5,
   },
   Graphics: {
     fog: {
-      //hex: 0x71757E,
       hex: 0x444249,
       density: 0.0125,
     },
@@ -62,7 +61,7 @@ export default {
               cameraNear: 0.5,
               cameraFar: 256,
               //csmMaxFar: 20,
-              csmMaxFar: 40,
+              csmMaxFar: 50,
               csmCascades: 4,
               csmFade: true,
               csmMode: 'practical', // practical, uniform, logarithmic

@@ -150,7 +150,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const VOLUME_MAX_RANDOM_OFFSET = 0.3;
 
     const INFLUENCE_FOG_NOISE = 0.1;
-    const INFLUENCE_VOLUMETRIC = 0.15;
+    const INFLUENCE_VOLUMETRIC = 0.08;
 
     // ray marching node
     const Raymarch = ( worldPosition, rayOrigin, rayDirection, rayMin, rayMax, raySteps, callback ) => {
@@ -300,7 +300,10 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const uvNode = uv();
     
     // setup 3d texture
-    this.setupComputeTexture({ size: 50, timeScale: 0.1, positionScale: 0.12 });
+    const COMPUTE_TEXTURE_SIZE = 64;
+    const COMPUTE_TIME_SCALE = 0.1;
+    const COMPUTE_POSITION_SCALE = 0.12;
+    this.setupComputeTexture({ size: COMPUTE_TEXTURE_SIZE, timeScale: COMPUTE_TIME_SCALE, positionScale: COMPUTE_POSITION_SCALE });
     builder.renderer.compute( this.computeNode );
 
     // setup fog node

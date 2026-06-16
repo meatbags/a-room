@@ -19,8 +19,22 @@ class Socket extends SceneNode {
   _init() {
     // helper
     const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1), 
-      new THREE.MeshBasicMaterial({color:0xFF0000, transparent:true, opacity:0.85}));
+      new THREE.SphereGeometry(0.5, 32, 32), 
+      new THREE.MeshPhysicalMaterial({
+        color:0xFF0000,
+        opacity:1,
+        transmission: 1,
+        thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
+				metalness: 0,
+				roughness: 0,
+        ior: 1.25,
+				thickness: 1,
+        attenuationColor: 0xffffff,
+				attenuationDistance: 1,
+				specularIntensity: 1,
+				specularColor: 0xff0000,
+        side: THREE.BackSide,
+      }));
     mesh.position.copy(this._position);
     this._addToScene(mesh);
   }
