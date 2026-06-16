@@ -33,7 +33,7 @@ export default {
       density: 0.0125,
     },
     backgroundBlurriness: 0,
-
+    backgroundRotation: 0.002 * Math.PI,
     skybox: {
       src: './images/env/skybox.jpg',
       props: {
@@ -41,7 +41,6 @@ export default {
         colorSpace: THREE.SRGBColorSpace
       }
     },
-
   },
   History: {
     disabled: false,

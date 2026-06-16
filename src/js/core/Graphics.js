@@ -39,6 +39,9 @@ export default class Graphics extends SceneNode {
     const scene = sceneModule.getScene();
     const config = Config.Graphics ?? {};
 
+    // ref
+    this._scene = scene;
+
     // scene setup
     if (config.skybox) {
       const texture = new THREE.TextureLoader().load(config.skybox.src, tex => {
@@ -131,5 +134,12 @@ export default class Graphics extends SceneNode {
     //const toneMapping = acesFilmicToneMapping(bloomPass, 1.2);
     const toneMapping = cineonToneMapping(bloomPass, 1.25);
     renderPipeline.outputNode = toneMapping;
+  }
+
+  /** update */
+  _update(delta) {
+    if (Config.Graphics.backgroundRotation) {
+      this._scene.backgroundRotation.y += delta * Config.Graphics.backgroundRotation;
+    }
   }
 }
