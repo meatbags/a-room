@@ -7,6 +7,7 @@ import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
 import Map from '../scenes/Map';
 import Overworld from '../scenes/Overworld';
+import Demo from '../scenes/Demo';
 import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
 
@@ -30,6 +31,7 @@ class Game extends SceneNode {
     // scene
     // this.add( new Map() );
     this.add( new Overworld() );
+    this.add( new Demo() );
   }
 
   _init() {

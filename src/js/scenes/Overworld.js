@@ -25,7 +25,7 @@ class Overworld extends SceneNode {
     this._addToScene(collision);
 
     // cosmetic background
-    // this._addToScene( this.getAsset('background') );
+    this._addToScene( this.getAsset('background') );
 
     // bridge instanced
     this.createPlatforms();
@@ -37,18 +37,18 @@ class Overworld extends SceneNode {
     // manifest
     const transforms = [
       [ new THREE.Vector3(0, 0, 0), 0 ], 
-      [ new THREE.Vector3(64, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, 64), 0 ], 
-      [ new THREE.Vector3(-64, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, -64), 0 ], 
-      [ new THREE.Vector3(-64, 0, -64), 0 ], 
-      [ new THREE.Vector3(64, 0, -64), 0 ], 
-      [ new THREE.Vector3(64, 0, 64), 0 ], 
-      [ new THREE.Vector3(-64, 0, 64), 0 ], 
-      [ new THREE.Vector3(128, 0, 0), 0 ], 
-      [ new THREE.Vector3(-128, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, 128), 0 ], 
-      [ new THREE.Vector3(0, 0, -128), 0 ],
+      [ new THREE.Vector3(48, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, 48), 0 ], 
+      [ new THREE.Vector3(-48, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, -48), 0 ], 
+      [ new THREE.Vector3(-48, 0, -48), 0 ], 
+      [ new THREE.Vector3(48, 0, -48), 0 ], 
+      [ new THREE.Vector3(48, 0, 48), 0 ], 
+      [ new THREE.Vector3(-48, 0, 48), 0 ], 
+      [ new THREE.Vector3(96, 0, 0), 0 ], 
+      [ new THREE.Vector3(-96, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, 96), 0 ], 
+      [ new THREE.Vector3(0, 0, -96), 0 ],
     ];
 
     // create platforms
@@ -61,19 +61,19 @@ class Overworld extends SceneNode {
     const halfPi = Math.PI / 2;
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const transforms = [
-      [ new THREE.Vector3(32, 0, 0), halfPi],
-      [ new THREE.Vector3(96, 0, 0), halfPi],
-      [ new THREE.Vector3(-32, 0, 0), halfPi],
-      [ new THREE.Vector3(-96, 0, 0), halfPi],
-      [ new THREE.Vector3(0, 0, 32), 0],
-      [ new THREE.Vector3(0, 0, -32), 0],
-      [ new THREE.Vector3(0, 0, 96), 0],
-      [ new THREE.Vector3(0, 0, -96), 0],
-      [ new THREE.Vector3(-64, 0, 32), 0],
-      [ new THREE.Vector3(64, 0, 32), 0],
-      [ new THREE.Vector3(64, 0, -32), 0],
-      [ new THREE.Vector3(32, 0, -64), halfPi],
-      [ new THREE.Vector3(-32, 0, -64), halfPi]
+      [ new THREE.Vector3(24, 0, 0), halfPi],
+      [ new THREE.Vector3(72, 0, 0), halfPi],
+      [ new THREE.Vector3(-24, 0, 0), halfPi],
+      [ new THREE.Vector3(-72, 0, 0), halfPi],
+      [ new THREE.Vector3(0, 0, 24), 0],
+      [ new THREE.Vector3(0, 0, -24), 0],
+      [ new THREE.Vector3(0, 0, 72), 0],
+      [ new THREE.Vector3(0, 0, -72), 0],
+      [ new THREE.Vector3(-48, 0, 24), 0],
+      [ new THREE.Vector3(48, 0, 24), 0],
+      [ new THREE.Vector3(48, 0, -24), 0],
+      [ new THREE.Vector3(24, 0, -48), halfPi],
+      [ new THREE.Vector3(-24, 0, -48), halfPi]
     ];
 
     // create bridge

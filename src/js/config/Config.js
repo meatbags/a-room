@@ -62,7 +62,8 @@ export default {
               cameraSize: 5,
               cameraNear: 0.5,
               cameraFar: 256,
-              csmMaxFar: 20,
+              //csmMaxFar: 20,
+              csmMaxFar: 40,
               csmCascades: 4,
               csmFade: true,
               csmMode: 'practical', // practical, uniform, logarithmic
@@ -75,6 +76,7 @@ export default {
     }
   },
   Physics: {
+    gravity: -2.3,
     stepHeight: 0.5,
     maxSlopeClimb: Math.PI * 0.3,
     minSlopeClimb: Math.PI * 0.3,
@@ -83,7 +85,7 @@ export default {
     height: 1.8,
     speed: 3.0,
     speedRunning: 6.0,
-    speedNoclip: 30,
+    speedNoclip: 64,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
     // jumpEnabled: false,
