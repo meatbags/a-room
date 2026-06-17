@@ -18,11 +18,11 @@ class Door extends SceneNode {
         color:0xFF0000,
         opacity:1,
         transmission: 1,
+        thickness: 1,
         thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
         metalness: 0,
         roughness: 0,
         ior: 1.25,
-        thickness: 1,
         attenuationColor: 0xffffff,
         attenuationDistance: 1,
         specularIntensity: 1,
@@ -30,6 +30,8 @@ class Door extends SceneNode {
         side: THREE.BackSide,
       })
     );
+    this._mesh.material.thicknessMap.wrapS = THREE.RepeatWrapping;
+    this._mesh.material.thicknessMap.wrapT = THREE.RepeatWrapping;
     this._mesh.position.copy( this._position );
     this._addToScene( this._mesh );
 
@@ -51,6 +53,11 @@ class Door extends SceneNode {
   close() {
     this._mesh.visible = true;
     this._collider.setEnabled( true );
+  }
+
+  _update(delta) {
+    this._mesh.material.thicknessMap.offset.y += delta * 0.02;
+    // this._mesh.material.needsUpdate = true;
   }
 }
 

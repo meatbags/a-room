@@ -35,6 +35,7 @@ class Room_02 extends Room {
     // indicator
     this._indicator = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), new THREE.MeshBasicMaterial({color:0xFFFFFF}));
     this._indicator.position.set(1.25, 0.25, -4.5).add(this._position);
+    this._indicatorTarget = this._indicator.position.y;
     this._addToScene(this._indicator);
   }
 
@@ -65,8 +66,12 @@ class Room_02 extends Room {
     }
 
     // test visual
-    this._indicator.position.y = state.progression == 0 ? 0.25 : 
+    this._indicatorTarget = state.progression == 0 ? 0.25 : 
       state.progression == 1 ? 1 : 1.75;
+  }
+
+  _update() {
+    this._indicator.position.y += (this._indicatorTarget - this._indicator.position.y) * 0.2;
   }
 }
 
