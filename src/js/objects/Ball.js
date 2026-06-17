@@ -27,12 +27,7 @@ class Ball extends SceneNode {
 
     // build socket cache once
     if ( ! Ball.socketCache ) {
-      Ball.socketCache = [];
-      SceneNode.getSceneNode('Game').traverse(child => {
-        if (child.isSocket) {
-          Ball.socketCache.push(child);
-        }
-      });
+      Ball.rebuildSocketCache();
     }
 
     // make carryable
@@ -154,6 +149,16 @@ class Ball extends SceneNode {
     });
     
     return found;
+  }
+
+  /** rebuild cache */
+  static rebuildSocketCache() {
+    Ball.socketCache = [];
+    SceneNode.getSceneNode('Game').traverse(child => {
+      if (child.isSocket) {
+        Ball.socketCache.push(child);
+      }
+    });
   }
 }
 

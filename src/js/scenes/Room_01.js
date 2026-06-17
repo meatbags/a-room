@@ -5,13 +5,14 @@ import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import FindObject from '../util/FindObject';
 
+import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
 
-class Demo extends SceneNode {
+class Room_01 extends SceneNode {
   constructor() {
-    super({ name: 'Demo' });
+    super({ name: 'Room_01' });
 
     this.load('room', './models/rooms/room-01.fbx');
     this.load('collision', './models/rooms/room-01-collision.fbx');
@@ -60,13 +61,13 @@ class Demo extends SceneNode {
     });
     
     // test ball
-    const ball1 = new Ball({ position: new THREE.Vector3(-3, 0.25, -1.5).add(this._position) });
-    const ball2 = new Ball({ position: new THREE.Vector3(-2, 0.25, 1.5).add(this._position) });
+    const ball1 = new Ball({ name: `${this.name}_Ball_01`, position: new THREE.Vector3(-3, 0.25, -1.5).add(this._position) });
+    const ball2 = new Ball({ name: `${this.name}_Ball_02`, position: new THREE.Vector3(-2, 0.25, 1.5).add(this._position) });
     this.add( ball1, ball2 );
 
     // test socket
-    const socket1 = new Socket({ position: new THREE.Vector3(-2, 0.55, -2).add(this._position) });
-    const socket2 = new Socket({ position: new THREE.Vector3(2, 0.55, -2).add(this._position) });
+    const socket1 = new Socket({ name: `${this.name}_Socket_01`, position: new THREE.Vector3(-2, 0.55, -2).add(this._position) });
+    const socket2 = new Socket({ name: `${this.name}_Socket_02`, position: new THREE.Vector3(2, 0.55, -2).add(this._position) });
     socket1.addEventListener('attach', () => this.setState({ power1: 1 }));
     socket1.addEventListener('detach', () => this.setState({ power1: 0 }));
     socket2.addEventListener('attach', () => this.setState({ power2: 1 }));
@@ -75,6 +76,7 @@ class Demo extends SceneNode {
 
     // door
     this._door = new Door({
+      name: `${this.name}_Door_01`,
       position: new THREE.Vector3(0, 4, -5).add( this._position ),
       size: new THREE.Vector3(2, 8, 0.25)
     });
@@ -105,4 +107,4 @@ class Demo extends SceneNode {
   }
 }
 
-export default Demo;
+export default Room_01;

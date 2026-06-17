@@ -6,11 +6,14 @@ import Footsteps from '../audio/Footsteps';
 import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
 import Map from '../scenes/Map';
-import Overworld from '../scenes/Overworld';
-import Demo from '../scenes/Demo';
 import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
 import SharedAssets from '../objects/SharedAssets';
+
+// scene
+import Overworld from '../scenes/Overworld';
+import Room_01 from '../scenes/Room_01';
+import Room_02 from '../scenes/Room_02';
 
 const FALL_THRESHOLD = -10;
 const RESET_POSITION = {x:0, y:0.125, z:8};
@@ -28,12 +31,13 @@ class Game extends SceneNode {
     // environment
     this.add( new Lighting() );
     this.add( new SharedAssets() );
-    // this.add( new Fog() );
 
-    // scene
-    // this.add( new Map() );
+    // overworld
     this.add( new Overworld() );
-    this.add( new Demo() );
+
+    // individual rooms
+    this.add( new Room_01() );
+    this.add( new Room_02() );
   }
 
   _init() {

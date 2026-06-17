@@ -2,6 +2,7 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
+import Ball from './Ball';
 
 class Socket extends SceneNode {
   constructor(props={}) {
@@ -37,6 +38,9 @@ class Socket extends SceneNode {
       }));
     mesh.position.copy(this._position);
     this._addToScene(mesh);
+
+    // ensure available
+    Ball.rebuildSocketCache();
   }
 
   /** attach object */
