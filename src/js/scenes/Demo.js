@@ -1,8 +1,9 @@
 /** Demo Room */
 
 import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
-import ExtractMeshes from '../util/ExtractMeshes';
 import * as THREE from 'three';
+import ExtractMeshes from '../util/ExtractMeshes';
+import FindObject from '../util/FindObject';
 
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
@@ -39,8 +40,24 @@ class Demo extends SceneNode {
 
     // mapped
     this._mapped = MapObjectByName( room );
+    this._blocks = [];
     if (this._mapped.shard_01) CentrePivot( this._mapped.shard_01 );
     if (this._mapped.shard_02) CentrePivot( this._mapped.shard_02 );
+    if (this._mapped.blocks) this._mapped.blocks.children.forEach(group => {
+      const block = FindObject(group, obj => obj.name.indexOf('block') !== -1);
+      const wire = FindObject(group, obj => obj.name.indexOf('wire') !== -1);
+      if (!block || !wire) return;
+      CentrePivot(block);
+      const age = Math.random() * 2 * Math.PI;
+      const speed = 0.05 + Math.random() * 0.05;
+      const offset = Math.random() * 0.1 + 0.1;
+      const axis = Math.random() > 0.5 ? 'x' : 'z';
+      const rotation = (Math.random() * 0.05 + 0.01) * Math.PI;
+      const rotationSpeed = 0.01 + 0.05 * Math.random() * Math.PI;
+      this._blocks.push({
+        group, block, wire, axis, age, speed, rotation, offset, rotationSpeed
+      });
+    });
     
     // test ball
     const ball1 = new Ball({ position: new THREE.Vector3(-3, 0.25, -1.5).add(this._position) });
@@ -75,12 +92,16 @@ class Demo extends SceneNode {
 
   _update( delta ) {
     if (!this._active) return;
-    if (this._mapped.shard_01) {
-      this._mapped.shard_01.rotation.x += delta * 0.05;
-    }
-    if (this._mapped.shard_02) {
-      this._mapped.shard_02.rotation.z += delta * 0.035;
-    }
+    if (this._mapped.shard_01) this._mapped.shard_01.rotation.x += delta * 0.05;
+    if (this._mapped.shard_02) this._mapped.shard_02.rotation.z += delta * 0.035;
+    this._blocks.forEach(obj => {
+      // group, block, wire, axis, age, speed, rotation, offset
+      obj.age += delta;
+      const theta1 = obj.age * obj.speed * Math.PI * 2;
+      const theta2 = obj.age * obj.rotationSpeed * Math.PI * 2;
+      obj.group.position.x = Math.sin( theta1 ) * obj.offset;
+      obj.block.rotation[obj.axis] = Math.sin( theta2 ) * obj.rotation;
+    });
   }
 }
 
