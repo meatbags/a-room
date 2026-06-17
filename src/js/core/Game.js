@@ -10,6 +10,7 @@ import Overworld from '../scenes/Overworld';
 import Demo from '../scenes/Demo';
 import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
+import SharedAssets from '../objects/SharedAssets';
 
 const FALL_THRESHOLD = -10;
 const RESET_POSITION = {x:0, y:0.125, z:8};
@@ -26,6 +27,7 @@ class Game extends SceneNode {
 
     // environment
     this.add( new Lighting() );
+    this.add( new SharedAssets() );
     // this.add( new Fog() );
 
     // scene

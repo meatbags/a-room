@@ -14,7 +14,6 @@ class Demo extends SceneNode {
 
     this.load('room', './models/rooms/room-01.fbx');
     this.load('collision', './models/rooms/room-01-collision.fbx');
-    this.load('ball', './models/interactive/sphere.fbx');
 
     this._position = new THREE.Vector3(0, 0, 96);
     this._active = true;
@@ -44,10 +43,8 @@ class Demo extends SceneNode {
     if (this._mapped.shard_02) CentrePivot( this._mapped.shard_02 );
     
     // test ball
-    const ballMesh = this.getAsset('ball');
-    // this._addToScene( ballMesh );
-    const ball1 = new Ball({ object: ballMesh.clone(), position: new THREE.Vector3(-3, 0.25, -1.5).add(this._position) });
-    const ball2 = new Ball({ object: ballMesh.clone(), position: new THREE.Vector3(-2, 0.25, 1.5).add(this._position) });
+    const ball1 = new Ball({ position: new THREE.Vector3(-3, 0.25, -1.5).add(this._position) });
+    const ball2 = new Ball({ position: new THREE.Vector3(-2, 0.25, 1.5).add(this._position) });
     this.add( ball1, ball2 );
 
     // test socket

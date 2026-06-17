@@ -3,77 +3,64 @@
 import { SceneNode, Carryable } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
+import SharedAssets from './SharedAssets';
 
 class Ball extends SceneNode {
   static ATTACH_RADIUS = 2;
+  static socketCache = null;
   
   constructor(props={}) {
     super({ name: props.name ?? 'Ball' });
     
     // props
     this.isBall = true;
-    this._object = props.object;
     this._position = props.position || new THREE.Vector3();
     this._emissiveTarget = 0;
   }
 
   _init() {
     // set up mesh
-    this._mesh = ExtractMeshes( this._object )[0];
-    console.log( this._mesh.material );
-    
-    const mat = new THREE.MeshPhysicalMaterial();
-    for (const key in this._mesh.material) {
-      if (mat[key] !== undefined)
-        mat[key] = this._mesh.material[key];
-    }
-    mat.needsUpdate = true;
-
-    this._mesh.material = mat;
-
-
+    const asset = SharedAssets.requestAsset('ball');
+    this._mesh = ExtractMeshes( asset )[0];
     this._mesh.position.copy(this._position);
     this._mesh.castShadow = true;
+
+    // build socket cache once
+    if ( ! Ball.socketCache ) {
+      Ball.socketCache = [];
+      SceneNode.getSceneNode('Game').traverse(child => {
+        if (child.isSocket) {
+          Ball.socketCache.push(child);
+        }
+      });
+    }
 
     // make carryable
     this._carryable = new Carryable({ 
       mesh: this._mesh,
       onCarry: () => {
-        SceneNode.getSceneNode('Game').traverse(child => {
-          if (
-            child.isSocket && 
-            child.hasAttached() &&
-            child.attached.id === this._carryable.id
-          ) {
-            this.detach( child );
+        Ball.socketCache.forEach(socket => {
+          if (socket.hasAttached() && socket.attached.id === this._carryable.id) {
+            this.detach(socket);
           }
         });
         this._carryable.carry();
       },
       onRelease: () => {
-        // get nearest valid socket
-        let found = false;
-        let d = -1;
-
-        SceneNode.getSceneNode('Game').traverse(child => {
-          if ( child.isSocket && ! child.hasAttached() ) {
-            const dist = child.position.distanceTo(this._mesh.position);
-            if (dist <= Ball.ATTACH_RADIUS && (d === -1 || dist < d)) {
-              found = child;
-              d = dist;
-            }
-          }
-        });
+        // nearest valid socket
+        const socket = Ball.nearestValidSocket(this._carryable.position);
+        this._carryable.visualOffset.set(0, 0, 0);
 
         // attach or release
-        if (found) {
-          this.attach( found, false );
+        if (socket) {
+          this.attach( socket, false );
         } else {
           this._carryable.release();
         }
       }
     });
     
+    // add
     this._addToScene(this._mesh);
     this.add(this._carryable);
   }
@@ -94,7 +81,26 @@ class Ball extends SceneNode {
     this._emissiveTarget = 0;
   }
 
+  /** update */
   _update() {
+    /** update carrying animation */
+    if (this._carryable.isCarrying) {
+      const nearest = Ball.nearestValidSocket(this._carryable.position);
+      if (nearest) {
+        const prox = 1 - nearest.position.distanceTo(this._carryable.position) / Ball.ATTACH_RADIUS;
+        const amt = (0.001 + prox * 0.03) * Math.random();
+        const dir = nearest.position.clone().sub(this._carryable.position).normalize();
+        this._carryable.visualOffset.set(
+          dir.x * amt,
+          dir.y * amt,
+          dir.z * amt
+        );
+      } else {
+        this._carryable.visualOffset.set(0, 0, 0);
+      }
+    }
+
+    /** update emissive */
     if (this._mesh.material.emissiveIntensity !== this._emissiveTarget) {
       this._mesh.material.emissiveIntensity += (this._emissiveTarget - this._mesh.material.emissiveIntensity) * 0.05;
       if (Math.abs(this._emissiveTarget - this._mesh.material.emissiveIntensity) < 0.001) {
@@ -128,6 +134,24 @@ class Ball extends SceneNode {
         json.position[2]
       )
     );
+  }
+
+  /** util: get nearest valid socket */
+  static nearestValidSocket(p) {
+    let found = null;
+    let d = -1;
+
+    Ball.socketCache.forEach(socket => {
+      if ( ! socket.hasAttached() ) {
+        const dist = socket.position.distanceTo( p );
+        if (dist <= Ball.ATTACH_RADIUS && (d === -1 || dist < d)) {
+          found = socket;
+          d = dist;
+        }
+      }
+    });
+    
+    return found;
   }
 }
 
