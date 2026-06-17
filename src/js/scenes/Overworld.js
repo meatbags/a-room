@@ -2,6 +2,7 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
+import ExtractMeshes from '../util/ExtractMeshes';
 
 class Overworld extends SceneNode {
   constructor() {
@@ -25,7 +26,13 @@ class Overworld extends SceneNode {
     this._addToScene(collision);
 
     // cosmetic background
-    this._addToScene( this.getAsset('background') );
+    const background = this.getAsset('background');
+    ExtractMeshes( background ).forEach( mesh => {
+      mesh.receiveShadow = true;
+      mesh.castShadow = true;
+    });
+    this._addToScene( background );
+
 
     // bridge instanced
     this.createPlatforms();

@@ -88,12 +88,14 @@ class Ball extends SceneNode {
       const nearest = Ball.nearestValidSocket(this._carryable.position);
       if (nearest) {
         const prox = 1 - nearest.position.distanceTo(this._carryable.position) / Ball.ATTACH_RADIUS;
-        const amt = (0.001 + prox * 0.03) * Math.random();
+        const fwd = (0.001 + prox * 0.3) * Math.random();
+        const side = (0.001 + prox * 0.025) * (Math.random() * 2 - 1);
         const dir = nearest.position.clone().sub(this._carryable.position).normalize();
+        const cross = dir.clone().cross(new THREE.Vector3(0, 1, 0));
         this._carryable.visualOffset.set(
-          dir.x * amt,
-          dir.y * amt,
-          dir.z * amt
+          dir.x * fwd + cross.x * side,
+          dir.y * fwd + cross.y * side,
+          dir.z * fwd + cross.z * side
         );
       } else {
         this._carryable.visualOffset.set(0, 0, 0);
