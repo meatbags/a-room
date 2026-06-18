@@ -46,8 +46,8 @@ class Room_01 extends SceneNode {
     if (this._mapped.shard_02) CentrePivot( this._mapped.shard_02 );
     if (this._mapped.blocks) this._mapped.blocks.children.forEach(group => {
       const block = FindObject(group, obj => obj.name.indexOf('block') !== -1);
-      const wire = FindObject(group, obj => obj.name.indexOf('wire') !== -1);
-      if (!block || !wire) return;
+      // const wire = FindObject(group, obj => obj.name.indexOf('wire') !== -1);
+      if (!block) return;
       CentrePivot(block);
       const age = Math.random() * 2 * Math.PI;
       const speed = 0.05 + Math.random() * 0.05;
@@ -56,7 +56,7 @@ class Room_01 extends SceneNode {
       const rotation = (Math.random() * 0.05 + 0.01) * Math.PI;
       const rotationSpeed = 0.01 + 0.05 * Math.random() * Math.PI;
       this._blocks.push({
-        group, block, wire, axis, age, speed, rotation, offset, rotationSpeed
+        group, block, axis, age, speed, rotation, offset, rotationSpeed
       });
     });
     

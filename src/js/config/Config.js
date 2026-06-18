@@ -59,9 +59,9 @@ export default {
               mapSize: 4096,
               cameraSize: 5,
               cameraNear: 0.5,
-              cameraFar: 256,
+              cameraFar: 512,
               //csmMaxFar: 20,
-              csmMaxFar: 50,
+              csmMaxFar: 64,
               csmCascades: 4,
               csmFade: true,
               csmMode: 'practical', // practical, uniform, logarithmic

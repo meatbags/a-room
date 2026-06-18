@@ -15,8 +15,8 @@ import Overworld from '../scenes/Overworld';
 import Room_01 from '../scenes/Room_01';
 import Room_02 from '../scenes/Room_02';
 
-const FALL_THRESHOLD = -10;
-const RESET_POSITION = {x:0, y:0.125, z:8};
+const FALL_THRESHOLD = -32;
+const RESET_POSITION = {x:0, y:0.125, z:96};
 const RESET_DIRECTION = {pitch:0, yaw:0};
 
 class Game extends SceneNode {

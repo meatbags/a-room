@@ -16,7 +16,7 @@ class Door extends SceneNode {
       new THREE.BoxGeometry( this._size.x, this._size.y, this._size.z ),
       new THREE.MeshPhysicalMaterial({
         color:0xFF0000,
-        opacity:1,
+        opacity: 1,
         transmission: 1,
         thickness: 1,
         thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),

@@ -34,9 +34,10 @@ class Socket extends SceneNode {
 				attenuationDistance: 1,
 				specularIntensity: 1,
 				specularColor: 0xff0000,
-        side: THREE.BackSide,
+        side: THREE.FrontSide,
       }));
     mesh.position.copy(this._position);
+    this._mesh = mesh;
     this._addToScene(mesh);
 
     // ensure available
@@ -46,6 +47,7 @@ class Socket extends SceneNode {
   /** attach object */
   attach(object) {
     this._attached = object;
+    this._mesh.material.side = THREE.BackSide;
     this.setState({ attached: object.name });
     this.emit('attach');
   }
@@ -53,6 +55,7 @@ class Socket extends SceneNode {
   /** detach object */
   detach() {
     this._attached = null;
+    this._mesh.material.side = THREE.FrontSide;
     this.setState({ attached: null });
     this.emit('detach');
   }

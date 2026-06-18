@@ -3,6 +3,7 @@
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
+import Config from '../config/Config';
 
 class Overworld extends SceneNode {
   constructor() {
@@ -13,6 +14,7 @@ class Overworld extends SceneNode {
     this.load('platform', './models/overworld/platform.fbx');
     this.load('bridge', './models/overworld/bridge.fbx');
     this.load('pylon', './models/overworld/pylon.fbx');
+    this.load('rock', './models/overworld/rock.fbx');
 
     // instance ref
     this._instances = {};
@@ -37,6 +39,7 @@ class Overworld extends SceneNode {
     // bridge instanced
     this.createPlatforms();
     this.createBridges();
+    this.createAsteroidField();
   }
 
   /** create platforms */
@@ -87,16 +90,58 @@ class Overworld extends SceneNode {
     this._createInstancedMeshes(this.getAsset('bridge'), transforms);   
   }
 
+  /** create asteroid field */
+  createAsteroidField() {
+    // instanced
+    const n = 600;
+    const mesh = ExtractMeshes(this.getAsset('rock'))[0];
+    const instanced = new THREE.InstancedMesh(
+      mesh.geometry, mesh.material, n
+    );
+
+    // transforms
+    const _tmp = new THREE.Object3D();
+    const range = (a, b) => a + Math.random() * (b - a);
+    for (let i=0; i<n; i++) {
+      const distance = range(200, 2500);
+      const scale = range(0.1, 20);
+      _tmp.position.copy(
+        new THREE.Vector3(
+          Math.random() * 2 - 1,
+          Math.random() * 2 - 1,
+          Math.random() * 2 - 1
+        ).normalize().multiplyScalar( distance )
+      );
+      _tmp.scale.setScalar(scale);
+      _tmp.rotation.set(
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI,
+        Math.random() * 2 * Math.PI
+      );
+      _tmp.updateMatrix();
+      
+      // set matrix
+      instanced.setMatrixAt(i, _tmp.matrix);
+    }
+
+    // add to scene
+    this._distantBackground = new THREE.Group();
+    this._distantBackground.add(instanced);
+    this._addToScene(this._distantBackground);
+  }
+
   /** create instanced meshes */
-  _createInstancedMeshes(group, transforms) {
+  _createInstancedMeshes(group, transforms, shadows=true) {
     // create instanced meshes
     const instanced = {};
     group.traverse(child => {
       if (child.isMesh) {
         const mesh = new THREE.InstancedMesh(
           child.geometry, child.material, transforms.length);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true; 
+        if (shadows) {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true; 
+        }
         instanced[child.name] = mesh;
         this._addToScene(mesh);
       }
@@ -115,6 +160,11 @@ class Overworld extends SceneNode {
         instanced[key].setMatrixAt(i, _tmp.matrix);
       }
     });
+  }
+
+  _update(delta) {
+    this._distantBackground.rotation.y += 
+      delta * Config.Graphics.backgroundRotation * 0.1;
   }
 }
 

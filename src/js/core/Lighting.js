@@ -251,10 +251,12 @@ class Lighting extends SceneNode {
           light.shadow.shadowNode = new CSMShadowNode(light, {
             cascades: conf.shadow.csmCascades ?? 3,
             maxFar: conf.shadow.csmMaxFar ?? 100,
-            mode: conf.shadow.csmMode ?? 'practical',
-            fade: conf.shadow.csmFade ?? false,
-          });;
+            mode: conf.shadow.csmMode ?? 'practical'
+          });
+          light.shadow.shadowNode.fade = conf.shadow.csmFade ?? false;
           this.shadowLights.push(light);
+
+          console.log( conf.shadow, light.shadow.shadowNode );
         }
 
         // add to scene
