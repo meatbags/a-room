@@ -27,8 +27,8 @@ import Room_12 from '../scenes/Room_12';
 import Room_13 from '../scenes/Room_13';
 
 const FALL_THRESHOLD = -32;
-const RESET_POSITION = {x:0, y:0.125, z:96};
-const RESET_DIRECTION = {pitch:0, yaw:0};
+const RESET_POSITION = { x: 3.3125, y: 0.25, z: 92.725 };
+const RESET_DIRECTION = {pitch: 0.06, yaw: 2.35 };
 
 class Game extends SceneNode {
   constructor() {

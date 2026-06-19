@@ -2,7 +2,7 @@
 
 import { SceneNode, Blend } from 'engine';
 
-const ATMOS_GAIN = 0.1;
+const ATMOS_GAIN = 0.5;
 
 class Music extends SceneNode {
   constructor() {

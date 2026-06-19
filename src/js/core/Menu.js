@@ -28,11 +28,16 @@ export default class Menu extends SceneNode {
         },
         'controls': () => overlay.openScreen('controls'),
         'credits': () => overlay.openScreen('credits'),
+        'reset demo': () => {
+          localStorage.clear();
+          window.location.reload();
+        },
       },
     });
     overlay.createScreen('controls', {
       title: 'controls',
       content: `
+        interact ~ <span>e</span><br>
         pan camera ~ <span>mouse</span><br>
         move ~ <span>wsad</span> or <span>arrow keys</span><br>
         sprint ~ <span>hold shift</span><br>
