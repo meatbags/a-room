@@ -13,6 +13,7 @@ class Overworld extends SceneNode {
     this.load('collision', './models/overworld/collision.fbx');
     this.load('platform', './models/overworld/platform.fbx');
     this.load('bridge', './models/overworld/bridge.fbx');
+    this.load('bridge_covered', './models/overworld/bridge_covered.fbx');
     this.load('pylon', './models/overworld/pylon.fbx');
     this.load('rock', './models/overworld/rock.fbx');
 
@@ -71,12 +72,8 @@ class Overworld extends SceneNode {
     const halfPi = Math.PI / 2;
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const transforms = [
-      [ new THREE.Vector3(24, 0, 0), halfPi],
       [ new THREE.Vector3(72, 0, 0), halfPi],
-      [ new THREE.Vector3(-24, 0, 0), halfPi],
       [ new THREE.Vector3(-72, 0, 0), halfPi],
-      [ new THREE.Vector3(0, 0, 24), 0],
-      [ new THREE.Vector3(0, 0, -24), 0],
       [ new THREE.Vector3(0, 0, 72), 0],
       [ new THREE.Vector3(0, 0, -72), 0],
       [ new THREE.Vector3(-48, 0, 24), 0],
@@ -85,9 +82,16 @@ class Overworld extends SceneNode {
       [ new THREE.Vector3(24, 0, -48), halfPi],
       [ new THREE.Vector3(-24, 0, -48), halfPi]
     ];
+    const transforms2 = [
+      [ new THREE.Vector3(24, 0, 0), halfPi],
+      [ new THREE.Vector3(-24, 0, 0), halfPi],
+      [ new THREE.Vector3(0, 0, 24), 0],
+      [ new THREE.Vector3(0, 0, -24), 0],
+    ];
 
-    // create bridge
-    this._createInstancedMeshes(this.getAsset('bridge'), transforms);   
+    // create bridges
+    this._createInstancedMeshes(this.getAsset('bridge'), transforms);
+    this._createInstancedMeshes(this.getAsset('bridge_covered'), transforms2);
   }
 
   /** create asteroid field */

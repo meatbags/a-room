@@ -20,12 +20,15 @@ class Socket extends SceneNode {
   _init() {
     // helper
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 32, 32), 
+      new THREE.SphereGeometry(0.375, 32, 32), 
       new THREE.MeshPhysicalMaterial({
         color:0xFF0000,
-        opacity:1,
-        transmission: 1,
-        thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
+        transparent: true,
+        opacity: 0.5,
+        emissive: 0xFF0000,
+        emissiveIntensity: 0.25,
+       // transmission: 1,
+       // thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
 				metalness: 0,
 				roughness: 0,
         ior: 1.25,

@@ -6,6 +6,7 @@ import ExtractMeshes from '../util/ExtractMeshes';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
+import LOD from '../util/LOD';
 
 class Room extends SceneNode {
   constructor(props={}) {
@@ -19,6 +20,7 @@ class Room extends SceneNode {
     // load models
     if (props.map) this.load('map', props.map);
     if (props.collisionMap) this.load('collision', props.collisionMap);
+    if (props.mapLow) this.load('lowpoly', props.mapLow);
 
     // create state
     const state = {};
@@ -34,6 +36,7 @@ class Room extends SceneNode {
   _init() {
     // add cosmetic map
     const map = this.getAsset('map');
+    const lowpoly = this.getAsset('lowpoly');
     if (map) {
       ExtractMeshes( map ).forEach(mesh => {
         mesh.castShadow = true;
@@ -41,6 +44,21 @@ class Room extends SceneNode {
       });
       map.position.copy( this._position );
       this._addToScene( map );
+
+      // add lowpoly LOD
+      if (lowpoly) {
+        ExtractMeshes( lowpoly ).forEach(mesh => {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        });
+        lowpoly.position.copy( this._position );
+        this._addToScene( lowpoly );
+
+        // create LOD
+        this._lod = new LOD( this._position );
+        this._lod.addLevel( map, 0 );
+        this._lod.addLevel( lowpoly, 48 );
+      }
     }
 
     // add collision map

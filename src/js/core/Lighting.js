@@ -255,8 +255,7 @@ class Lighting extends SceneNode {
           });
           light.shadow.shadowNode.fade = conf.shadow.csmFade ?? false;
           this.shadowLights.push(light);
-
-          console.log( conf.shadow, light.shadow.shadowNode );
+          // console.log( conf.shadow, light.shadow.shadowNode );
         }
 
         // add to scene

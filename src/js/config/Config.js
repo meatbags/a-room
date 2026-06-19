@@ -93,5 +93,7 @@ export default {
     localClippingEnabled: false,
     useWebGPU: true,
     useShadows: true,
+    width: 1440,
+    height: 810,
   },
 };

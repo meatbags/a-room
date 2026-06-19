@@ -8,7 +8,7 @@ class MenuAnimation extends SceneNode {
     super({ name: 'MenuAnimation' });
     this._active = false;
     this._age = 0;
-    this._phase = Math.PI * 0.5;
+    this._phase = Math.PI * 0.25;
     this._rotationSpeed = 0.0008;
     this._distance = 400;
     this._y = -50;

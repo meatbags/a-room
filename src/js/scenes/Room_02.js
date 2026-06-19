@@ -33,7 +33,17 @@ class Room_02 extends Room {
     super._init();
 
     // indicator
-    this._indicator = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), new THREE.MeshBasicMaterial({color:0xFFFFFF}));
+    const light = new THREE.Mesh(
+      new THREE.BoxGeometry(0.125, 0.125, 0.125),
+      new THREE.MeshBasicMaterial({color:0xFF0000})
+    );
+    light.position.set(1.25, 1.75, -4.5).add(this._position);
+    this._addToScene(light);
+    this._indicator = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 2.25, 0.5),
+      new THREE.MeshBasicMaterial({color:0xFF0000, transparent: true, opacity: 0.75})
+    );
+    this._indicator.geometry.translate(0, -1, 0);
     this._indicator.position.set(1.25, 0.25, -4.5).add(this._position);
     this._indicatorTarget = this._indicator.position.y;
     this._addToScene(this._indicator);

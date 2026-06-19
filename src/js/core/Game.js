@@ -14,6 +14,17 @@ import SharedAssets from '../objects/SharedAssets';
 import Overworld from '../scenes/Overworld';
 import Room_01 from '../scenes/Room_01';
 import Room_02 from '../scenes/Room_02';
+import Room_03 from '../scenes/Room_03';
+import Room_04 from '../scenes/Room_04';
+import Room_05 from '../scenes/Room_05';
+import Room_06 from '../scenes/Room_06';
+import Room_07 from '../scenes/Room_07';
+import Room_08 from '../scenes/Room_08';
+import Room_09 from '../scenes/Room_09';
+import Room_10 from '../scenes/Room_10';
+import Room_11 from '../scenes/Room_11';
+import Room_12 from '../scenes/Room_12';
+import Room_13 from '../scenes/Room_13';
 
 const FALL_THRESHOLD = -32;
 const RESET_POSITION = {x:0, y:0.125, z:96};
@@ -38,6 +49,17 @@ class Game extends SceneNode {
     // individual rooms
     this.add( new Room_01() );
     this.add( new Room_02() );
+    this.add( new Room_03() );
+    this.add( new Room_04() );
+    this.add( new Room_05() );
+    this.add( new Room_06() );
+    this.add( new Room_07() );
+    this.add( new Room_08() );
+    this.add( new Room_09() );
+    this.add( new Room_10() );
+    this.add( new Room_11() );
+    this.add( new Room_12() );
+    this.add( new Room_13() );
   }
 
   _init() {
