@@ -4,20 +4,21 @@ import { SceneNode } from 'engine';
 import * as THREE from 'three';
 
 class SharedAssets extends SceneNode {
-  static _inst = null;
+  static _instance = null;
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
 
     this.load('ball', './models/interactive/sphere.fbx');
     this.load('terminal', './models/interactive/terminal.fbx');
+    this.load('data_stick', './models/interactive/data_stick.fbx');
 
-    SharedAssets._inst = this;
+    SharedAssets._instance = this;
   }
 
   /** request asset */
   static requestAsset( name ) {
-    const asset = SharedAssets._inst.getAsset(name);
+    const asset = SharedAssets._instance.getAsset(name);
     if (!asset) {
       return null;
     }
@@ -35,12 +36,21 @@ class SharedAssets extends SceneNode {
 
   /** deep clone material -- nb: forces rebuild */
   static deepCloneMaterial( material ) {
+    if (Array.isArray(material)) {
+      return SharedAssets.deepCloneMaterialArray(material);
+    }
     const clone = new ( material.constructor )();
     for (const key in material) {
       if (clone[key] !== undefined) {
         clone[key] = material[key];
       }
     }
+    return clone;
+  }
+
+  /** material array */
+  static deepCloneMaterialArray(materials) {
+    const clone = materials.map(mat => SharedAssets.deepCloneMaterial(mat));
     return clone;
   }
 }

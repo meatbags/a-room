@@ -3,11 +3,12 @@
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
+import LOD from '../util/LOD';
 import Ball from './Ball';
+import DataStick from './DataStick';
+import Door from './Door';
 import Socket from './Socket';
 import Terminal from './Terminal';
-import Door from '../objects/Door';
-import LOD from '../util/LOD';
 
 class Room extends SceneNode {
   constructor(props={}) {
@@ -77,7 +78,7 @@ class Room extends SceneNode {
         const position = new THREE.Vector3().fromArray(p).add(this._position);
         const ball = new Ball({ name, position });
         this._map[name] = ball;
-        this.add(ball);
+        this.add( ball );
       });
     }
 
@@ -91,7 +92,7 @@ class Room extends SceneNode {
         socket.addEventListener('attach', () => this.setState({ [state]: 1 }));
         socket.addEventListener('detach', () => this.setState({ [state]: 0 }));
         this._map[name] = socket;
-        this.add(socket);
+        this.add( socket );
       });
     }
 
@@ -116,6 +117,19 @@ class Room extends SceneNode {
         const terminal = new Terminal({ name, position, rotation });
         this._map[name] = terminal;
         this.add( terminal );
+      });
+    }
+
+    // add data sticks
+    if (this._manifest.dataSticks) {
+      this._manifest.dataSticks.forEach((prt, i) => {
+        const name = `${this.name}_DataStick_${i}`;
+        const position = new THREE.Vector3().fromArray(prt[0]).add(this._position);
+        // const rotation = new THREE.Euler().fromArray(prt[1]);
+        const text = prt[1];
+        const dataStick = new DataStick({ name, position, text });
+        this._map[name] = dataStick;
+        this.add( dataStick );
       });
     }
   }
