@@ -84,9 +84,9 @@ class Overworld extends SceneNode {
     ];
     const transforms2 = [
       [ new THREE.Vector3(24, 0, 0), halfPi],
-      [ new THREE.Vector3(-24, 0, 0), halfPi],
+      [ new THREE.Vector3(-24, 0, 0), halfPi * 3],
       [ new THREE.Vector3(0, 0, 24), 0],
-      [ new THREE.Vector3(0, 0, -24), 0],
+      [ new THREE.Vector3(0, 0, -24), Math.PI],
     ];
 
     // create bridges

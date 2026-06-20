@@ -10,6 +10,7 @@ class SharedAssets extends SceneNode {
     super({ name: 'SharedAssets' });
 
     this.load('ball', './models/interactive/sphere.fbx');
+    this.load('terminal', './models/interactive/terminal.fbx');
 
     SharedAssets._inst = this;
   }

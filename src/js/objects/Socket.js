@@ -27,8 +27,6 @@ class Socket extends SceneNode {
         opacity: 0.5,
         emissive: 0xFF0000,
         emissiveIntensity: 0.25,
-       // transmission: 1,
-       // thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
 				metalness: 0,
 				roughness: 0,
         ior: 1.25,
@@ -80,13 +78,39 @@ class Socket extends SceneNode {
 
   /** get attached ball */
   fromJSON(json) {
+    // detach existing
+    if (this.hasAttached()) {
+      this._attached.detach( this );
+    }
+
+    // attach existing
     if (json.attached) {
+      const sockets = [];
+      let ball = null;
       SceneNode.getSceneNode('Game').traverse(child => {
-        if (child.isBall && child.carryable.name === json.attached) {
-          child.attach(this, true);
+        if (child.isSocket) {
+          sockets.push(child);
+        }
+        if (child.isBall && child.name === json.attached) {
+          ball = child;
         }
       });
+      if (ball) {
+        sockets.forEach(socket => {
+          if (
+            socket.name !== this.name && 
+            socket.hasAttached() && 
+            socket.attached.name === ball.name
+          ) {
+            ball.detach( socket );
+          }
+        });
+        ball.attach(this, true);
+      }
     }
+
+    // set state
+    this.setState({ attached: json.attached ?? null });
   }
 }
 

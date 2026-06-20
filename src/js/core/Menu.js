@@ -49,7 +49,7 @@ export default class Menu extends SceneNode {
     });
     overlay.createScreen('credits', {
       title: 'credits',
-      content: `[ credits ]`,
+      content: `a game by Xavier Burrow`,
       buttons: {
         '&larr; back': () => overlay.openScreen('home'),
       }

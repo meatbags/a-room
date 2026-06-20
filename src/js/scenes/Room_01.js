@@ -21,7 +21,7 @@ class Room_01 extends Room {
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
         sockets: [ [-2, 0.55, -2] ],
-        doors: [ [[0, 4, -5], [2, 8, 0.25] ] ], 
+        doors: [ [[0, 4, -5], [2, 8, 0.25] ] ],
       }
     });
   }

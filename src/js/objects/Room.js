@@ -3,8 +3,9 @@
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
-import Ball from '../objects/Ball';
-import Socket from '../objects/Socket';
+import Ball from './Ball';
+import Socket from './Socket';
+import Terminal from './Terminal';
 import Door from '../objects/Door';
 import LOD from '../util/LOD';
 
@@ -85,7 +86,7 @@ class Room extends SceneNode {
       this._manifest.sockets.forEach((p, i) => {
         const name = `${this.name}_Socket_${i+1}`;
         const state = `power${i+1}`;
-        const position = new THREE.Vector3().fromArray(p).add(this._position);
+        const position = new THREE.Vector3().fromArray([p[0], p[1], p[2]]).add(this._position);
         const socket = new Socket({ name, position });
         socket.addEventListener('attach', () => this.setState({ [state]: 1 }));
         socket.addEventListener('detach', () => this.setState({ [state]: 0 }));
@@ -103,6 +104,18 @@ class Room extends SceneNode {
         const door = new Door({ name, position, size });
         this._map[name] = door;
         this.add( door );
+      });
+    }
+
+    // add terminals
+    if (this._manifest.terminals) {
+      this._manifest.terminals.forEach((pr, i) => {
+        const name = `${this.name}_Terminal_${i}`;
+        const position = new THREE.Vector3().fromArray(pr[0]).add(this._position);
+        const rotation = pr[1];
+        const terminal = new Terminal({ name, position, rotation });
+        this._map[name] = terminal;
+        this.add( terminal );
       });
     }
   }

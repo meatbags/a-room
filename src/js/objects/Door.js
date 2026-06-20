@@ -43,6 +43,12 @@ class Door extends SceneNode {
     this._collider = collider;
   }
 
+  /** util: set state */
+  setOpen(open) {
+    if (open) this.open();
+    else this.close();
+  }
+
   /** open door */
   open() {
     this._mesh.visible = false;

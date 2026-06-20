@@ -31,11 +31,11 @@ class Ball extends SceneNode {
     }
 
     // make carryable
-    this._carryable = new Carryable({ 
+    this._carryable = new Carryable({
       mesh: this._mesh,
       onCarry: () => {
         Ball.socketCache.forEach(socket => {
-          if (socket.hasAttached() && socket.attached.id === this._carryable.id) {
+          if (socket.hasAttached() && socket.attached.name === this.name) {
             this.detach(socket);
           }
         });
@@ -62,7 +62,7 @@ class Ball extends SceneNode {
 
   /** attach to socket */
   attach(socket, warp=false) {
-    socket.attach( this._carryable );
+    socket.attach( this );
     this._carryable.attach( socket.position, null, true );
     if (warp) {
       this._carryable.warp( socket.position );
@@ -71,6 +71,7 @@ class Ball extends SceneNode {
     this._emissiveTarget = 1;
   }
 
+  /** detach */
   detach( socket ) {
     socket.detach();
     this._emissiveTarget = 0;
