@@ -1,10 +1,11 @@
 /** Room base class */
 
-import { SceneNode } from 'engine';
+import { SceneNode, Ladder } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import LOD from '../util/LOD';
 import Ball from './Ball';
+import Button from './Button';
 import DataStick from './DataStick';
 import Door from './Door';
 import Socket from './Socket';
@@ -28,7 +29,12 @@ class Room extends SceneNode {
     const state = {};
     if (this._manifest.sockets) {
       this._manifest.sockets.forEach((_, i) => {
-        state[`power${i+1}`] = 0;
+        state[`power_${i+1}`] = 0;
+      });
+    }
+    if (this._manifest.buttons) {
+      this._manifest.buttons.forEach((_, i) => {
+        state[`button_${i+1}`] = 0;
       });
     }
     this.createState(state);
@@ -86,13 +92,30 @@ class Room extends SceneNode {
     if (this._manifest.sockets) {
       this._manifest.sockets.forEach((p, i) => {
         const name = `${this.name}_Socket_${i+1}`;
-        const state = `power${i+1}`;
+        const state = `power_${i+1}`;
         const position = new THREE.Vector3().fromArray([p[0], p[1], p[2]]).add(this._position);
         const socket = new Socket({ name, position });
         socket.addEventListener('attach', () => this.setState({ [state]: 1 }));
         socket.addEventListener('detach', () => this.setState({ [state]: 0 }));
         this._map[name] = socket;
         this.add( socket );
+      });
+    }
+
+    // add buttons
+    if (this._manifest.buttons) {
+      this._manifest.buttons.forEach((p, i) => {
+        const name = `${this.name}_Button_${i+1}`;
+        const state = `button_${i+1}`;
+        const position = new THREE.Vector3().fromArray([p[0], p[1], p[2]]).add(this._position);
+        const size = p.length > 3 ? p[3] : 0.125;
+        const button = new Button({ name, position, size });
+        button.addEventListener('press', () => {
+          const current = this.getState( state );
+          this.setState({ [state]: current == 1 ? 0 : 1 });
+        });
+        this._map[name] = button;
+        this.add( button );
       });
     }
 
@@ -130,6 +153,20 @@ class Room extends SceneNode {
         const dataStick = new DataStick({ name, position, text });
         this._map[name] = dataStick;
         this.add( dataStick );
+      });
+    }
+
+    // add ladders
+    if (this._manifest.ladders) {
+      this._manifest.ladders.forEach((item, i) => {
+        const name = `${this.name}_Ladder_${i+1}`;
+        const position = new THREE.Vector3().fromArray(item[0]).add(this._position);
+        const normal = new THREE.Vector3().fromArray(item[1]);
+        const width = item[2][0];
+        const height = item[2][1];
+        const ladder = new Ladder({ position, normal, width, height });
+        this._map[name] = ladder;
+        this.add( ladder );
       });
     }
   }

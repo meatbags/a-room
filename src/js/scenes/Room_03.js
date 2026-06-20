@@ -48,10 +48,10 @@ class Room_03 extends Room {
     const state = this.getState();
 
     // set doors
-    this._map.Room_03_Door_1.setOpen( state.power1 == 1 );
-    this._map.Room_03_Door_2.setOpen( state.power2 == 1 );
-    this._map.Room_03_Door_3.setOpen( state.power3 == 1 );
-    this._map.Room_03_Door_4.setOpen( state.power4 == 1 );
+    this._map.Room_03_Door_1.setOpen( state.power_1 == 1 );
+    this._map.Room_03_Door_2.setOpen( state.power_2 == 1 );
+    this._map.Room_03_Door_3.setOpen( state.power_3 == 1 );
+    this._map.Room_03_Door_4.setOpen( state.power_4 == 1 );
   }  
 }
 

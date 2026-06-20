@@ -54,7 +54,7 @@ class Room_01 extends Room {
 
   _onStateChanged(changed) {
     const state = this.getState();
-    if (state.power1) {
+    if (state.power_1) {
       this._map.Room_01_Door_1.open();
     } else {
       this._map.Room_01_Door_1.close();

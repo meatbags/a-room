@@ -57,19 +57,19 @@ class Room_02 extends Room {
     // progression ladder
     switch (state.progression) {
       case 0: 
-        if (state.power2) this.setState({ progression: 1 });
+        if (state.power_2) this.setState({ progression: 1 });
         door.close();
         break;
       case 1: 
-        if (state.power3) this.setState({ progression: 2 });
-        else if ( !state.power2 ) this.setState({ progression: 0 });
+        if (state.power_3) this.setState({ progression: 2 });
+        else if ( !state.power_2 ) this.setState({ progression: 0 });
         door.close();
         break;
       case 2:
-        if (state.power3 && state.power1) {
+        if (state.power_3 && state.power_1) {
           door.open();
         } else {
-          if (!state.power3) this.setState({ progression: 0 });
+          if (!state.power_3) this.setState({ progression: 0 });
           door.close();
         } 
         break;

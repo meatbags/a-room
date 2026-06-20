@@ -64,7 +64,7 @@ class DataStick extends SceneNode {
           ! keyboard.isKeyDown('e')
         ) return;
         this._displayMessage();
-      })
+      });
   }
 
   /** create prompt */
