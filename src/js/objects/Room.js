@@ -93,8 +93,9 @@ class Room extends SceneNode {
       this._manifest.sockets.forEach((p, i) => {
         const name = `${this.name}_Socket_${i+1}`;
         const state = `power_${i+1}`;
-        const position = new THREE.Vector3().fromArray([p[0], p[1], p[2]]).add(this._position);
-        const socket = new Socket({ name, position });
+        const position = new THREE.Vector3().fromArray( p[0] ).add(this._position);
+        const orientation = new THREE.Vector3().fromArray( p[1] );
+        const socket = new Socket({ name, position, orientation });
         socket.addEventListener('attach', () => this.setState({ [state]: 1 }));
         socket.addEventListener('detach', () => this.setState({ [state]: 0 }));
         this._map[name] = socket;
