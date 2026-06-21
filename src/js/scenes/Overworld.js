@@ -12,7 +12,7 @@ class Overworld extends SceneNode {
     this.load('background', './models/overworld/background.fbx');
     this.load('collision', './models/overworld/collision.fbx');
     this.load('platform', './models/overworld/platform.fbx');
-    this.load('bridge', './models/overworld/bridge.fbx');
+    this.load('bridge', './models/overworld/bridge_alt.fbx');
     this.load('bridge_covered', './models/overworld/bridge_covered.fbx');
     this.load('pylon', './models/overworld/pylon.fbx');
     this.load('rock', './models/overworld/rock.fbx');
