@@ -23,6 +23,7 @@ class Ball extends SceneNode {
     const asset = SharedAssets.requestAsset('ball');
     this._mesh = ExtractMeshes( asset )[0];
     this._mesh.position.copy(this._position);
+    this._mesh.userData.isDynamic = true;
     this._mesh.castShadow = true;
 
     // build socket cache once
@@ -99,12 +100,14 @@ class Ball extends SceneNode {
     }
 
     /** update emissive */
+    /*
     if (this._mesh.material.emissiveIntensity !== this._emissiveTarget) {
       this._mesh.material.emissiveIntensity += (this._emissiveTarget - this._mesh.material.emissiveIntensity) * 0.05;
       if (Math.abs(this._emissiveTarget - this._mesh.material.emissiveIntensity) < 0.001) {
         this._mesh.material.emissiveIntensity = this._emissiveTarget;
       }
     }
+    */
   }
 
   /** get carryable */

@@ -15,7 +15,6 @@ class Room_02 extends Room {
       name: 'Room_02',
       map: './models/rooms/room-02.fbx',
       collisionMap: './models/rooms/room-02-collision.fbx',
-      mapLow: './models/rooms/room-02-low.fbx',
       position: new THREE.Vector3(0, 0, 48),
       manifest: {
         balls: [ [3.5, 1.5, 0], [ -3.5, 0.25, 2.5 ] ],

@@ -21,17 +21,17 @@ class Door extends SceneNode {
     if ( ! Door.sharedMaterial ) {
       Door.sharedMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xFF0000,
-        transparent: false,
-        opacity: 0.5,
-        transmission: 1,
-        thickness: 1,
-        thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
-        metalness: 0,
-        roughness: 0,
-        ior: 1.25,
+        //transparent: false,
+        //opacity: 0.5,
+        //transmission: 1,
+        //thickness: 1,
+        //thicknessMap: new THREE.TextureLoader().load('./images/Concrete_Base_02/Concrete_Base_02_Base_Color.jpg'),
+        metalness: 1,
+        roughness: .25,
+        //ior: 1.25,
       });
-      Door.sharedMaterial.thicknessMap.wrapS = THREE.RepeatWrapping;
-      Door.sharedMaterial.thicknessMap.wrapT = THREE.RepeatWrapping;
+      //Door.sharedMaterial.thicknessMap.wrapS = THREE.RepeatWrapping;
+      //Door.sharedMaterial.thicknessMap.wrapT = THREE.RepeatWrapping;
       Door.sharedLODMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
       this._updateSharedMaterial = true;
     }

@@ -26,11 +26,13 @@ class SharedAssets extends SceneNode {
 
     // clone asset & materials
     const clone = asset.clone();
+    /*
     clone.traverse(child => {
       if (child.material) {
         child.material = SharedAssets.deepCloneMaterial(child.material);
       }
     });
+    */
 
     return clone;
   }

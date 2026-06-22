@@ -12,6 +12,8 @@ import Socket from './Socket';
 import Terminal from './Terminal';
 
 class Room extends SceneNode {
+  static ACTIVE_DISTANCE = 32;
+
   constructor(props={}) {
     super({ name: props.name ?? 'Room' });
 
@@ -175,6 +177,14 @@ class Room extends SceneNode {
   /** override this */
   _onStateChanged() {
     console.log(this.state);
+  }
+
+  /** override - check should update */
+  update(delta) {
+    const p = SceneNode.getSceneNode('Player').getPosition();
+    if ( Math.abs(p.x-this._position.x) + Math.abs(p.z-this._position.z) < Room.ACTIVE_DISTANCE ) {
+      super.update(delta);
+    }
   }
 }
 

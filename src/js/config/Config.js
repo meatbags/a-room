@@ -10,7 +10,7 @@ const getPointLight = () => {
 
 export default {
   Camera: {
-    fov: 60,
+    fov: 70,
     near: 0.1,
     far: 10000,
   },

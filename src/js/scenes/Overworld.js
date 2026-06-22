@@ -9,8 +9,8 @@ class Overworld extends SceneNode {
   constructor() {
     super({ name: 'Overworld' });
 
-    // load models
-    [
+    // load assets
+    this._assetList = [
       'background',
       'collision',
       'platform',
@@ -18,10 +18,13 @@ class Overworld extends SceneNode {
       'bridge_large_alt',
       'module_circular',
       'module_circular_blank',
+      'module_triangular',
       'module_roof_circular',
+      'module_roof_triangular',
       'pylon',
       'rock'
-    ].forEach(key => {
+    ];
+    this._assetList.forEach(key => {
       this.load(key, `./models/overworld/${key}.fbx`);
     })
 
@@ -55,11 +58,8 @@ class Overworld extends SceneNode {
   /** create modules */
   createModules() {
     // manifest
-    const manifest = {
-      module_circular: [],
-      module_circular_blank: [],
-      module_roof_circular: [],
-    };
+    const manifest = {};
+    this._assetList.forEach(key => manifest[key] = []);
 
     // room 01
     manifest.module_circular.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
@@ -67,8 +67,8 @@ class Overworld extends SceneNode {
     manifest.module_roof_circular.push( [ new THREE.Vector3(0, 16, 96), 0 ] );
 
     // room 02
-    manifest.module_circular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
+    manifest.module_triangular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
+    manifest.module_roof_triangular.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
 
     // room 03
     manifest.module_circular.push( [ new THREE.Vector3(0, 0, 0), 0 ] );
@@ -76,8 +76,12 @@ class Overworld extends SceneNode {
     manifest.module_circular_blank.push( [ new THREE.Vector3(0, 16, 0), 0 ] );
     manifest.module_roof_circular.push( [ new THREE.Vector3(0, 24, 0), 0 ] );
 
+    // room 04
+    manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
+
     // create modules
     for (const key in manifest) {
+      if ( ! manifest[key].length ) continue;
       this._createInstancedMeshes(this.getAsset(key), manifest[key]);
     }
   }
