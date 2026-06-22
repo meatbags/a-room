@@ -48,6 +48,7 @@ class Game extends SceneNode {
 
     // individual rooms
     this.add( new Room_01() );
+    /*
     this.add( new Room_02() );
     this.add( new Room_03() );
     this.add( new Room_04() );
@@ -60,6 +61,7 @@ class Game extends SceneNode {
     this.add( new Room_11() );
     this.add( new Room_12() );
     this.add( new Room_13() );
+    */
   }
 
   _init() {

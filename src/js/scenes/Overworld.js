@@ -9,13 +9,21 @@ class Overworld extends SceneNode {
   constructor() {
     super({ name: 'Overworld' });
 
-    this.load('background', './models/overworld/background.fbx');
-    this.load('collision', './models/overworld/collision.fbx');
-    this.load('platform', './models/overworld/platform.fbx');
-    this.load('bridge', './models/overworld/bridge_alt.fbx');
-    this.load('bridge_large', './models/overworld/bridge_large_alt.fbx');
-    this.load('pylon', './models/overworld/pylon.fbx');
-    this.load('rock', './models/overworld/rock.fbx');
+    // load models
+    [
+      'background',
+      'collision',
+      'platform',
+      'bridge_alt',
+      'bridge_large_alt',
+      'module_circular',
+      'module_circular_blank',
+      'module_roof_circular',
+      'pylon',
+      'rock'
+    ].forEach(key => {
+      this.load(key, `./models/overworld/${key}.fbx`);
+    })
 
     // instance ref
     this._instances = {};
@@ -38,9 +46,40 @@ class Overworld extends SceneNode {
 
 
     // bridge instanced
+    this.createModules();
     this.createPlatforms();
     this.createBridges();
     this.createAsteroidField();
+  }
+
+  /** create modules */
+  createModules() {
+    // manifest
+    const manifest = {
+      module_circular: [],
+      module_circular_blank: [],
+      module_roof_circular: [],
+    };
+
+    // room 01
+    manifest.module_circular.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 96), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 16, 96), 0 ] );
+
+    // room 02
+    manifest.module_circular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
+
+    // room 03
+    manifest.module_circular.push( [ new THREE.Vector3(0, 0, 0), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 0), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(0, 16, 0), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 24, 0), 0 ] );
+
+    // create modules
+    for (const key in manifest) {
+      this._createInstancedMeshes(this.getAsset(key), manifest[key]);
+    }
   }
 
   /** create platforms */
@@ -90,8 +129,8 @@ class Overworld extends SceneNode {
     ];
 
     // create bridges
-    this._createInstancedMeshes(this.getAsset('bridge'), transforms);
-    this._createInstancedMeshes(this.getAsset('bridge_large'), transforms2);
+    this._createInstancedMeshes(this.getAsset('bridge_alt'), transforms);
+    this._createInstancedMeshes(this.getAsset('bridge_large_alt'), transforms2);
   }
 
   /** create asteroid field */
