@@ -19,8 +19,10 @@ class Overworld extends SceneNode {
       'module_circular',
       'module_circular_blank',
       'module_triangular',
+      'module_square',
       'module_roof_circular',
       'module_roof_triangular',
+      'module_roof_square',
       'pylon',
       'rock'
     ];
