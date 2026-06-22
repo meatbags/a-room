@@ -13,7 +13,7 @@ class Overworld extends SceneNode {
     this.load('collision', './models/overworld/collision.fbx');
     this.load('platform', './models/overworld/platform.fbx');
     this.load('bridge', './models/overworld/bridge_alt.fbx');
-    this.load('bridge_covered', './models/overworld/bridge_covered.fbx');
+    this.load('bridge_large', './models/overworld/bridge_large_alt.fbx');
     this.load('pylon', './models/overworld/pylon.fbx');
     this.load('rock', './models/overworld/rock.fbx');
 
@@ -91,7 +91,7 @@ class Overworld extends SceneNode {
 
     // create bridges
     this._createInstancedMeshes(this.getAsset('bridge'), transforms);
-    this._createInstancedMeshes(this.getAsset('bridge_covered'), transforms2);
+    this._createInstancedMeshes(this.getAsset('bridge_large'), transforms2);
   }
 
   /** create asteroid field */
@@ -143,7 +143,9 @@ class Overworld extends SceneNode {
         const mesh = new THREE.InstancedMesh(
           child.geometry, child.material, transforms.length);
         if (shadows) {
-          mesh.castShadow = true;
+          if (Overworld.shouldCastShadow(child.material)) {
+            mesh.castShadow = true;
+          }
           mesh.receiveShadow = true; 
         }
         instanced[child.name] = mesh;
@@ -169,6 +171,20 @@ class Overworld extends SceneNode {
   _update(delta) {
     this._distantBackground.rotation.y += 
       delta * Config.Graphics.backgroundRotation * 0.1;
+  }
+
+  /** util: check material should cast shadows */
+  static shouldCastShadow(material) {
+    if (Array.isArray(material)) {
+      for (let i=0; i<material.length; i++) {
+        if ( ! Overworld.shouldCastShadow(material[i]) ) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return material.transparent == false && 
+      material.transmission == 0;
   }
 }
 
