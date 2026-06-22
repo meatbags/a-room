@@ -26,7 +26,6 @@ class Door extends SceneNode {
         metalness: 0,
         roughness: 0,
         ior: 1.25,
-        side: THREE.BackSide,
       });
       this._updateSharedMaterial = true;
     }

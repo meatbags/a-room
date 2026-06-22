@@ -33,7 +33,7 @@ class DataStick extends SceneNode {
     this._group.position.copy(this._position);
     this._group.rotation.copy(this._rotation);
     this._addToScene(this._group);
-    console.log(this._group);
+    // console.log(this._group);
 
     // hoverable
     const box = new THREE.Mesh(

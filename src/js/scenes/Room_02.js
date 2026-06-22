@@ -28,6 +28,7 @@ class Room_02 extends Room {
       },
     });
 
+    // extend state
     this.createState({
       ...(this.getState() || {}),
       progression: 0,
