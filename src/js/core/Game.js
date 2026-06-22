@@ -52,9 +52,6 @@ class Game extends SceneNode {
     this.add( new Room_02() );
     this.add( new Room_03() );
     this.add( new Room_04() );
-
-    // optimisation
-    this.add( new Frustum() );
     /*
     this.add( new Room_05() );
     this.add( new Room_06() );
@@ -66,6 +63,9 @@ class Game extends SceneNode {
     this.add( new Room_12() );
     this.add( new Room_13() );
     */
+
+    // optimisation
+    //this.add( new Frustum() );
   }
 
   _init() {

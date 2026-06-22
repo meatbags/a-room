@@ -49,7 +49,6 @@ class Overworld extends SceneNode {
     });
     this._addToScene( background );
 
-
     // bridge instanced
     this.createModules();
     this.createPlatforms();
@@ -80,6 +79,8 @@ class Overworld extends SceneNode {
 
     // room 04
     manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
+    manifest.module_square.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
+    manifest.module_roof_square.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
 
     // create modules
     for (const key in manifest) {
@@ -214,8 +215,10 @@ class Overworld extends SceneNode {
   }
 
   _update(delta) {
-    this._distantBackground.rotation.y += 
-      delta * Config.Graphics.backgroundRotation * 0.1;
+    if (this._distantBackground) {
+      this._distantBackground.rotation.y += 
+        delta * Config.Graphics.backgroundRotation * 0.1;
+    }
   }
 
   /** util: check material should cast shadows */
