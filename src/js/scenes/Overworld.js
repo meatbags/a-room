@@ -3,6 +3,7 @@
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
+import CreateInstancedMeshes from '../util/CreateInstancedMeshes';
 import Config from '../config/Config';
 
 class Overworld extends SceneNode {
@@ -180,38 +181,12 @@ class Overworld extends SceneNode {
     this._addToScene(this._distantBackground);
   }
 
-  /** create instanced meshes */
+  /** util: create instanced meshes */
   _createInstancedMeshes(group, transforms, shadows=true) {
-    // create instanced meshes
-    const instanced = {};
-    group.traverse(child => {
-      if (child.isMesh) {
-        const mesh = new THREE.InstancedMesh(
-          child.geometry, child.material, transforms.length);
-        if (shadows) {
-          if (Overworld.shouldCastShadow(child.material)) {
-            mesh.castShadow = true;
-          }
-          mesh.receiveShadow = true; 
-        }
-        instanced[child.name] = mesh;
+    CreateInstancedMeshes(group, transforms.length, transforms, shadows)
+      .forEach(mesh => {
         this._addToScene(mesh);
-      }
-    });
-
-    // apply transforms
-    const _tmp = new THREE.Object3D();
-    transforms.forEach((t, i) => {
-      // set transform
-      _tmp.position.copy(t[0]);
-      _tmp.rotation.y = t[1];
-      _tmp.updateMatrix();
-      
-      // set matrix
-      for (const key in instanced) {
-        instanced[key].setMatrixAt(i, _tmp.matrix);
-      }
-    });
+      });
   }
 
   _update(delta) {
@@ -219,20 +194,6 @@ class Overworld extends SceneNode {
       this._distantBackground.rotation.y += 
         delta * Config.Graphics.backgroundRotation * 0.1;
     }
-  }
-
-  /** util: check material should cast shadows */
-  static shouldCastShadow(material) {
-    if (Array.isArray(material)) {
-      for (let i=0; i<material.length; i++) {
-        if ( ! Overworld.shouldCastShadow(material[i]) ) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return material.transparent == false && 
-      material.transmission == 0;
   }
 }
 

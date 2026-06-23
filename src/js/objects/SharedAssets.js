@@ -2,19 +2,39 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
+import CreateInstancedMeshes from '../util/CreateInstancedMeshes';
 
 class SharedAssets extends SceneNode {
   static _instance = null;
+  static _instancedMeshes = {};
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
 
-    this.load('ball', './models/interactive/sphere.fbx');
+    this.load('sphere', './models/interactive/sphere.fbx');
     this.load('socket', './models/interactive/socket.fbx');
     this.load('terminal', './models/interactive/terminal.fbx');
     this.load('data_stick', './models/interactive/data_stick.fbx');
 
     SharedAssets._instance = this;
+  }
+
+  /** create instanced geometry */
+  _afterInit() {
+    for (const key in SharedAssets._instancedMeshes) {
+      const asset = this.getAsset(key);
+      const n = SharedAssets._instancedMeshes[key];
+      const temp = [];
+      for (let i=0; i<n; i++) {
+        const p = new THREE.Vector3(i, 1, 0);
+        const ry = 0;
+        temp.push([p, ry]);
+      }
+      const meshes = CreateInstancedMeshes(asset, n, temp, true);
+      meshes.forEach(mesh => this._addToScene(mesh));
+      SharedAssets._instancedMeshes[key] = meshes;
+    }
+    console.log(SharedAssets._instancedMeshes);
   }
 
   /** request asset */
@@ -35,6 +55,21 @@ class SharedAssets extends SceneNode {
     */
 
     return clone;
+  }
+
+  /** get instanced mesh index, increment setup counter */
+  static getInstancedMeshIndex( name ) {
+    if ( SharedAssets._instancedMeshes[name] == undefined ) {
+      SharedAssets._instancedMeshes[name] = 0;
+    }
+    const index = SharedAssets._instancedMeshes[name];
+    SharedAssets._instancedMeshes[name] += 1;
+    return index;
+  }
+
+  /** get instanced mesh */
+  static getInstancedMesh( name ) {
+    return SharedAssets._instancedMeshes[name] ?? null;
   }
 
   /** deep clone material -- nb: forces rebuild */

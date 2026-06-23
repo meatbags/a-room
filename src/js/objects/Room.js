@@ -45,6 +45,7 @@ class Room extends SceneNode {
   /** init room */
   _init() {
     // add cosmetic map
+    /*
     const map = this.getAsset('map');
     const lowpoly = this.getAsset('lowpoly');
     if (map) {
@@ -78,6 +79,7 @@ class Room extends SceneNode {
       this._addObjectToPhysicsWorld( collision );
       this._addToScene( collision );
     }
+    */
 
     // add balls
     if (this._manifest.balls) {

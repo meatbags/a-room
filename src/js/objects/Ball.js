@@ -19,12 +19,14 @@ class Ball extends SceneNode {
   }
 
   _init() {
-    // set up mesh
-    const asset = SharedAssets.requestAsset('ball');
-    this._mesh = ExtractMeshes( asset )[0];
+    // set up dummy mesh
+    this._mesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), 
+      new THREE.MeshBasicMaterial({color:0x888888}));
     this._mesh.position.copy(this._position);
-    this._mesh.userData.isDynamic = true;
-    this._mesh.castShadow = true;
+
+    // get model index
+    this._instancedMeshIndex = SharedAssets.getInstancedMeshIndex('sphere');
+    console.log(this._instancedMeshIndex);
 
     // build socket cache once
     if ( ! Ball.socketCache ) {
