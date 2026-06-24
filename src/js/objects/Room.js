@@ -11,6 +11,9 @@ import Door from './Door';
 import Socket from './Socket';
 import Terminal from './Terminal';
 
+// testing
+import { optimisationMaterial } from '../util/CreateInstancedMeshes';
+
 class Room extends SceneNode {
   static ACTIVE_DISTANCE = 32;
 
@@ -44,10 +47,15 @@ class Room extends SceneNode {
 
   /** init room */
   _init() {
-    // add cosmetic map
-    /*
+    // add cosmetic map, lod
     const map = this.getAsset('map');
-    const lowpoly = this.getAsset('lowpoly');
+    let lowpoly = this.getAsset('lowpoly');
+    if (!lowpoly) {
+      lowpoly = new THREE.Mesh(
+        new THREE.BoxGeometry(1,1,1), 
+        new THREE.MeshPhysicalMaterial({ color:0xFF0000 })
+      );
+    }
     if (map) {
       ExtractMeshes( map ).forEach(mesh => {
         mesh.castShadow = true;
@@ -68,7 +76,7 @@ class Room extends SceneNode {
         // create LOD
         this._lod = new LOD( this._position );
         this._lod.addLevel( map, 0 );
-        this._lod.addLevel( lowpoly, 48 );
+        this._lod.addLevel( lowpoly, 40 );
       }
     }
 
@@ -77,9 +85,8 @@ class Room extends SceneNode {
     if (collision) {
       collision.position.copy( this._position );
       this._addObjectToPhysicsWorld( collision );
-      this._addToScene( collision );
+      // this._addToScene( collision );
     }
-    */
 
     // add balls
     if (this._manifest.balls) {
@@ -174,6 +181,15 @@ class Room extends SceneNode {
         this.add( ladder );
       });
     }
+  }
+
+  /** after init */
+  _afterInit() {
+    this.getAsset('map').traverse(obj => {
+      if (obj.isMesh) {
+        obj.material = optimisationMaterial;
+      }
+    });
   }
 
   /** override this */

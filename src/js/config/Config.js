@@ -24,7 +24,7 @@ export default {
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: 0.5,
+    envMapIntensityDefault: 0.454375,
   },
   Graphics: {
     fog: {

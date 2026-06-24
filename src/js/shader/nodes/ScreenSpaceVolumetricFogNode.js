@@ -300,7 +300,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     const uvNode = uv();
     
     // setup 3d texture
-    const COMPUTE_TEXTURE_SIZE = 64;
+    const COMPUTE_TEXTURE_SIZE = 50;
     const COMPUTE_TIME_SCALE = 0.1;
     const COMPUTE_POSITION_SCALE = 0.12;
     this.setupComputeTexture({ size: COMPUTE_TEXTURE_SIZE, timeScale: COMPUTE_TIME_SCALE, positionScale: COMPUTE_POSITION_SCALE });

@@ -3,7 +3,7 @@
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
-import CreateInstancedMeshes from '../util/CreateInstancedMeshes';
+import { CreateInstancedMeshes } from '../util/CreateInstancedMeshes';
 import Config from '../config/Config';
 
 class Overworld extends SceneNode {
@@ -41,7 +41,7 @@ class Overworld extends SceneNode {
     // collision map
     const collision = this.getAsset('collision');    
     this._addObjectToPhysicsWorld(collision);
-    this._addToScene(collision);
+    // this._addToScene(collision);
 
     // cosmetic background
     const background = this.getAsset('background');
@@ -83,6 +83,10 @@ class Overworld extends SceneNode {
     manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
     manifest.module_square.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
     manifest.module_roof_square.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
+
+    // room 05
+    manifest.module_triangular.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
+    manifest.module_roof_triangular.push( [ new THREE.Vector3(-48, 8, 48), 0 ] );
 
     // create modules
     for (const key in manifest) {

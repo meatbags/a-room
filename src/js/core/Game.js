@@ -1,7 +1,7 @@
 /** Game */
 
 import { SceneNode, Stats } from 'engine';
-// import Stats from 'three/addons/libs/stats.module.js';
+import * as THREE from 'three';
 import Footsteps from '../audio/Footsteps';
 import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
@@ -10,6 +10,7 @@ import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
 import SharedAssets from '../objects/SharedAssets';
 import Frustum from '../util/Frustum';
+import { optimisationMaterial } from '../util/CreateInstancedMeshes';
 
 // scene
 import Overworld from '../scenes/Overworld';

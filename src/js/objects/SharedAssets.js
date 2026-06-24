@@ -2,7 +2,7 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
-import CreateInstancedMeshes from '../util/CreateInstancedMeshes';
+import { CreateInstancedMeshes, optimisationInteractiveMaterial } from '../util/CreateInstancedMeshes';
 
 class SharedAssets extends SceneNode {
   static _instance = null;
@@ -32,7 +32,10 @@ class SharedAssets extends SceneNode {
         transforms.push([p, r]);
       }
       const meshes = CreateInstancedMeshes(asset, manifest.count, transforms, true);
-      meshes.forEach(mesh => this._addToScene(mesh));
+      meshes.forEach(mesh => {
+        mesh.material = optimisationInteractiveMaterial;
+        this._addToScene(mesh);
+       });
       SharedAssets._instancedMeshes[key].meshes = meshes;
     }
   }
