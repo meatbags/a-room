@@ -1,7 +1,6 @@
 /** util: create instanced meshes from object */
 
 import * as THREE from 'three';
-import { InstancedMesh2 } from '@three.ez/instanced-mesh';
 
 const optimisationMaterial = new THREE.MeshPhysicalMaterial({
   color: 0xFFFFFF, 
@@ -44,13 +43,15 @@ const CreateInstancedMeshes = (object, count=0, transforms=null, shadows=true) =
   // find distinct meshes
   object.traverse(child => {
     if (child.isMesh) {
-      // const mesh = new THREE.InstancedMesh(child.geometry, child.material, count);
+      const mesh = new THREE.InstancedMesh(child.geometry, child.material, count);
+      /*
       const mesh = new THREE.InstancedMesh(
         child.geometry, 
         child.material.transparent || child.material.transmission !== 0 
           ? optimisationMaterialTransparent : optimisationMaterial,
         count
       );
+      */
       if (shadows) {
         if (ShouldCastShadow(child.material)) {
           mesh.castShadow = true;
