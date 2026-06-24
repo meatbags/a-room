@@ -36,8 +36,6 @@ class Room_01 extends Room {
     this._blocks = [];
     if (this._mapped.shard_01) CentrePivot( this._mapped.shard_01 );
     if (this._mapped.shard_02) CentrePivot( this._mapped.shard_02 );
-
-    console.log(this._mapped);
   }
 
   _onStateChanged(changed) {

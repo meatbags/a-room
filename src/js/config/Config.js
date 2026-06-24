@@ -86,7 +86,8 @@ export default {
     speedNoclip: 64,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
-    // jumpEnabled: false,
+    jumpEnabled: false,
+    crouchEnabled: false,
     playerLight: getPointLight(),
   },
   Renderer: {

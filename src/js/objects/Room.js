@@ -85,7 +85,7 @@ class Room extends SceneNode {
     if (collision) {
       collision.position.copy( this._position );
       this._addObjectToPhysicsWorld( collision );
-      // this._addToScene( collision );
+      this._addToScene( collision );
     }
 
     // add balls
@@ -187,7 +187,13 @@ class Room extends SceneNode {
   _afterInit() {
     this.getAsset('map').traverse(obj => {
       if (obj.isMesh) {
-        obj.material = optimisationMaterial;
+        if (Array.isArray(obj.material)) {
+          obj.material = obj.material.map(m => {
+            return m.name.indexOf('clue') == -1 ? optimisationMaterial : m;
+          });
+        } else {
+          obj.material = optimisationMaterial;
+        }
       }
     });
   }

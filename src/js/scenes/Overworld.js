@@ -13,7 +13,6 @@ class Overworld extends SceneNode {
     // load assets
     this._assetList = [
       'background',
-      'collision',
       'platform',
       'bridge_alt',
       'bridge_large_alt',
@@ -25,6 +24,17 @@ class Overworld extends SceneNode {
       'module_roof_circular',
       'module_roof_triangular',
       'module_roof_square',
+      'platform_collision',
+      'bridge_alt_collision',
+      'bridge_large_alt_collision',
+      'module_circular_collision',
+      'module_circular_single_collision',
+      'module_circular_blank_collision',
+      'module_triangular_collision',
+      'module_square_collision',
+      'module_roof_circular_collision',
+      'module_roof_triangular_collision',
+      'module_roof_square_collision',
       'pylon',
       'rock'
     ];
@@ -38,11 +48,6 @@ class Overworld extends SceneNode {
 
   /** override */
   _init() {
-    // collision map
-    const collision = this.getAsset('collision');    
-    this._addObjectToPhysicsWorld(collision);
-    // this._addToScene(collision);
-
     // cosmetic background
     const background = this.getAsset('background');
     ExtractMeshes( background ).forEach( mesh => {
@@ -92,6 +97,7 @@ class Overworld extends SceneNode {
     for (const key in manifest) {
       if ( ! manifest[key].length ) continue;
       this._createInstancedMeshes(this.getAsset(key), manifest[key]);
+      this._createCollisions(this.getAsset(`${key}_collision`), manifest[key]);
     }
   }
 
@@ -116,6 +122,7 @@ class Overworld extends SceneNode {
 
     // create platforms
     this._createInstancedMeshes(this.getAsset('platform'), transforms);   
+    this._createCollisions(this.getAsset('platform_collision'), transforms);   
   }
 
   /** create bridges */
@@ -144,6 +151,8 @@ class Overworld extends SceneNode {
     // create bridges
     this._createInstancedMeshes(this.getAsset('bridge_alt'), transforms);
     this._createInstancedMeshes(this.getAsset('bridge_large_alt'), transforms2);
+    this._createCollisions(this.getAsset('bridge_alt_collision'), transforms);
+    this._createCollisions(this.getAsset('bridge_large_alt_collision'), transforms2);
   }
 
   /** create asteroid field */
@@ -192,6 +201,22 @@ class Overworld extends SceneNode {
       .forEach(mesh => {
         this._addToScene(mesh);
       });
+  }
+
+  /** util: create collisions */
+  _createCollisions(group, transforms) {
+    transforms.forEach(t => {
+      const collision = group.clone();
+      collision.position.copy(t[0]);
+      if (t.length > 1 && t[1] !== 0) {
+        ExtractMeshes(collision).forEach(mesh => {
+          mesh.geometry = mesh.geometry.clone();
+          mesh.geometry.rotateY( t[1] );
+        });
+      }
+      this._addObjectToPhysicsWorld(collision);
+      this._addToScene(collision);
+    });
   }
 
   _update(delta) {

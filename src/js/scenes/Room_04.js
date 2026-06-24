@@ -16,7 +16,7 @@ class Room_04 extends Room {
       const theta = offset * (i + 0.5);
       const x = Math.cos(theta) * dist;
       const z = Math.sin(theta) * dist;
-      buttons.push([x, 0.125, z, 0.25]);
+      buttons.push([x, 0.125, z, 0.375]);
     }
 
     super({
@@ -29,7 +29,7 @@ class Room_04 extends Room {
         doors: [
           [ [0, 2.125, 5.5], [0, 0, -1] ], // to greenhouse
           [ [5.5, 2.125, 0], [-1, 0, 0] ], // to hub
-          [ [-5.5, 2.125, 0], [0, 0, -1] ], // to engine?
+          [ [-5.5, 2.125, 0], [-1, 0, 0] ], // to engine
         ],
         sockets: [ [[0, .3125, 0], [0, 1, 0]] ],
         balls: [ [1, 0.25, 0] ],
@@ -180,6 +180,8 @@ class Room_04 extends Room {
 
   /** after init */
   _afterInit() {
+    super._afterInit();
+    
     this._map.Room_04_Ball_1.attach( this._map.Room_04_Socket_1, true );
   }
 
