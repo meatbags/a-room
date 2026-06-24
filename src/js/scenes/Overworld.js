@@ -18,6 +18,7 @@ class Overworld extends SceneNode {
       'bridge_alt',
       'bridge_large_alt',
       'module_circular',
+      'module_circular_single',
       'module_circular_blank',
       'module_triangular',
       'module_square',
@@ -64,7 +65,7 @@ class Overworld extends SceneNode {
     this._assetList.forEach(key => manifest[key] = []);
 
     // room 01
-    manifest.module_circular.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
+    manifest.module_circular_single.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 96), 0 ] );
     manifest.module_roof_circular.push( [ new THREE.Vector3(0, 16, 96), 0 ] );
 

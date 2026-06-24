@@ -44,7 +44,8 @@ const CreateInstancedMeshes = (object, count=0, transforms=null, shadows=true) =
       // set transform
       _tmp.position.copy(t[0]);
       if (t.length > 1) {
-        _tmp.rotation.y = t[1];
+        if (t[1].isEuler) _tmp.rotation.copy(t[1]);
+        else _tmp.rotation.y = t[1];
       }
       _tmp.updateMatrix();
       

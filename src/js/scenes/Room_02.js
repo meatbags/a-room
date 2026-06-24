@@ -23,7 +23,7 @@ class Room_02 extends Room {
           [[2, 1, -4.25], [0, 0, 1]], 
           [[2, 1.75, -4.25], [0, 0, 1]]
         ],
-        doors: [ [[0, 4, -5], [2, 8, 0.25] ] ],
+        doors: [ [[0, 2.125, -5.5], [0, 0, -1] ] ],
         dataSticks: [ [[3, 1.25, 3], '[ lore snippet ]'] ],
       },
     });
@@ -47,7 +47,7 @@ class Room_02 extends Room {
     this._addToScene(light);
     this._indicator = new THREE.Mesh(
       new THREE.BoxGeometry(0.5, 2.25, 0.5),
-      new THREE.MeshBasicMaterial({color:0xFF0000, transparent: true, opacity: 0.75})
+      new THREE.MeshBasicMaterial({ color:0xFF0000 })
     );
     this._indicator.geometry.translate(0, -1, 0);
     this._indicator.position.set(1.25, 0.25, -4.5).add(this._position);

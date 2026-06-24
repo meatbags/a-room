@@ -81,14 +81,9 @@ class Game extends SceneNode {
     }
   }
 
-  _afterInit() {
-    console.log('AFTERINIT');
-  }
-
   resetPlayer() {
     SceneNode.getSceneNode('Player').setPosition(RESET_POSITION.x, RESET_POSITION.y, RESET_POSITION.z);
     SceneNode.getSceneNode('Camera').setRotation(RESET_DIRECTION.pitch, RESET_DIRECTION.yaw);
-    // SceneNode.getSceneNode('Map').reset();
   }
 
   _update() {

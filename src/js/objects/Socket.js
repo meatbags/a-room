@@ -20,14 +20,11 @@ class Socket extends SceneNode {
   }
 
   _init() {
-    // set up group
-    this._group = new THREE.Group();
-    this._group.add( SharedAssets.requestAsset('socket') );
-    this._mapped = MapObjectByName(this._group);
-    // this._mapped.socket_inner.material.emissive.setHex(0xFFFFFF);
-    this._group.lookAt(this._orientation);
-    this._group.position.copy(this._position);
-    this._addToScene(this._group);
+    // set instanced mesh index
+    const object = new THREE.Object3D();
+    object.lookAt(this._orientation);
+    object.position.copy(this._position);
+    const index = SharedAssets.getInstancedMeshIndex( 'socket', object );
 
     // ensure available
     Ball.rebuildSocketCache();
@@ -36,7 +33,6 @@ class Socket extends SceneNode {
   /** attach object */
   attach(object) {
     this._attached = object;
-    //this._mapped.socket_inner.material.emissiveIntensity = 1;
     this.setState({ attached: object.name });
     this.emit('attach');
   }
@@ -44,7 +40,6 @@ class Socket extends SceneNode {
   /** detach object */
   detach() {
     this._attached = null;
-    //this._mapped.socket_inner.material.emissiveIntensity = 0;
     this.setState({ attached: null });
     this.emit('detach');
   }

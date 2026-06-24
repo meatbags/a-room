@@ -129,8 +129,8 @@ class Room extends SceneNode {
       this._manifest.doors.forEach((ps, i) => {
         const name = `${this.name}_Door_${i+1}`;
         const position = new THREE.Vector3().fromArray(ps[0]).add(this._position);
-        const size = new THREE.Vector3().fromArray(ps[1]);
-        const door = new Door({ name, position, size });
+        const orientation = new THREE.Vector3().fromArray(ps[1]);
+        const door = new Door({ name, position, orientation });
         this._map[name] = door;
         this.add( door );
       });
@@ -179,14 +179,6 @@ class Room extends SceneNode {
   /** override this */
   _onStateChanged() {
     console.log(this.state);
-  }
-
-  /** override - check should update */
-  update(delta) {
-    const p = SceneNode.getSceneNode('Player').getPosition();
-    if ( Math.abs(p.x-this._position.x) + Math.abs(p.z-this._position.z) < Room.ACTIVE_DISTANCE ) {
-      super.update(delta);
-    }
   }
 }
 

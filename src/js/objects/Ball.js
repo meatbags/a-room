@@ -22,11 +22,12 @@ class Ball extends SceneNode {
     // set up dummy mesh
     this._mesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), 
       new THREE.MeshBasicMaterial({color:0x888888}));
+    this._mesh.visible = false;
     this._mesh.position.copy(this._position);
 
-    // get model index
+    // register instanced
     this._instancedMeshIndex = SharedAssets.getInstancedMeshIndex('sphere');
-    console.log(this._instancedMeshIndex);
+    this._instancedMeshes = null;
 
     // build socket cache once
     if ( ! Ball.socketCache ) {
@@ -80,9 +81,20 @@ class Ball extends SceneNode {
     this._emissiveTarget = 0;
   }
 
+  /** set position */
+  _setInstancedPosition() {
+    if (!this._instancedMeshes) {
+      this._instancedMeshes = SharedAssets.getInstancedMesh('sphere');
+    }
+    this._mesh.updateMatrix();
+    this._instancedMeshes.forEach(mesh => {
+      mesh.setMatrixAt(this._instancedMeshIndex, this._mesh.matrix);
+    });
+  }
+
   /** update */
   _update() {
-    /** update carrying animation */
+    // update carrying animation
     if (this._carryable.isCarrying) {
       const nearest = Ball.nearestValidSocket(this._carryable.position);
       if (nearest) {
@@ -100,6 +112,9 @@ class Ball extends SceneNode {
         this._carryable.visualOffset.set(0, 0, 0);
       }
     }
+
+    // set visual
+    this._setInstancedPosition();
 
     /** update emissive */
     /*

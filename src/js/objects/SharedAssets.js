@@ -15,6 +15,7 @@ class SharedAssets extends SceneNode {
     this.load('socket', './models/interactive/socket.fbx');
     this.load('terminal', './models/interactive/terminal.fbx');
     this.load('data_stick', './models/interactive/data_stick.fbx');
+    this.load('door', './models/interactive/door.fbx');
 
     SharedAssets._instance = this;
   }
@@ -23,16 +24,16 @@ class SharedAssets extends SceneNode {
   _afterInit() {
     for (const key in SharedAssets._instancedMeshes) {
       const asset = this.getAsset(key);
-      const n = SharedAssets._instancedMeshes[key];
-      const temp = [];
-      for (let i=0; i<n; i++) {
-        const p = new THREE.Vector3(i, 1, 0);
-        const ry = 0;
-        temp.push([p, ry]);
+      const manifest = SharedAssets._instancedMeshes[key];
+      const transforms = [];
+      for (let i=0; i<manifest.count; i++) {
+        const p = manifest.objects[i] ? manifest.objects[i].position : new THREE.Vector3(i, 1, 0);
+        const r = manifest.objects[i] ? manifest.objects[i].rotation : new THREE.Euler(0, 0, 0);
+        transforms.push([p, r]);
       }
-      const meshes = CreateInstancedMeshes(asset, n, temp, true);
+      const meshes = CreateInstancedMeshes(asset, manifest.count, transforms, true);
       meshes.forEach(mesh => this._addToScene(mesh));
-      SharedAssets._instancedMeshes[key] = meshes;
+      SharedAssets._instancedMeshes[key].meshes = meshes;
     }
   }
 
@@ -57,18 +58,20 @@ class SharedAssets extends SceneNode {
   }
 
   /** get instanced mesh index, increment setup counter */
-  static getInstancedMeshIndex( name ) {
+  static getInstancedMeshIndex( name, object3D=null ) {
     if ( SharedAssets._instancedMeshes[name] == undefined ) {
-      SharedAssets._instancedMeshes[name] = 0;
+      SharedAssets._instancedMeshes[name] = { count: 0, meshes: [], objects: [] };
     }
-    const index = SharedAssets._instancedMeshes[name];
-    SharedAssets._instancedMeshes[name] += 1;
+    const index = SharedAssets._instancedMeshes[name].count;
+    SharedAssets._instancedMeshes[name].count += 1;
+    SharedAssets._instancedMeshes[name].objects.push( object3D );
     return index;
   }
 
-  /** get instanced mesh */
+  /** get instanced mesh/es */
   static getInstancedMesh( name ) {
-    return SharedAssets._instancedMeshes[name] ?? null;
+    return SharedAssets._instancedMeshes[name] 
+      ? SharedAssets._instancedMeshes[name].meshes : null;
   }
 
   /** deep clone material -- nb: forces rebuild */
