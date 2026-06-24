@@ -34,7 +34,6 @@ class SharedAssets extends SceneNode {
       meshes.forEach(mesh => this._addToScene(mesh));
       SharedAssets._instancedMeshes[key] = meshes;
     }
-    console.log(SharedAssets._instancedMeshes);
   }
 
   /** request asset */
