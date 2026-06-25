@@ -40,7 +40,7 @@ class Room_03 extends Room {
   }
 
   _afterInit() {
-    super._afterInit();
+    // super._afterInit();
    
     // set initial attachment
     this._map.Room_03_Ball_1.attach( this._map.Room_03_Socket_2, true );

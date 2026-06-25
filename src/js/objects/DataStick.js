@@ -23,17 +23,14 @@ class DataStick extends SceneNode {
 
   /** init */
   _init() {
-    // add asset
-    const asset = SharedAssets.requestAsset('data_stick');
-    this._group = new THREE.Group();
-    ExtractMeshes( asset ).forEach(mesh => {
-      mesh.castShadow = true;
-      this._group.add(mesh);
-    });
-    this._group.position.copy(this._position);
-    this._group.rotation.copy(this._rotation);
-    this._addToScene(this._group);
-    // console.log(this._group);
+    // dummy mesh
+    this._object3D = new THREE.Object3D();
+    this._object3D.position.copy(this._position);
+    this._object3D.rotation.copy(this._rotation);
+
+    // register instanced
+    this._instancedMeshIndex = SharedAssets.getInstancedMeshIndex('data_stick');
+    this._instancedMeshes = null;
 
     // hoverable
     const box = new THREE.Mesh(
@@ -107,9 +104,21 @@ class DataStick extends SceneNode {
     return ! this._locked && ! Carryable.currentTarget;
   }
 
+  /** set position */
+  _setInstancedPosition() {
+    if (!this._instancedMeshes) {
+      this._instancedMeshes = SharedAssets.getInstancedMesh('data_stick');
+    }
+    this._object3D.updateMatrix();
+    this._instancedMeshes.forEach(mesh => {
+      mesh.setMatrixAt(this._instancedMeshIndex, this._object3D.matrix);
+    });
+  }
+
   /** update */
   _update(delta) {
-    this._group.rotateOnAxis(this._axis, this._rotationSpeed*delta);
+    this._object3D.rotateOnAxis(this._axis, this._rotationSpeed * delta);
+    this._setInstancedPosition();
   }
 }
 

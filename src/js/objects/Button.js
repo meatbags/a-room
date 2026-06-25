@@ -4,6 +4,8 @@ import { SceneNode, Carryable, Hoverable, Prompt } from 'engine';
 import * as THREE from 'three';
 
 class Button extends SceneNode {
+  static materials = {};
+
   constructor(props={}) {
     super({ name: props.name ?? 'Button' });
 
@@ -12,7 +14,35 @@ class Button extends SceneNode {
     this._size = props.size ?? 0.125;
   }
 
+  /** init */
   _init() {
+    // visual
+    if (!Button.materials.default) {
+      Button.materials.default = new THREE.MeshPhysicalMaterial({
+        color: 0xFFFFFF, 
+        metalness: 0.05, 
+        roughness: 0.95,
+        emissive: 0x00FF00,
+        emissiveIntensity: 0.05,
+      });
+      // create common colours
+      [0xFF0000, 0x00FF00, 0x0000FF].forEach(hex => {
+        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
+          color: 0xFFFFFF, 
+          metalness: 0.05, 
+          roughness: 0.95,
+          emissive: hex,
+          emissiveIntensity: 1,
+        });
+      });
+    }
+    this._mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(this._size/2, 12, 12),
+      Button.materials.default,
+    );
+    this._mesh.position.copy(this._position);
+    this._addToScene(this._mesh);
+
     // hoverable
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(this._size, this._size, this._size), 
@@ -45,6 +75,24 @@ class Button extends SceneNode {
         ) return;
         this._press();
       });
+  }
+
+  /** set button colour */
+  setHex(hex) {
+    if (hex === 0) {
+      this._mesh.material = Button.materials.default;
+    } else {
+      if ( ! Button.materials[hex] ) {
+        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
+          color: 0xFFFFFF, 
+          metalness: 0.05, 
+          roughness: 0.95,
+          emissive: hex,
+          emissiveIntensity: 1,
+        });
+      }
+      this._mesh.material = Button.materials[hex];
+    }
   }
 
   /** create prompt */

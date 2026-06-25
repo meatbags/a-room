@@ -54,20 +54,6 @@ class Room_04 extends Room {
     } else {
       console.warn('No hatch found', this._mapped);
     }
-
-    // visual helper
-    this._manifest.buttons.forEach((button, i) => {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(button[3], button[3], button[3]),
-        new THREE.MeshPhysicalMaterial({
-          emissive: 0x00FF00,
-        }),
-      );
-      mesh.position.set(button[0], button[1], button[2]).add(this._position);
-      const name = `button_${i+1}_mesh`;
-      this._map[name] = mesh;
-      this._addToScene(mesh);
-    });
   }
 
   /** set up hatch logic */
@@ -195,8 +181,10 @@ class Room_04 extends Room {
     for (const key in state) {
       if (key.indexOf('button') !== -1) {
         total += state[key];
-        this._map[`${key}_mesh`].material.emissiveIntensity = 
-          power && state[key] ? 1 : 0;
+        const n = key.split('_')[1];
+        this._map[`${this.name}_Button_${n}`].setHex(
+          power && state[key] ? 0x00FF00 : 0
+        );
       }
     }
 

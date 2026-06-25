@@ -16,6 +16,7 @@ class Overworld extends SceneNode {
       'platform',
       'bridge_alt',
       'bridge_large_alt',
+      'module_airlock',
       'module_circular',
       'module_circular_single',
       'module_circular_blank',
@@ -24,9 +25,11 @@ class Overworld extends SceneNode {
       'module_roof_circular',
       'module_roof_triangular',
       'module_roof_square',
+      'module_observation',
       'platform_collision',
       'bridge_alt_collision',
       'bridge_large_alt_collision',
+      'module_airlock_collision',
       'module_circular_collision',
       'module_circular_single_collision',
       'module_circular_blank_collision',
@@ -35,6 +38,7 @@ class Overworld extends SceneNode {
       'module_roof_circular_collision',
       'module_roof_triangular_collision',
       'module_roof_square_collision',
+      'module_observation_collision',
       'pylon',
       'rock'
     ];
@@ -86,12 +90,15 @@ class Overworld extends SceneNode {
 
     // room 04
     manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
+    manifest.module_airlock.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
     manifest.module_square.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
     manifest.module_roof_square.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
 
     // room 05
-    manifest.module_triangular.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
-    manifest.module_roof_triangular.push( [ new THREE.Vector3(-48, 8, 48), 0 ] );
+    manifest.module_observation.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(-48, 8, 48), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(-48, 16, 48), 0 ] );
+    manifest.module_airlock.push( [ new THREE.Vector3(-48, 0, 48), Math.PI ] );
 
     // create modules
     for (const key in manifest) {
