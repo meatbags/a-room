@@ -20,7 +20,7 @@ class Room_01 extends Room {
       position: new THREE.Vector3(0, 0, 96),
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
-        sockets: [ [[-1.5625, 0.3125, -2.0938], [0, 1, 0]] ],
+        sockets: [ [[-1.25, 0.3125, -2.375], [0, 1, 0], Math.PI/6] ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1]] ],
       }
     });

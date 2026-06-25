@@ -49,13 +49,6 @@ class Room extends SceneNode {
   _init() {
     // add cosmetic map, lod
     const map = this.getAsset('map');
-    let lowpoly = this.getAsset('lowpoly');
-    if (!lowpoly) {
-      lowpoly = new THREE.Mesh(
-        new THREE.BoxGeometry(1,1,1), 
-        new THREE.MeshPhysicalMaterial({ color:0xFF0000 })
-      );
-    }
     if (map) {
       ExtractMeshes( map ).forEach(mesh => {
         mesh.castShadow = true;
@@ -63,22 +56,32 @@ class Room extends SceneNode {
       });
       map.position.copy( this._position );
       this._addToScene( map );
-
-      // add lowpoly LOD
-      if (lowpoly) {
-        ExtractMeshes( lowpoly ).forEach(mesh => {
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        });
-        lowpoly.position.copy( this._position );
-        this._addToScene( lowpoly );
-
-        // create LOD
-        this._lod = new LOD( this._position );
-        this._lod.addLevel( map, 0 );
-        this._lod.addLevel( lowpoly, 40 );
-      }
     }
+
+    // set LODs
+    /*
+    let lowpoly = this.getAsset('lowpoly');
+    if (!lowpoly) {
+      lowpoly = new THREE.Mesh(
+        new THREE.BoxGeometry(1,1,1), 
+        new THREE.MeshPhysicalMaterial({ color:0xFF0000 })
+      );
+    }
+    // add lowpoly LOD
+    if (lowpoly) {
+      ExtractMeshes( lowpoly ).forEach(mesh => {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      });
+      lowpoly.position.copy( this._position );
+      this._addToScene( lowpoly );
+
+      // create LOD
+      this._lod = new LOD( this._position );
+      this._lod.addLevel( map, 0 );
+      this._lod.addLevel( lowpoly, 40 );
+    }
+    */
 
     // add collision map
     const collision = this.getAsset('collision');
@@ -105,8 +108,9 @@ class Room extends SceneNode {
         const name = `${this.name}_Socket_${i+1}`;
         const state = `power_${i+1}`;
         const position = new THREE.Vector3().fromArray( p[0] ).add(this._position);
-        const orientation = new THREE.Vector3().fromArray( p[1] );
-        const socket = new Socket({ name, position, orientation });
+        const orientation = new THREE.Vector3().fromArray( p[1] ).normalize();
+        const rotation = p.length > 2 ? p[2] : 0;
+        const socket = new Socket({ name, position, orientation, rotation });
         socket.addEventListener('attach', () => this.setState({ [state]: 1 }));
         socket.addEventListener('detach', () => this.setState({ [state]: 0 }));
         this._map[name] = socket;

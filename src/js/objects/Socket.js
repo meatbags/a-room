@@ -13,6 +13,7 @@ class Socket extends SceneNode {
     this.isSocket = true;
     this._position = props.position || new THREE.Vector3();
     this._orientation = props.orientation || new THREE.Vector3(0, 1, 0);
+    this._rotation = props.rotation || 0;
     this._attached = null;
 
     // state
@@ -23,6 +24,9 @@ class Socket extends SceneNode {
     // set instanced mesh index
     const object = new THREE.Object3D();
     object.lookAt(this._orientation);
+    if (object._rotation) {
+      // todo
+    }
     object.position.copy(this._position);
     const index = SharedAssets.getInstancedMeshIndex( 'socket', object );
 
