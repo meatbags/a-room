@@ -12,6 +12,7 @@ class Button extends SceneNode {
     this.isButton = true;
     this._position = props.position ?? new THREE.Vector3();
     this._size = props.size ?? 0.125;
+    this._enabled = true;
   }
 
   /** init */
@@ -77,24 +78,6 @@ class Button extends SceneNode {
       });
   }
 
-  /** set button colour */
-  setHex(hex) {
-    if (hex === 0) {
-      this._mesh.material = Button.materials.default;
-    } else {
-      if ( ! Button.materials[hex] ) {
-        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
-          color: 0xFFFFFF, 
-          metalness: 0.05, 
-          roughness: 0.95,
-          emissive: hex,
-          emissiveIntensity: 1,
-        });
-      }
-      this._mesh.material = Button.materials[hex];
-    }
-  }
-
   /** create prompt */
   _createPrompt(text, modifier) {
     this._destroyPrompt();
@@ -129,7 +112,39 @@ class Button extends SceneNode {
 
   /** check can interact */
   _canInteract() {
-    return ! this._locked && ! Carryable.currentTarget;
+    return this._enabled && ! this._locked && ! Carryable.currentTarget;
+  }
+
+  /** set button colour */
+  setHex(hex) {
+    if (hex === 0) {
+      this._mesh.material = Button.materials.default;
+    } else {
+      if ( ! Button.materials[hex] ) {
+        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
+          color: 0xFFFFFF, 
+          metalness: 0.05, 
+          roughness: 0.95,
+          emissive: hex,
+          emissiveIntensity: 1,
+        });
+      }
+      this._mesh.material = Button.materials[hex];
+    }
+  }
+
+  /** set enabled */
+  set enabled(value) {
+    // set value
+    this._enabled = value;
+
+    // update prompt, hoverable
+    if ( ! this._enabled ) {
+      this._destroyPrompt();
+      this._hoverable.disable();
+    } else {
+      this._hoverable.enable();
+    }
   }
 }
 

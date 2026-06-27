@@ -14,6 +14,7 @@ import CircularControl from './CircularControl';
 
 // testing
 import { optimisationMaterial } from '../util/CreateInstancedMeshes';
+import HexagonalControl from './HexagonalControl';
 
 class Room extends SceneNode {
   static ACTIVE_DISTANCE = 32;
@@ -55,7 +56,27 @@ class Room extends SceneNode {
         state[`${prefix}pipe_ne`] = 0;
         state[`${prefix}pipe_sw`] = 0;
         state[`${prefix}pipe_se`] = 0;
-      })
+      });
+      state.circular_control_version = 0;
+    }
+    if (this._manifest.hexagonalControls) {
+      this._manifest.hexagonalControls.forEach((_, i) => {
+        const prefix = `hexagonal_control_${i+1}_`;
+        state[`${prefix}cursor`] = null;
+        state[`${prefix}pipe_c1`] = 0;
+        state[`${prefix}pipe_c2`] = 0;
+        state[`${prefix}pipe_c3`] = 0;
+        state[`${prefix}pipe_c4`] = 0;
+        state[`${prefix}pipe_c5`] = 0;
+        state[`${prefix}pipe_c6`] = 0;
+        state[`${prefix}pipe_12`] = 0;
+        state[`${prefix}pipe_23`] = 0;
+        state[`${prefix}pipe_34`] = 0;
+        state[`${prefix}pipe_45`] = 0;
+        state[`${prefix}pipe_56`] = 0;
+        state[`${prefix}pipe_61`] = 0;
+      });
+      state.hexagonal_control_version = 0;
     }
     this.createState(state);
   }
@@ -150,22 +171,45 @@ class Room extends SceneNode {
       });
     }
 
+    // circular controls
     if (this._manifest.circularControls) {
       this._manifest.circularControls.forEach((p, i) => {
         const name = `${this.name}_CircularControl_${i+1}`;
         const position = new THREE.Vector3().fromArray( p[0] ).add(this._position);
         const orientation = new THREE.Vector3().fromArray( p[1] ).normalize();
-        const prefix = `circular_control_${i+1}`;
+        const prefix = `circular_control_${i+1}_`;
         const onChange = state => {
           const next = {};
           for (const key in state) {
             next[`${prefix}${key}`] = state[key];
           }
+          next.circular_control_version = this.getState('circular_control_version') + 1;
           this.setState( next );
         };
         const circularControl = new CircularControl({ name, position, orientation, onChange });
         this._map[name] = circularControl;
         this.add( circularControl );
+      });
+    }
+
+    // hexagonal controls
+    if (this._manifest.hexagonalControls) {
+      this._manifest.hexagonalControls.forEach((p, i) => {
+        const name = `${this.name}_HexagonalControl_${i+1}`;
+        const position = new THREE.Vector3().fromArray( p[0] ).add(this._position);
+        const orientation = new THREE.Vector3().fromArray( p[1] ).normalize();
+        const prefix = `hexagonal_control_${i+1}_`;
+        const onChange = state => {
+          const next = {};
+          for (const key in state) {
+            next[`${prefix}${key}`] = state[key];
+          }
+          next.hexagonal_control_version = this.getState('hexagonal_control_version') + 1;
+          this.setState( next );
+        };
+        const hexagonalControl = new HexagonalControl({ name, position, orientation, onChange });
+        this._map[name] = hexagonalControl;
+        this.add( hexagonalControl );
       });
     }
 

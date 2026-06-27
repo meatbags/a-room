@@ -32,7 +32,7 @@ class Room_02 extends Room {
     this.createState({
       ...(this.getState() || {}),
       progression: 0,
-    })
+    });
   }
   
   _init() {

@@ -17,6 +17,10 @@ class SharedAssets extends SceneNode {
     this.load('data_stick', './models/interactive/data_stick.fbx');
     this.load('door', './models/interactive/door.fbx');
     this.load('circular_control', './models/interactive/circular_control.fbx');
+    this.load('circular_control_clue', './models/interactive/circular_control_clue.fbx');
+    this.load('hexagonal_control', './models/interactive/hexagonal_control.fbx');
+    this.load('hexagonal_control_clue', './models/interactive/hexagonal_control_clue.fbx');
+    this.load('lidded_box', './models/interactive/lidded_box.fbx');
 
     SharedAssets._instance = this;
   }
