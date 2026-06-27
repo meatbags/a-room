@@ -127,8 +127,9 @@ class Room_03 extends Room {
         this._map.Indicator_7,
       );
     }
+
     this._timer = 0;
-    this._index = 0;
+    this._index = this._sequence.length > 0 ? -1 : 0;
     this._locked = false;
   }
   

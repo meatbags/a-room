@@ -10,6 +10,7 @@ import DataStick from './DataStick';
 import Door from './Door';
 import Socket from './Socket';
 import Terminal from './Terminal';
+import CircularControl from './CircularControl';
 
 // testing
 import { optimisationMaterial } from '../util/CreateInstancedMeshes';
@@ -41,6 +42,20 @@ class Room extends SceneNode {
       this._manifest.buttons.forEach((_, i) => {
         state[`button_${i+1}`] = 0;
       });
+    }
+    if (this._manifest.circularControls) {
+      this._manifest.circularControls.forEach((_, i) => {
+        const prefix = `circular_control_${i+1}_`;
+        state[`${prefix}cursor`] = null;
+        state[`${prefix}pipe_n`] = 0;
+        state[`${prefix}pipe_s`] = 0;
+        state[`${prefix}pipe_e`] = 0;
+        state[`${prefix}pipe_w`] = 0;
+        state[`${prefix}pipe_nw`] = 0;
+        state[`${prefix}pipe_ne`] = 0;
+        state[`${prefix}pipe_sw`] = 0;
+        state[`${prefix}pipe_se`] = 0;
+      })
     }
     this.createState(state);
   }
@@ -132,6 +147,25 @@ class Room extends SceneNode {
         });
         this._map[name] = button;
         this.add( button );
+      });
+    }
+
+    if (this._manifest.circularControls) {
+      this._manifest.circularControls.forEach((p, i) => {
+        const name = `${this.name}_CircularControl_${i+1}`;
+        const position = new THREE.Vector3().fromArray( p[0] ).add(this._position);
+        const orientation = new THREE.Vector3().fromArray( p[1] ).normalize();
+        const prefix = `circular_control_${i+1}`;
+        const onChange = state => {
+          const next = {};
+          for (const key in state) {
+            next[`${prefix}${key}`] = state[key];
+          }
+          this.setState( next );
+        };
+        const circularControl = new CircularControl({ name, position, orientation, onChange });
+        this._map[name] = circularControl;
+        this.add( circularControl );
       });
     }
 
