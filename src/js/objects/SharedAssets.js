@@ -21,6 +21,8 @@ class SharedAssets extends SceneNode {
     this.load('hexagonal_control', './models/interactive/hexagonal_control.fbx');
     this.load('hexagonal_control_clue', './models/interactive/hexagonal_control_clue.fbx');
     this.load('lidded_box', './models/interactive/lidded_box.fbx');
+    this.load('foliage_leaf', './models/interactive/foliage_leaf.fbx');
+    this.load('foliage_branch', './models/interactive/foliage_branch.fbx');
 
     SharedAssets._instance = this;
   }
