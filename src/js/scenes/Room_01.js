@@ -20,7 +20,7 @@ class Room_01 extends Room {
       position: new THREE.Vector3(0, 0, 96),
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
-        sockets: [ [[-1.25, 0.3125, -2.375], [0, 1, 0], Math.PI/6] ],
+        sockets: [ [[0, 0.53125, 0], [0, 1, 0], Math.PI/6] ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1]] ],
       }
     });
@@ -33,10 +33,16 @@ class Room_01 extends Room {
     this._mapped = MapObjectByName( this.getAsset('map') );
 
     // get shards
-    this._blocks = [];
-    if (this._mapped.shard_01) CentrePivot( this._mapped.shard_01 );
-    if (this._mapped.shard_02) CentrePivot( this._mapped.shard_02 );
+    if (this._mapped.shards) {
+      this._mapped.shards.children.forEach(mesh => {
+        CentrePivot( mesh );
+        mesh.userData.axis = Math.random() > 0.5 ? 'x' : 'z';
+        mesh.userData.speed = (Math.random() * 0.2 + 0.3) * (Math.random() > 0.5 ? 1 : -1);
+      });
+    }
   }
+
+  _afterInit() {}
 
   _onStateChanged(changed) {
     const state = this.getState();
@@ -48,8 +54,11 @@ class Room_01 extends Room {
   }
 
   _update( delta ) {
-    if (this._mapped.shard_01) this._mapped.shard_01.rotation.x += delta * 0.05;
-    if (this._mapped.shard_02) this._mapped.shard_02.rotation.z += delta * 0.035;
+    if (this._mapped.shards) {
+      this._mapped.shards.children.forEach(mesh => {
+        mesh.rotation[mesh.userData.axis] += delta * mesh.userData.speed;
+      });
+    }
   }
 }
 

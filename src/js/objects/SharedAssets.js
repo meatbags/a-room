@@ -1,36 +1,33 @@
 /** SharedAssets */
 
-import { SceneNode } from 'engine';
+import { SceneNode, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import { CreateInstancedMeshes, optimisationInteractiveMaterial } from '../util/CreateInstancedMeshes';
 
 class SharedAssets extends SceneNode {
   static _instance = null;
   static _instancedMeshes = {};
+  static _map = null;
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
 
-    this.load('sphere', './models/interactive/sphere.fbx');
-    this.load('socket', './models/interactive/socket.fbx');
-    this.load('terminal', './models/interactive/terminal.fbx');
-    this.load('data_stick', './models/interactive/data_stick.fbx');
-    this.load('door', './models/interactive/door.fbx');
-    this.load('circular_control', './models/interactive/circular_control.fbx');
-    this.load('circular_control_clue', './models/interactive/circular_control_clue.fbx');
-    this.load('hexagonal_control', './models/interactive/hexagonal_control.fbx');
-    this.load('hexagonal_control_clue', './models/interactive/hexagonal_control_clue.fbx');
-    this.load('lidded_box', './models/interactive/lidded_box.fbx');
-    this.load('foliage_leaf', './models/interactive/foliage_leaf.fbx');
-    this.load('foliage_branch', './models/interactive/foliage_branch.fbx');
+    this.load('interactive_group', './models/interactive_group.fbx');
 
     SharedAssets._instance = this;
   }
 
   /** create instanced geometry */
   _afterInit() {
+    SharedAssets.map();
+    
+    // create instanced
     for (const key in SharedAssets._instancedMeshes) {
-      const asset = this.getAsset(key);
+      const asset = SharedAssets._map[key];
+      if ( ! asset ) {
+        console.warn( 'Could not create instanced mesh, asset not found:', key );
+        continue;
+      }
       const manifest = SharedAssets._instancedMeshes[key];
       const transforms = [];
       for (let i=0; i<manifest.count; i++) {
@@ -47,24 +44,26 @@ class SharedAssets extends SceneNode {
     }
   }
 
+  /** util: map object */
+  static map() {
+    if ( ! SharedAssets._map ) {
+      SharedAssets._map = MapObjectByName( this._instance.getAsset('interactive_group') );
+    }
+  }
+
   /** request asset */
   static requestAsset( name ) {
-    const asset = SharedAssets._instance.getAsset(name);
-    if (!asset) {
+    // map assets
+    SharedAssets.map();
+
+    // check exists
+    if ( ! SharedAssets._map[name] ) {
+      console.warn('Asset not found:', name);
       return null;
     }
 
-    // clone asset & materials
-    const clone = asset.clone();
-    /*
-    clone.traverse(child => {
-      if (child.material) {
-        child.material = SharedAssets.deepCloneMaterial(child.material);
-      }
-    });
-    */
-
-    return clone;
+    // clone
+    return SharedAssets._map[name].clone();
   }
 
   /** get instanced mesh index, increment setup counter */

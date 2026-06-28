@@ -24,8 +24,8 @@ class Socket extends SceneNode {
     // set instanced mesh index
     const object = new THREE.Object3D();
     object.lookAt(this._orientation);
-    if (object._rotation) {
-      // todo
+    if (this._rotation) {
+      // object.rotateOnAxis(this._orientation, this._rotation);
     }
     object.position.copy(this._position);
     const index = SharedAssets.getInstancedMeshIndex( 'socket', object );
