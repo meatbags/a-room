@@ -189,9 +189,9 @@ class Room_04 extends Room {
     }
 
     // set doors
-    this._map.Room_04_Door_1.setOpen( power && total == 3 && state.button_3 && state.button_7 && state.button_8 );
+    this._map.Room_04_Door_1.setOpen( power && total == 4 && state.button_2 && state.button_3 && state.button_7 && state.button_8 );
     this._map.Room_04_Door_2.setOpen( power );
-    this._map.Room_04_Door_3.setOpen( power && total == 3 && state.button_1 && state.button_2 && state.button_5 );
+    this._map.Room_04_Door_3.setOpen( power && total == 4 && state.button_1 && state.button_2 && state.button_4 && state.button_5 );
 
     // set hatch
     if (changed.hatch) {

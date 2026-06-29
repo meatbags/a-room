@@ -1,6 +1,6 @@
 /** Ball */
 
-import { SceneNode, Carryable } from 'engine';
+import { SceneNode, Carryable, Prompt } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import SharedAssets from './SharedAssets';
@@ -108,9 +108,15 @@ class Ball extends SceneNode {
           dir.y * fwd + cross.y * side,
           dir.z * fwd + cross.z * side
         );
+        if (!this._prompt) {
+          this._createPrompt('[e] place', 'bottom');
+        }
       } else {
         this._carryable.visualOffset.set(0, 0, 0);
+        this._destroyPrompt();
       }
+    } else {
+      this._destroyPrompt();
     }
 
     // set visual
@@ -125,6 +131,25 @@ class Ball extends SceneNode {
       }
     }
     */
+  }
+
+  /** create prompt */
+  _createPrompt(text, modifier='') {
+    this._destroyPrompt();
+    this._prompt = new Prompt({
+      name: this.name + '_Prompt',
+      text: text,
+      modifier: modifier,
+    });
+    this.add(this._prompt);
+  }
+
+  /** destroy prompt */
+  _destroyPrompt() {
+    if (this._prompt) {
+      this._prompt.destroy();
+      this._prompt = null;
+    }
   }
 
   /** get carryable */

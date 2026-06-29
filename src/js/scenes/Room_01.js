@@ -1,6 +1,6 @@
 /** Demo Room */
 
-import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
+import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import FindObject from '../util/FindObject';
@@ -24,6 +24,8 @@ class Room_01 extends Room {
         doors: [ [[0, 2.125, -5.5], [0, 0, -1]] ],
       }
     });
+
+    this.createState({ ...this.getState, pod_open: false });
   }
   
   _init() {
@@ -40,6 +42,28 @@ class Room_01 extends Room {
         mesh.userData.speed = (Math.random() * 0.2 + 0.3) * (Math.random() > 0.5 ? 1 : -1);
       });
     }
+
+    // open doors
+    if (this._mapped.pod_door_right && this._mapped.pod_door_left) {
+      const pivot = new THREE.Vector3(3.1820, 0, -3.1820);
+      const rotation = Math.PI * 2 * (85 / 360);
+      const duration = 1.2;
+      const delay = 0.5;
+      SetPivot(this._mapped.pod_door_right, pivot);
+      SetPivot(this._mapped.pod_door_left, pivot);
+      this.add( new Animation({
+        duration: duration + delay,
+        callback: t => {
+          let s = t * (duration + delay);
+          let t2 = Math.max(0, (s - delay) / duration);
+          this._mapped.pod_door_right.rotation.y = - rotation * t2;
+          this._mapped.pod_door_left.rotation.y = rotation * t2;
+        },
+        onEnd: () => {
+          this.setState({ pod_open: true });
+        }
+      }) );
+    }
   }
 
   _afterInit() {}
@@ -50,6 +74,10 @@ class Room_01 extends Room {
       this._map.Room_01_Door_1.open();
     } else {
       this._map.Room_01_Door_1.close();
+    }
+    if (changed.pod_open && state.pod_open) {
+      if (this._mapped.pod_door_right) this._mapped.pod_door_right.rotation.y = - Math.PI * 2 * (85 / 360);
+      if (this._mapped.pod_door_left) this._mapped.pod_door_left.rotation.y = Math.PI * 2 * (85 / 360);
     }
   }
 

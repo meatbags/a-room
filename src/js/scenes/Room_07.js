@@ -3,9 +3,7 @@
 import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
-import Ball from '../objects/Ball';
-import Socket from '../objects/Socket';
-import Door from '../objects/Door';
+import SharedAssets from '../objects/SharedAssets';
 
 class Room_07 extends Room {
   constructor() {
@@ -15,6 +13,17 @@ class Room_07 extends Room {
       collisionMap: './models/rooms/room-07-collision.fbx',
       position: new THREE.Vector3(48, 0, 0),
     });
+  }
+
+  _init() {
+    super._init();
+
+    // add gate
+    const gate = SharedAssets.requestAsset('gate_large');
+    const orientation = new THREE.Vector3(1, 0, 0);
+    gate.lookAt( orientation );
+    gate.position.set(-21, 0, 0).add(this._position);
+    this._addToScene(gate);
   }
 }
 

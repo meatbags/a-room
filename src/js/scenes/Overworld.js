@@ -107,6 +107,13 @@ class Overworld extends SceneNode {
     manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 24, 0), 0 ] );
     manifest.module_roof_circular.push( [ new THREE.Vector3(-96, 32, 0), 0 ] );
 
+    // room 07
+    manifest.module_circular.push( [ new THREE.Vector3(48, 0, 0), 0 ] );
+    manifest.module_circular_single.push( [ new THREE.Vector3(48, 8, 0), Math.PI * 0.5 ] );
+    manifest.module_airlock.push( [ new THREE.Vector3(48, 8, 0), Math.PI * 0.5 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(48, 16, 0), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(48, 24, 0), 0 ] );
+
     // create modules
     for (const key in manifest) {
       if ( ! manifest[key].length ) continue;
