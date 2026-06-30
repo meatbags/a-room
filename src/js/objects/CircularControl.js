@@ -1,10 +1,11 @@
 /** CircularControl */
 
-import { SceneNode, MapObjectByName, Carryable, Hoverable, Prompt } from 'engine';
+import { SceneNode, MapObjectByName, Hoverable } from 'engine';
 import * as THREE from 'three';
 import SharedAssets from './SharedAssets';
+import ObjectBaseNode from './ObjectBaseNode';
 
-class CircularControl extends SceneNode {
+class CircularControl extends ObjectBaseNode {
   static activeMaterial = null;
 
   constructor(props={}) {
@@ -51,7 +52,7 @@ class CircularControl extends SceneNode {
     this._map = MapObjectByName(object);
     
     // set up buttons
-    this._hoverable = [];
+    this._hoverableObjects = [];
     ['button_c', 'button_n', 'button_e', 'button_s', 'button_w'].forEach(name => {
       const button = this._map[name];
       const hoverable = new Hoverable(button, {
@@ -66,7 +67,7 @@ class CircularControl extends SceneNode {
           this._destroyPrompt();
         },
       });
-      this._hoverable.push( { name, hoverable } );
+      this._hoverableObjects.push( { name, hoverable } );
       this.add(hoverable);
     });
 
@@ -78,7 +79,7 @@ class CircularControl extends SceneNode {
           keyboard.isKeyDown('e')
         ) {
           let found = false;
-          this._hoverable.forEach(obj => {
+          this._hoverableObjects.forEach(obj => {
             if (!found && obj.hoverable.isHover()) {
               found = true;
               this._onButton( obj.name );
@@ -93,7 +94,7 @@ class CircularControl extends SceneNode {
     if (this._locked) return;
     this._locked = true;
     this._destroyPrompt();
-    this._hoverable.forEach(obj => {
+    this._hoverableObjects.forEach(obj => {
       obj.hoverable.disable();
     });
     
@@ -152,7 +153,7 @@ class CircularControl extends SceneNode {
 
     setTimeout(() => {
       this._locked = false;
-      this._hoverable.forEach(obj => {
+      this._hoverableObjects.forEach(obj => {
         obj.hoverable.enable();
       });
     }, 350);
@@ -161,30 +162,6 @@ class CircularControl extends SceneNode {
   /** util: check a/b combination */
   _combination(a, b, key1, key2) {
     return (a === key1 && b === key2) || (a === key2 && b === key1);
-  }
-
-  /** create prompt */
-  _createPrompt(text, modifier='') {
-    this._destroyPrompt();
-    this._prompt = new Prompt({
-      name: this.name + '_Prompt',
-      text: text,
-      modifier: modifier,
-    });
-    this.add(this._prompt);
-  }
-
-  /** destroy prompt */
-  _destroyPrompt() {
-    if (this._prompt) {
-      this._prompt.destroy();
-      this._prompt = null;
-    }
-  }
-
-  /** check can interact */
-  _canInteract() {
-    return ! this._locked && ! Carryable.currentTarget;
   }
 
   /** util: set mesh state */

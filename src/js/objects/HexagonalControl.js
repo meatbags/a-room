@@ -1,10 +1,11 @@
 /** HexagonalControl */
 
-import { SceneNode, MapObjectByName, Carryable, Hoverable, Prompt } from 'engine';
+import { SceneNode, MapObjectByName, Hoverable } from 'engine';
 import * as THREE from 'three';
 import SharedAssets from './SharedAssets';
+import ObjectBaseNode from './ObjectBaseNode';
 
-class HexagonalControl extends SceneNode {
+class HexagonalControl extends ObjectBaseNode {
   static activeMaterial = null;
 
   constructor(props={}) {
@@ -185,30 +186,6 @@ class HexagonalControl extends SceneNode {
   /** util: check a/b combination */
   _combination(a, b, key1, key2) {
     return (a === key1 && b === key2) || (a === key2 && b === key1);
-  }
-
-  /** create prompt */
-  _createPrompt(text, modifier='') {
-    this._destroyPrompt();
-    this._prompt = new Prompt({
-      name: this.name + '_Prompt',
-      text: text,
-      modifier: modifier,
-    });
-    this.add(this._prompt);
-  }
-
-  /** destroy prompt */
-  _destroyPrompt() {
-    if (this._prompt) {
-      this._prompt.destroy();
-      this._prompt = null;
-    }
-  }
-
-  /** check can interact */
-  _canInteract() {
-    return ! this._locked && ! Carryable.currentTarget;
   }
 
   /** util: set mesh state */

@@ -33,7 +33,10 @@ class Room_04 extends Room {
         ],
         sockets: [ [[0, .3125, 0], [0, 1, 0]] ],
         balls: [ [1, 0.25, 0] ],
-        buttons
+        airlocks: [
+          [[0, 0, -6], [0, 0, -1], [3, 4, 5, 6]]
+        ],
+        buttons,
       }
     });
 

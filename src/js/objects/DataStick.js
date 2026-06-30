@@ -1,11 +1,12 @@
 /** DataStick */
 
-import { SceneNode, Animation, Hoverable, Carryable, Prompt } from 'engine';
+import { SceneNode, Animation, Hoverable } from 'engine';
 import * as THREE from 'three';
 import SharedAssets from './SharedAssets';
 import ExtractMeshes from '../util/ExtractMeshes';
+import ObjectBaseNode from './ObjectBaseNode';
 
-class DataStick extends SceneNode {
+class DataStick extends ObjectBaseNode {
   static modifierPrompt = 'data-stick-prompt';
   static modifierMessage = 'data-stick-message';
 
@@ -64,25 +65,6 @@ class DataStick extends SceneNode {
       });
   }
 
-  /** create prompt */
-  _createPrompt(text, modifier) {
-    this._destroyPrompt();
-    this._prompt = new Prompt({
-      name: this.name + '_Prompt',
-      text: text,
-      modifier: modifier,
-    });
-    this.add(this._prompt);
-  }
-
-  /** destroy prompt */
-  _destroyPrompt() {
-    if (this._prompt) {
-      this._prompt.destroy();
-      this._prompt = null;
-    }
-  }
-
   /** display message */
   _displayMessage() {
     this._locked = true;
@@ -97,11 +79,6 @@ class DataStick extends SceneNode {
         this._hoverable.enable();
       }, 250);  
     }, 1000);
-  }
-
-  /** check can interact */
-  _canInteract() {
-    return ! this._locked && ! Carryable.currentTarget;
   }
 
   /** set position */

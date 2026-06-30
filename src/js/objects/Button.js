@@ -2,8 +2,9 @@
 
 import { SceneNode, Carryable, Hoverable, Prompt } from 'engine';
 import * as THREE from 'three';
+import ObjectBaseNode from './ObjectBaseNode';
 
-class Button extends SceneNode {
+class Button extends ObjectBaseNode {
   static materials = {};
 
   constructor(props={}) {
@@ -78,25 +79,6 @@ class Button extends SceneNode {
       });
   }
 
-  /** create prompt */
-  _createPrompt(text, modifier) {
-    this._destroyPrompt();
-    this._prompt = new Prompt({
-      name: this.name + '_Prompt',
-      text: text,
-      modifier: modifier,
-    });
-    this.add(this._prompt);
-  }
-
-  /** destroy prompt */
-  _destroyPrompt() {
-    if (this._prompt) {
-      this._prompt.destroy();
-      this._prompt = null;
-    }
-  }
-
   /** on press */
   _press() {
     if (this._locked) return;
@@ -108,11 +90,6 @@ class Button extends SceneNode {
       this._locked = false;
       this._hoverable.enable();
     }, 200);
-  }
-
-  /** check can interact */
-  _canInteract() {
-    return this._enabled && ! this._locked && ! Carryable.currentTarget;
   }
 
   /** set button colour */
@@ -130,20 +107,6 @@ class Button extends SceneNode {
         });
       }
       this._mesh.material = Button.materials[hex];
-    }
-  }
-
-  /** set enabled */
-  set enabled(value) {
-    // set value
-    this._enabled = value;
-
-    // update prompt, hoverable
-    if ( ! this._enabled ) {
-      this._destroyPrompt();
-      this._hoverable.disable();
-    } else {
-      this._hoverable.enable();
     }
   }
 }

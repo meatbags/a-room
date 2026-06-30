@@ -11,6 +11,7 @@ import Door from './Door';
 import Socket from './Socket';
 import Terminal from './Terminal';
 import CircularControl from './CircularControl';
+import Airlock from './Airlock';
 
 // testing
 import { optimisationMaterial } from '../util/CreateInstancedMeshes';
@@ -247,6 +248,19 @@ class Room extends SceneNode {
         const dataStick = new DataStick({ name, position, text });
         this._map[name] = dataStick;
         this.add( dataStick );
+      });
+    }
+
+    // add airlock/s
+    if (this._manifest.airlocks) {
+      this._manifest.airlocks.forEach((poc, i) => {
+        const name = `${this.name}_Airlock_${i+1}`;
+        const position = new THREE.Vector3().fromArray(poc[0]).add(this._position);
+        const orientation = new THREE.Vector3().fromArray(poc[1]);
+        const code = [ ...poc[2] ];
+        const airlock = new Airlock({ name, position, orientation, code });
+        this._map[name] = airlock;
+        this.add( airlock );
       });
     }
 
