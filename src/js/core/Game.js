@@ -55,7 +55,7 @@ class Game extends SceneNode {
     this.add( new Room_04() );
     //this.add( new Room_05() );
     //this.add( new Room_06() );
-    //this.add( new Room_07() );
+    this.add( new Room_07() );
     /*
     this.add( new Room_08() );
     this.add( new Room_09() );

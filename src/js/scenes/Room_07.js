@@ -12,6 +12,11 @@ class Room_07 extends Room {
       map: './models/rooms/room-07.fbx',
       collisionMap: './models/rooms/room-07-collision.fbx',
       position: new THREE.Vector3(48, 0, 0),
+      manifest: {
+        airlocks: [
+          [[-6, 8, 0], [-1, 0, 0], [1, 2, 7, 8]]
+        ],
+      }
     });
   }
 

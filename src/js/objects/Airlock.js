@@ -1,13 +1,11 @@
 /** Airlock */
 
-import { SceneNode, MapObjectByName, Carryable, Hoverable, CentrePivot, SetPivot } from 'engine';
+import { SceneNode, Animation, MapObjectByName, Carryable, Hoverable, CentrePivot, SetPivot } from 'engine';
 import * as THREE from 'three';
 import SharedAssets from './SharedAssets';
 import ObjectBaseNode from "./ObjectBaseNode";
 
-class Airlock extends ObjectBaseNode {
-  static activeMaterial = null;
-  
+class Airlock extends ObjectBaseNode {  
   constructor(props={}) {
     super({ name: props.name ?? 'Airlock' });
 
@@ -32,40 +30,31 @@ class Airlock extends ObjectBaseNode {
   }
 
   _init() {
-    // create shared material
-    if ( ! Airlock.activeMaterial ) {
-      Airlock.activeMaterial = new THREE.MeshPhysicalMaterial({
-        emissive: 0xFFFFFF,
-        emissiveIntensity: 1
-      });
-    }
-
-    // map object
+    // map object, set pivots, positions
     const group = SharedAssets.requestAsset('airlock');
     this._map = MapObjectByName( group );
-    
-    // add cosmetic
+    this._map.airlock_inner_door.geometry = this._map.airlock_inner_door.geometry.clone();
+    this._map.airlock_outer_door.geometry = this._map.airlock_outer_door.geometry.clone();
+    this._map.codebox_lever.geometry = this._map.codebox_lever.geometry.clone();
+    SetPivot( this._map.airlock_inner_door, new THREE.Vector3(1.75, 0, 3) );
+    SetPivot( this._map.airlock_outer_door, new THREE.Vector3(1.75, 0, 8.75) );
+    SetPivot( this._map.codebox_lever, new THREE.Vector3(2.1250, 2, 5.8750) );
+    const rotation = Math.atan2( this._orientation.x, this._orientation.z );
+    const up = new THREE.Vector3(0, 1, 0); 
+    const box = new THREE.Box3().setFromObject( this._map.codebox_box );
+    this._codeboxPosition = box.getCenter(new THREE.Vector3()).applyAxisAngle(up, rotation).add(this._position);  
+
+    // add cosmetic, apply orientation, position
     this._map.cosmetic.lookAt(this._orientation);
     this._map.cosmetic.position.copy(this._position);
     this._addToScene( this._map.cosmetic );
 
-    // get rotation
-    const rotation = Math.atan2( this._orientation.x, this._orientation.z );
-    const up = new THREE.Vector3(0, 1, 0);
-
-    // set airlock pivots
-    SetPivot( this._map.airlock_inner_door, new THREE.Vector3(1.75, 0, 3) );
-    SetPivot( this._map.airlock_outer_door, new THREE.Vector3(1.75, 0, 8.75) );
-    SetPivot( this._map.codebox_lever, new THREE.Vector3(2.1250, 2, 5.8750) );
-
     // set buttons
-    this._hoverableObjects = [];
-    const box = new THREE.Box3().setFromObject( this._map.codebox_box );
-    this._codeboxPosition = box.getCenter(new THREE.Vector3())
-      .applyAxisAngle(up, -rotation).add(this._position);   
+    this._hoverableObjects = []; 
     for (let i=0; i<8; i++) {
       const name = `button_${i+1}`;
       const button = this._map[name];
+      button.geometry = button.geometry.clone();
       CentrePivot( button );
       const hoverable = new Hoverable(button, {
         name: `${this.name}_Hoverable_${name}`,
@@ -85,15 +74,17 @@ class Airlock extends ObjectBaseNode {
 
     // set lever
     box.setFromObject( this._map.codebox_lever );
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(.5, .5, .5), new THREE.MeshBasicMaterial({color:0x0000FF, wireframe:true}));
-    box.getCenter(mesh.position).applyAxisAngle(up, -rotation).add(this._position);
-    this._addToScene(mesh);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(.5, .5, 1), new THREE.MeshBasicMaterial({color:0x0000FF, wireframe:true}));  
+    mesh.visible = false;
+    box.getCenter(mesh.position);
+    this._map.cosmetic.add(mesh);
     this._hoverableLever = new Hoverable(mesh, {
       name: `${this.name}_Hoverable_lever`,
       radius: 2,
       onHover: () => {
         if ( ! this._canInteract(this._codeboxPosition) ) return;
-        this._createPrompt('[e] open airlock', 'button');
+        const verb = this.getState('open') ? 'close' : 'open';
+        this._createPrompt(`[e] ${verb} airlock`, 'button');
       },
       onHoverEnd: () => {
         if ( ! this._canInteract(this._codeboxPosition) ) return;
@@ -146,8 +137,14 @@ class Airlock extends ObjectBaseNode {
 
   /** on lever */
   _onLever() {
+    // close airlock
     if ( this.getState('open') ) {
+      this._hoverableObjects.forEach(obj => {
+        obj.hoverable.enable();
+      });
       this.setState({ open: false });
+
+    // try to open airlock
     } else {
       const state = this.getState();
       let ok = true;
@@ -163,12 +160,17 @@ class Airlock extends ObjectBaseNode {
         }
       }
       if (ok) {
+        this._hoverableObjects.forEach(obj => {
+          obj.hoverable.disable();
+        });
         this.setState({ open: true });
+      } else {
+        this._doFailAnimation();
       }
     }
   }
 
-  /** on button pressed */
+  /** on button press */
   _onButton(name) {
     if (this._locked) return;
     this._locked = true;
@@ -185,31 +187,79 @@ class Airlock extends ObjectBaseNode {
       this._hoverableObjects.forEach(obj => {
         obj.hoverable.enable();
       });
-    }, 250);
+    }, 150);
+  }
+
+  _doFailAnimation() {
+    if (this._locked) return;
+    this._locked = true;
+    this._destroyPrompt();
+    this._hoverableLever.disable();
+    this._hoverableObjects.forEach(obj => {
+      obj.hoverable.disable();
+    });
+
+    // animation
+    let done = false;
+    const state = this.getState();
+    for (const key in state) {
+      if (key.indexOf('button') !== -1 && state[key]) {
+        this._map[key].material = SharedAssets.getEmissiveMaterial(0xFF0000);
+      }
+    }
+    this.add(new Animation({
+      duration: 0.5,
+      onEnd: () => {
+        for (const key in state) {
+          if (key.indexOf('button') !== -1 && state[key]) {
+            this._map[key].material = SharedAssets.getEmissiveMaterial(0xFFFFFF);
+          }
+        }
+        this._locked = false;
+        this._hoverableLever.enable();
+        this._hoverableObjects.forEach(obj => {
+          obj.hoverable.enable();
+        });
+      }
+    }));
   }
 
   /** util: set mesh state */
-  _setMaterial(mesh, state) {
+  _setMaterial(mesh, button, open) {
     if ( ! mesh.userData.material ) {
       mesh.userData.material = mesh.material;
     }
-    mesh.material = state ? Airlock.activeMaterial : mesh.userData.material;
+    mesh.material = button ? ( open ? 
+        SharedAssets.getEmissiveMaterial(0x00FF00) 
+          : SharedAssets.getEmissiveMaterial(0xFFFFFF)
+      ) : mesh.userData.material;
   }
 
   /** set airlock state */
-  _setAirlock( open ) {
+  _setAirlock( open, changed=false ) {
+    // close airlock
     if ( ! open ) {
       this._map.codebox_lever.rotation.x = -Math.PI * 1/3;
       this._map.airlock_inner_door.rotation.y = -Math.PI / 2;
       this._map.airlock_outer_door.rotation.y = 0;
       this._map.collision_inner_door.userData.collisionMesh.userData.collider.setEnabled( false );
       this._map.collision_outer_door.userData.collisionMesh.userData.collider.setEnabled( true );
+
+    // open airlock
     } else {
       this._map.codebox_lever.rotation.x = Math.PI * 1/3;
       this._map.airlock_inner_door.rotation.y = 0;
       this._map.airlock_outer_door.rotation.y = Math.PI / 2;
       this._map.collision_inner_door.userData.collisionMesh.userData.collider.setEnabled( true );
       this._map.collision_outer_door.userData.collisionMesh.userData.collider.setEnabled( false );
+    }
+
+    // on state changed -- todo animate
+    if (changed) {
+      this._hoverableLever.disable();
+      setTimeout(() => {
+        this._hoverableLever.enable();
+      }, 150);
     }
   }
 
@@ -218,17 +268,17 @@ class Airlock extends ObjectBaseNode {
     const state = this.getState();
 
     // set button materials
-    this._setMaterial( this._map.button_1, state.button_1 === 1 );
-    this._setMaterial( this._map.button_2, state.button_2 === 1 );
-    this._setMaterial( this._map.button_3, state.button_3 === 1 );
-    this._setMaterial( this._map.button_4, state.button_4 === 1 );
-    this._setMaterial( this._map.button_5, state.button_5 === 1 );
-    this._setMaterial( this._map.button_6, state.button_6 === 1 );
-    this._setMaterial( this._map.button_7, state.button_7 === 1 );
-    this._setMaterial( this._map.button_8, state.button_8 === 1 );
+    this._setMaterial( this._map.button_1, state.button_1, state.open );
+    this._setMaterial( this._map.button_2, state.button_2, state.open );
+    this._setMaterial( this._map.button_3, state.button_3, state.open );
+    this._setMaterial( this._map.button_4, state.button_4, state.open );
+    this._setMaterial( this._map.button_5, state.button_5, state.open );
+    this._setMaterial( this._map.button_6, state.button_6, state.open );
+    this._setMaterial( this._map.button_7, state.button_7, state.open );
+    this._setMaterial( this._map.button_8, state.button_8, state.open );
 
     // set open, closed
-    this._setAirlock( state.open );
+    this._setAirlock( state.open, changed.open );
   }
 }
 

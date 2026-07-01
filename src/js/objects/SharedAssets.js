@@ -8,6 +8,7 @@ class SharedAssets extends SceneNode {
   static _instance = null;
   static _instancedMeshes = {};
   static _map = null;
+  static _emissiveMaterials = {};
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
@@ -101,6 +102,17 @@ class SharedAssets extends SceneNode {
   static deepCloneMaterialArray(materials) {
     const clone = materials.map(mat => SharedAssets.deepCloneMaterial(mat));
     return clone;
+  }
+
+  /** util: get shared emissive material */
+  static getEmissiveMaterial(hex) {
+    if ( ! SharedAssets._emissiveMaterials[hex] ) {
+      SharedAssets._emissiveMaterials[hex] = new THREE.MeshPhysicalMaterial({
+        emissive: hex,
+        emissiveIntensity: 1,
+      });
+    }
+    return SharedAssets._emissiveMaterials[hex];
   }
 }
 
