@@ -5,8 +5,8 @@ import * as THREE from 'three';
 
 class ObjectBaseNode extends SceneNode {
   static cameraRef = null;
-  static broadphaseRadius = 5;
-  static broadphaseRadiusSquared = 25;
+  static broadphaseRadius = 4;
+  static broadphaseRadiusSquared = 16;
 
   constructor(props={}) {
     super(props);
@@ -63,14 +63,15 @@ class ObjectBaseNode extends SceneNode {
   }
 
   /** check can interact */
-  _canInteract() {
+  _canInteract(position=null) {
     if ( ! ObjectBaseNode.cameraRef ) {
       ObjectBaseNode.cameraRef = SceneNode.getSceneNode('Camera').getCamera();
     }
     return this._enabled && 
       ! this._locked && 
       ! Carryable.currentTarget && 
-      this._position.distanceToSquared( ObjectBaseNode.cameraRef.position ) <= ObjectBaseNode.broadphaseRadiusSquared;
+      (position || this._position).distanceToSquared( ObjectBaseNode.cameraRef.position ) 
+          <= ObjectBaseNode.broadphaseRadiusSquared;
   }
 }
 

@@ -7,6 +7,7 @@ import ExtractMeshes from '../util/ExtractMeshes';
 import ObjectBaseNode from './ObjectBaseNode';
 
 class DataStick extends ObjectBaseNode {
+  static defaultPromptText = '[e] read log';
   static modifierPrompt = 'data-stick-prompt';
   static modifierMessage = 'data-stick-message';
 
@@ -19,7 +20,9 @@ class DataStick extends ObjectBaseNode {
     this._rotation = new THREE.Euler(Math.random()*Math.PI*2, Math.random()*Math.PI*2, Math.random()*Math.PI*2);
     this._axis = new THREE.Vector3(Math.random()*2-1, Math.random()*2-1, Math.random()*2-1).normalize();
     this._rotationSpeed = Math.PI * 0.02;
-    this._text = props.text ?? '[ text ]';
+    this._displayActive = false;
+    this._promptText = props.promptText ?? DataStick.defaultPromptText;
+    this._text = props.text ?? '...';
   }
 
   /** init */
@@ -43,7 +46,7 @@ class DataStick extends ObjectBaseNode {
     this._hoverable = new Hoverable(box, {
       onHover: () => {
         if ( ! this._canInteract() ) return;
-        this._createPrompt('[e] read', DataStick.modifierPrompt);
+        this._createPrompt(this._promptText, DataStick.modifierPrompt);
       },
       onHoverEnd: () => {
         if ( ! this._canInteract() ) return;
@@ -53,32 +56,93 @@ class DataStick extends ObjectBaseNode {
     this._addToScene(box);
     this.add(this._hoverable);
 
+    // camera listener
+    this._getSceneNode('Camera').addEventListener('move', p => {
+      if (this._displayActive && !this._canInteract()) {
+        this._removeMessage();
+      }
+    });
+
     // keyboard
     const listener = this._getSceneNode('UserInterface')
       .addEventListener('key', keyboard => {
-        if (
-          ! this._canInteract() || 
-          ! this._hoverable.isHover() ||
-          ! keyboard.isKeyDown('e')
-        ) return;
-        this._displayMessage();
+        if (this._canInteract() && keyboard.isKeyDown('e')) {
+          if (this._displayActive) {
+            this._removeMessage();
+          } else if (this._hoverable.isHover()) {
+            this._displayMessage();
+          }
+        } 
       });
   }
 
   /** display message */
   _displayMessage() {
     this._locked = true;
+    this._displayActive = true;
     this._destroyPrompt();
     this._hoverable.disable();
-    this._createPrompt(this._text, DataStick.modifierMessage);
-    const element = this._prompt.element;
+    this._createPrompt(this._text + '<br><br>[e] close', DataStick.modifierMessage);
+
+    // animate text
+    this._prompt.addEventListener('ready', () => {
+      const element = this._prompt.element;
+      const children = [];
+      let duration = 0;
+      const step = 0.0075;
+      element.childNodes.forEach(child => {
+        if (child.nodeName === '#text') {
+          child.textContent.split('').forEach(letter => {
+            const e = document.createElement('span');
+            e.style.opacity = 0;
+            e.innerText = letter;
+            children.push(e);
+            duration += step;
+          });
+        } else {
+          children.push(child);
+        }
+      });
+      element.innerHTML = '';
+      children.forEach(e => element.appendChild(e));
+      this._animation = new Animation({
+        duration,
+        callback: t => {
+          const idx = children.length * t;
+          children.forEach((e, i) => {
+            if (i <= idx) {
+              e.style.opacity = 1;
+              e.dataset.cursor = 0;
+            } else if (i - 1 <= idx) {
+              e.style.opacity = 1;
+              e.dataset.cursor = 1;
+            }
+          });
+        },
+        onEnd: () => {
+          this._animation = null;
+        }
+      });
+      this.add(this._animation);
+    });
+
+    // unlock
     setTimeout(() => {
-      this._destroyPrompt();
-      setTimeout(() => {
-        this._locked = false;
-        this._hoverable.enable();
-      }, 250);  
-    }, 1000);
+      this._locked = false;
+    }, 250);
+  }
+
+  /** remove message */
+  _removeMessage() {
+    if (this._animation) {
+      this._animation.destroy();
+      this._animation = null;
+    }
+    this._displayActive = false;
+    this._destroyPrompt();
+    setTimeout(() => {
+      this._hoverable.enable();
+    }, 250);
   }
 
   /** set position */

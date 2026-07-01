@@ -24,7 +24,7 @@ class Room_02 extends Room {
           [[2, 1.75, -4.25], [0, 0, 1]]
         ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1] ] ],
-        dataSticks: [ [[3, 1.25, 3], '[ lore snippet ]'] ],
+        dataSticks: [ [[3, 1.25, 3], 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'] ],
       },
     });
 
