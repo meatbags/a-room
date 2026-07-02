@@ -49,6 +49,14 @@ class Airlock extends ObjectBaseNode {
     this._map.cosmetic.position.copy(this._position);
     this._addToScene( this._map.cosmetic );
 
+    // set shadows
+    this._map.cosmetic.children.forEach(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+
     // set buttons
     this._hoverableObjects = []; 
     for (let i=0; i<8; i++) {

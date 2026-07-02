@@ -14,7 +14,7 @@ class Room_07 extends Room {
       position: new THREE.Vector3(48, 0, 0),
       manifest: {
         airlocks: [
-          [[-6, 8, 0], [-1, 0, 0], [1, 2, 7, 8]]
+          [[-6.5, 8, 0], [-1, 0, 0], [1, 2, 7, 8]]
         ],
       }
     });
