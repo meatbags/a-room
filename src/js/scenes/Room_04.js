@@ -59,6 +59,11 @@ class Room_04 extends Room {
     }
   }
 
+  /** after init */
+  _afterInit() {    
+    this._map.Room_04_Ball_1.attach( this._map.Room_04_Socket_1, true );
+  }
+
   /** set up hatch logic */
   _initHatch() {
     // create pivot
@@ -165,13 +170,6 @@ class Room_04 extends Room {
       }
     });
     this.add(animation);
-  }
-
-  /** after init */
-  _afterInit() {
-    super._afterInit();
-    
-    this._map.Room_04_Ball_1.attach( this._map.Room_04_Socket_1, true );
   }
 
   /** on state changed */

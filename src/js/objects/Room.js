@@ -279,8 +279,8 @@ class Room extends SceneNode {
     }
   }
 
-  /** after init */
-  _afterInit() {
+  /** util: set map to optimisation material */
+  _setOptimisationMaterial() {
     this.getAsset('map').traverse(obj => {
       if (obj.isMesh) {
         if (Array.isArray(obj.material)) {
@@ -293,6 +293,8 @@ class Room extends SceneNode {
       }
     });
   }
+
+
 
   /** override this */
   _onStateChanged() {
