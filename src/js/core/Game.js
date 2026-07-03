@@ -48,14 +48,14 @@ class Game extends SceneNode {
     // overworld
     this.add( new Overworld() );
 
-    // individual rooms
-    //this.add( new Room_01() );
-    //this.add( new Room_02() );
+    // rooms
+    this.add( new Room_01() );
+    this.add( new Room_02() );
     //this.add( new Room_03() );
-    this.add( new Room_04() );
+    //this.add( new Room_04() );
     //this.add( new Room_05() );
     //this.add( new Room_06() );
-    this.add( new Room_07() );
+    //this.add( new Room_07() );
     /*
     this.add( new Room_08() );
     this.add( new Room_09() );

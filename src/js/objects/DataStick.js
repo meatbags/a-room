@@ -44,6 +44,7 @@ class DataStick extends ObjectBaseNode {
     box.visible = false;
     box.position.copy(this._position);
     this._hoverable = new Hoverable(box, {
+      radius: 1.5,
       onHover: () => {
         if ( ! this._canInteract() ) return;
         this._createPrompt(this._promptText, DataStick.modifierPrompt);

@@ -13,7 +13,9 @@ class SharedAssets extends SceneNode {
   constructor(props={}) {
     super({ name: 'SharedAssets' });
 
+    // load assets
     this.load('interactive_group', './models/interactive_group.fbx');
+    this.load('rooms_group', './models/rooms_group.fbx');
 
     SharedAssets._instance = this;
   }
@@ -48,12 +50,15 @@ class SharedAssets extends SceneNode {
   /** util: map object */
   static map() {
     if ( ! SharedAssets._map ) {
-      SharedAssets._map = MapObjectByName( this._instance.getAsset('interactive_group') );
+      SharedAssets._map = {
+        ...MapObjectByName( this._instance.getAsset('interactive_group') ),
+        ...MapObjectByName( this._instance.getAsset('rooms_group') )
+      };
     }
   }
 
   /** request asset */
-  static requestAsset( name ) {
+  static requestAsset( name, clone=true ) {
     // map assets
     SharedAssets.map();
 
@@ -64,7 +69,11 @@ class SharedAssets extends SceneNode {
     }
 
     // clone
-    return SharedAssets._map[name].clone();
+    if (clone) {
+      return SharedAssets._map[name].clone();
+    } else {
+      return SharedAssets._map[name];
+    }
   }
 
   /** get instanced mesh index, increment setup counter */

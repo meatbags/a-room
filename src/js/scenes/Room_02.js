@@ -1,6 +1,6 @@
 /** Demo Room */
 
-import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
+import { SceneNode, Carryable, CentrePivot, SetPivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import FindObject from '../util/FindObject';
@@ -13,81 +13,101 @@ class Room_02 extends Room {
   constructor() {
     super({
       name: 'Room_02',
-      map: './models/rooms/room-02.fbx',
-      collisionMap: './models/rooms/room-02-collision.fbx',
       position: new THREE.Vector3(0, 0, 48),
       manifest: {
-        balls: [ [3.5, 1.5, 0], [ -3.5, 0.25, 2.5 ] ],
-        sockets: [ 
-          [[-2.5, .3125, -3], [0, 1, 0]], 
-          [[2, 1, -4.25], [0, 0, 1]], 
-          [[2, 1.75, -4.25], [0, 0, 1]]
+        balls: [ [ -3.5, 0.25, 2.5 ], [ -3.5, 0.25, -2.5 ] ],
+        sockets: [
+          [[1.75, 1.25, 1.3125], [-1, 1, 0]],
+          [[1.75, 1.25, 0], [-1, 1, 0]],
+          [[1.75, 1.25, -1.3125], [-1, 1, 0]],
+          [[-3, 0.53125, 0], [0, 1, 0]], 
         ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1] ] ],
-        dataSticks: [ [[3, 1.25, 3], 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'] ],
+        dataSticks: [ [[2.875, 1.25, 4.188], 
+          `Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+          sed do eiusmod tempor incididunt ut labore et dolore magna
+          aliqua.`
+        ] ],
       },
     });
 
     // extend state
     this.createState({
       ...(this.getState() || {}),
-      progression: 0,
+      progression_1: 0,
+      progression_2: 0,
     });
   }
   
   _init() {
     super._init();
 
+    this._mapped = MapObjectByName( this._getCosmeticMap() );
+    
     // indicator
-    const light = new THREE.Mesh(
-      new THREE.BoxGeometry(0.125, 0.125, 0.125),
-      new THREE.MeshBasicMaterial({color:0xFF0000})
-    );
-    light.position.set(1.25, 1.75, -4.5).add(this._position);
-    this._addToScene(light);
-    this._indicator = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 2.25, 0.5),
-      new THREE.MeshBasicMaterial({ color:0xFF0000 })
-    );
-    this._indicator.geometry.translate(0, -1, 0);
-    this._indicator.position.set(1.25, 0.25, -4.5).add(this._position);
-    this._indicatorTarget = this._indicator.position.y;
-    this._addToScene(this._indicator);
+    if (
+      ! this._mapped.room_02_puzzle_rod_1 ||
+      ! this._mapped.room_02_puzzle_rod_2
+    ) {
+      console.error('Asset not found:'. this._mapped );
+      return;
+    }
+
+    SetPivot( this._mapped.room_02_puzzle_rod_1, new THREE.Vector3(2.8125, 1.75, 2.625) );
+    SetPivot( this._mapped.room_02_puzzle_rod_2, new THREE.Vector3(2.8125, 1.75, -2.625) );
+    this._target = { scale_1: 0.25, scale_2: 0.25 };
   }
 
+  /** util: progression states */
+  _getNextProgression( x, p1, p2, p3 ) {
+    // 0 >= x > 1
+    if (x < 1) {
+      return p1 ? (p2 ? (p3 ? 3 : 2) : 1) : 0;
+    // 1 >= x > 2
+    } else if (x < 2) {
+      return p2 ? (p3 ? 3 : 2) : (p1 ? 1 : 0);
+    // 2 >= x > 3
+    } else if (x < 3) {
+      return p3 ? 3 : (p2 ? 2 : (p1 ? 1 : 0));
+    // 3
+    } else {
+      return p3 ? 3 : (p2 ? 2 : (p1 ? 1 : 0));
+    }
+  }
+
+  /** on state changed */
   _onStateChanged(changed) {
     const state = this.getState();
     const door = this._map.Room_02_Door_1;
     
-    // progression ladder
-    switch (state.progression) {
-      case 0: 
-        if (state.power_2) this.setState({ progression: 1 });
-        door.close();
-        break;
-      case 1: 
-        if (state.power_3) this.setState({ progression: 2 });
-        else if ( !state.power_2 ) this.setState({ progression: 0 });
-        door.close();
-        break;
-      case 2:
-        if (state.power_3 && state.power_1) {
-          door.open();
-        } else {
-          if (!state.power_3) this.setState({ progression: 0 });
-          door.close();
-        } 
-        break;
-      default: break;
+    // progression ladders
+    let p1 = this._getNextProgression( state.progression_1, state.power_1, state.power_2, state.power_3 );
+    let p2 = this._getNextProgression( state.progression_2, state.power_3, state.power_2, state.power_1 );
+    while (p1 + p2 > 4) {
+      p1 -= 0.5;
+      p2 -= 0.5;
+    }
+    if (p1 !== state.progression_1 || p2 !== state.progression_2) {
+      this.setState({ progression_1: p1, progression_2: p2 });
     }
 
-    // test visual
-    this._indicatorTarget = state.progression == 0 ? 0.25 : 
-      state.progression == 1 ? 1 : 1.75;
+    // set door
+    door.setOpen( state.power_4 && p1 + p2 === 4 );
+
+    // set visual
+    this._target.scale_1 = Math.max(0.25, p1);
+    this._target.scale_2 = Math.max(0.25, p2);
   }
 
   _update() {
-    this._indicator.position.y += (this._indicatorTarget - this._indicator.position.y) * 0.2;
+    if (this._mapped.room_02_puzzle_rod_1 && this._mapped.room_02_puzzle_rod_2) {
+      this._mapped.room_02_puzzle_rod_1.scale.z += 
+        (this._target.scale_1 - this._mapped.room_02_puzzle_rod_1.scale.z) * 0.1;
+      this._mapped.room_02_puzzle_conn_1.position.z = -this._mapped.room_02_puzzle_rod_1.scale.z * 1.3125;
+      this._mapped.room_02_puzzle_rod_2.scale.z += 
+        (this._target.scale_2 - this._mapped.room_02_puzzle_rod_2.scale.z) * 0.1;
+      this._mapped.room_02_puzzle_conn_2.position.z = this._mapped.room_02_puzzle_rod_2.scale.z * 1.3125;
+    }
   }
 }
 

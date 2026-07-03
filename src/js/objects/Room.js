@@ -3,6 +3,7 @@
 import { SceneNode, Ladder } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
+import SharedAssets from './SharedAssets';
 import LOD from '../util/LOD';
 import Ball from './Ball';
 import Button from './Button';
@@ -28,12 +29,7 @@ class Room extends SceneNode {
     this._manifest = props.manifest ?? {};
     this._position = props.position ?? new THREE.Vector3();
 
-    // load models
-    if (props.map) this.load('map', props.map);
-    if (props.collisionMap) this.load('collision', props.collisionMap);
-    if (props.mapLow) this.load('lowpoly', props.mapLow);
-
-    // create state
+    // create state from manifest
     const state = {};
     if (this._manifest.sockets) {
       this._manifest.sockets.forEach((_, i) => {
@@ -84,28 +80,22 @@ class Room extends SceneNode {
 
   /** init room */
   _init() {
-    // add cosmetic map, lod
-    const map = this.getAsset('map');
-    if (map) {
-      ExtractMeshes( map ).forEach(mesh => {
+    // add cosmetic map
+    const cosmetic = this._getCosmeticMap();
+    if (cosmetic) {
+      ExtractMeshes(cosmetic).forEach(mesh => {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
       });
-      map.position.copy( this._position );
-      this._addToScene( map );
+      cosmetic.position.copy(this._position);
+      this._addToScene(cosmetic);
     }
 
-    // set LODs
+    // add lod, lowpoly map
     /*
-    let lowpoly = this.getAsset('lowpoly');
-    if (!lowpoly) {
-      lowpoly = new THREE.Mesh(
-        new THREE.BoxGeometry(1,1,1), 
-        new THREE.MeshPhysicalMaterial({ color:0xFF0000 })
-      );
-    }
-    // add lowpoly LOD
-    if (lowpoly) {
+    const lowpolyKey = `${this.name.toLowerCase()}_low`;
+    const lowpoly = SharedAssets.requestAsset(lowpolyKey);
+    if (lowpoly && cosmetic) {
       ExtractMeshes( lowpoly ).forEach(mesh => {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -115,13 +105,13 @@ class Room extends SceneNode {
 
       // create LOD
       this._lod = new LOD( this._position );
-      this._lod.addLevel( map, 0 );
-      this._lod.addLevel( lowpoly, 40 );
+      this._lod.addLevel( cosmetic, 0 );
+      this._lod.addLevel( lowpoly, 36 );
     }
     */
 
     // add collision map
-    const collision = this.getAsset('collision');
+    const collision = this._getCollisionMap();
     if (collision) {
       collision.position.copy( this._position );
       this._addObjectToPhysicsWorld( collision );
@@ -279,22 +269,36 @@ class Room extends SceneNode {
     }
   }
 
-  /** util: set map to optimisation material */
-  _setOptimisationMaterial() {
-    this.getAsset('map').traverse(obj => {
-      if (obj.isMesh) {
-        if (Array.isArray(obj.material)) {
-          obj.material = obj.material.map(m => {
-            return m.name.indexOf('clue') == -1 ? optimisationMaterial : m;
-          });
-        } else {
-          obj.material = optimisationMaterial;
-        }
-      }
-    });
+  /** util: get cosmetic map for room */
+  _getCosmeticMap() {
+    const cosmeticKey = `${this.name.toLowerCase()}_cosmetic`;
+    return SharedAssets.requestAsset(cosmeticKey, false);
   }
 
+  /** util: get collision map for room */
+  _getCollisionMap() {
+    const collisionKey = `${this.name.toLowerCase()}_collision`;
+    return SharedAssets.requestAsset(collisionKey, false);
+  }
 
+  /** util: set map to optimisation material */
+  _setOptimisationMaterial() {
+    const cosmeticKey = `${this.name.toLowerCase()}_cosmetic`;
+    const cosmetic = SharedAssets.requestAsset(cosmeticKey);
+    if (cosmetic) {
+      cosmetic.traverse(obj => {
+        if (obj.isMesh) {
+          if (Array.isArray(obj.material)) {
+            obj.material = obj.material.map(m => {
+              return m.name.indexOf('clue') == -1 ? optimisationMaterial : m;
+            });
+          } else {
+            obj.material = optimisationMaterial;
+          }
+        }
+      });
+    }
+  }
 
   /** override this */
   _onStateChanged() {

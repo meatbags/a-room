@@ -4,7 +4,6 @@ import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import FindObject from '../util/FindObject';
-
 import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
@@ -14,9 +13,6 @@ class Room_01 extends Room {
   constructor() {
     super({
       name: 'Room_01',
-      map: './models/rooms/room-01.fbx',
-      mapLow: './models/rooms/room-01-low.fbx',
-      collisionMap: './models/rooms/room-01-collision.fbx',
       position: new THREE.Vector3(0, 0, 96),
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
@@ -32,11 +28,11 @@ class Room_01 extends Room {
     super._init();
 
     // mapped
-    this._mapped = MapObjectByName( this.getAsset('map') );
+    this._mapped = MapObjectByName( this._getCosmeticMap() );
 
     // get shards
-    if (this._mapped.shards) {
-      this._mapped.shards.children.forEach(mesh => {
+    if (this._mapped.glass_shards) {
+      this._mapped.glass_shards.children.forEach(mesh => {
         CentrePivot( mesh );
         mesh.userData.axis = Math.random() > 0.5 ? 'x' : 'z';
         mesh.userData.speed = (Math.random() * 0.2 + 0.3) * (Math.random() > 0.5 ? 1 : -1);
@@ -82,8 +78,8 @@ class Room_01 extends Room {
   }
 
   _update( delta ) {
-    if (this._mapped.shards) {
-      this._mapped.shards.children.forEach(mesh => {
+    if (this._mapped.glass_shards) {
+      this._mapped.glass_shards.children.forEach(mesh => {
         mesh.rotation[mesh.userData.axis] += delta * mesh.userData.speed;
       });
     }
