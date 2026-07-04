@@ -6,34 +6,40 @@ import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
+import SharedAssets from '../core/SharedAssets';
+import DataStick from '../objects/DataStick';
 
 class Room_04 extends Room {
   constructor() {
     const buttons = [];
-    const dist = 3;
+    const dist = 4.75;
     const offset = Math.PI * 2 / 8;
     for (let i=0; i<8; i++) {
       const theta = offset * (i + 0.5);
       const x = Math.cos(theta) * dist;
       const z = Math.sin(theta) * dist;
-      buttons.push([x, 0.125, z, 0.375]);
+      buttons.push([[x, 1.5625, z], [0.5, 0.875, 0.5], [x, 0, z], false]);
     }
 
     super({
       name: 'Room_04',
       position: new THREE.Vector3(-48, 0, 0),
       manifest: {
-        ladders: [ [ [-1.5, 4.25, 0], [1, 0, 0], [1.5, 8.5] ] ],
+        ladders: [ [ [-0.875, 4.25, 0], [1, 0, 0], [1.5, 8.5] ] ],
         doors: [
           [ [0, 2.125, 5.5], [0, 0, -1] ], // to greenhouse
           [ [5.5, 2.125, 0], [-1, 0, 0] ], // to hub
-          [ [-5.5, 2.125, 0], [-1, 0, 0] ], // to engine
+          [ [0, 2.125, -5.5], [0, 0, 1] ], // to airlock
+          [ [-5.5, 2.125, 0], [-1, 0, 0] ], // to engineering
         ],
-        sockets: [ [[0, .3125, 0], [0, 1, 0]] ],
+        sockets: [ [[3.125, 1.625, -3.125], [-1, 0, 1]] ],
         balls: [ [1, 0.25, 0] ],
         airlocks: [
           [[0, 0, -6.5], [0, 0, -1], [3, 4, 5, 6]]
         ],
+        dataSticks: [ [[2.5, 9.25, 2.5], 
+          `I've rewired the CO₂ scrubbers to the door controls. Should make it hard for SOROKIN to move around the station. Sleep with the hatch closed!`
+        ] ],
         buttons,
       }
     });
@@ -50,26 +56,18 @@ class Room_04 extends Room {
 
     // get hatch target
     this._mapped = MapObjectByName(this._getCosmeticMap());
-    if (this._mapped.hatch) {
-      this._initHatch();
-    } else {
-      console.warn('No hatch found', this._mapped);
+    if ( ! this._mapped.room_04_hatch ) {
+      console.error('No hatch found', this._mapped);
+      return;
     }
-  }
 
-  /** after init */
-  _afterInit() {    
-    this._map.Room_04_Ball_1.attach( this._map.Room_04_Socket_1, true );
-  }
+    // init hatch
+    this._hatch = this._mapped.room_04_hatch;
+    const origin = new THREE.Vector3(0, 8.125, 1.4165);
+    SetPivot( this._hatch, origin );
 
-  /** set up hatch logic */
-  _initHatch() {
-    // create pivot
-    const origin = new THREE.Vector3(0, 8.125, 2.125);
-    SetPivot( this._mapped.hatch, origin );
-
-    // create clickable mesh
-    const box = new THREE.Box3().setFromObject(this._mapped.hatch);
+    // clickable mesh
+    const box = new THREE.Box3().setFromObject(this._hatch);
     const size = box.getSize( new THREE.Vector3() );
     const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(size.x, size.y, size.z),
@@ -77,11 +75,11 @@ class Room_04 extends Room {
     );
     mesh.visible = false;
     mesh.position.y += size.y / 2;
-    this._mapped.hatch.add(mesh);
+    this._hatch.add(mesh);
 
-    // create closed-hatch collider
-    // rp=0 7.750 0, r=1.875 h=1
-    const radius = 1.875;
+    // create hatch collider
+    // relp=0 7.750 0, r=1.25, h=1
+    const radius = 1.25;
     const radiusSqr = radius * radius;
     const physics = SceneNode.getSceneNode('Physics');
     const shape = physics.cylinderShape(1, radius);
@@ -109,6 +107,7 @@ class Room_04 extends Room {
     const canInteract = () => {
       const p = refPlayer.getPosition();
       const ok = ! Carryable.currentTarget && 
+        ! DataStick.reading &&
         ! this._map.Room_04_Ladder_1.playerOnLadder() &&
         p.y >= 8 &&
         Math.pow(p.x-this._position.x, 2) + Math.pow(p.z-this._position.z, 2) > radiusSqr;
@@ -147,6 +146,11 @@ class Room_04 extends Room {
       });
   }
 
+  /** after init */
+  _afterInit() {    
+    this._map.Room_04_Ball_1.attach( this._map.Room_04_Socket_1, true );
+  }
+
   _setHatch(open) {
     // physics
     this._collider.setEnabled( ! open );
@@ -155,13 +159,13 @@ class Room_04 extends Room {
     this._map.Room_04_Ladder_1.setEnabled( open );
     
     // rotation animation
-    const start = this._mapped.hatch.rotation.x;
+    const start = this._hatch.rotation.x;
     const stop = open ? 0 : -Math.PI / 2;
     this._hoverable.disable();
     const animation = new Animation({
       duration: 0.6,
       callback: t => {
-        this._mapped.hatch.rotation.x = start + (stop - start) * t;
+        this._hatch.rotation.x = start + (stop - start) * t;
       },
       onEnd: () => {
         this._hoverable.enable();
@@ -170,18 +174,35 @@ class Room_04 extends Room {
     this.add(animation);
   }
 
+  /** util: check door condition */
   _doorCondition( door, power, total, state ) {
+    let bits = 0;
+    for (let i=0; i<8; i++) {
+      if (state[`button_${i+1}`]) {
+        bits += 1 << i;
+      }
+    }
     if (door == 1) {
       return power && (
-        ( total == 4 && state.button_2 && state.button_3 && state.button_7 && state.button_8 ) ||
-        ( total == 6 && ! state.button_2 && ! state.button_6)
+        ( total == 3 && bits === 0b10000110 ) ||
+        ( total == 4 && bits === 0b10011100 ) ||
+        ( total == 6 && bits === 0b11101110 ) ||
+        ( total == 5 && bits === 0b11110100 )
       );
     } else if (door == 2) {
       return power;
+    } else if (door == 3) {
+      return power && (
+        ( total == 3 && bits === 0b01101000 ) ||
+        ( total == 4 && bits === 0b01110010 ) ||
+        ( total == 6 && bits === 0b11101110 ) ||
+        ( total == 5 && bits === 0b11110100 )
+      );
     } else {
       return power && (
-        ( total == 4 && state.button_1 && state.button_2 && state.button_4 && state.button_5 ) ||
-        ( total == 6 && ! state.button_2 && ! state.button_6)
+        ( total == 3 && bits === 0b00011010 ) ||
+        ( total == 4 && (bits === 0b10011100 || bits === 0b01110010 )) ||
+        ( total == 5 && bits === 0b11110100 )
       );
     }
   }
@@ -197,9 +218,9 @@ class Room_04 extends Room {
       if (key.indexOf('button') !== -1) {
         total += state[key];
         const n = key.split('_')[1];
-        this._map[`${this.name}_Button_${n}`].setHex(
-          power && state[key] ? 0x00FF00 : 0
-        );
+        this._mapped[`lever_${n}`].position.y = state[key] ? -0.625 : 0;
+        this._mapped[`indicator_${n}`].material = 
+          SharedAssets.getEmissiveMaterial(power && state[key] ? 0x00FF00 : 0xFF0000);
       }
     }
 
@@ -207,6 +228,7 @@ class Room_04 extends Room {
     this._map.Room_04_Door_1.setOpen( this._doorCondition(1, power, total, state) );
     this._map.Room_04_Door_2.setOpen( this._doorCondition(2, power, total, state) );
     this._map.Room_04_Door_3.setOpen( this._doorCondition(3, power, total, state) );
+    this._map.Room_04_Door_4.setOpen( this._doorCondition(4, power, total, state) );
 
     // set hatch
     if (changed.hatch) {

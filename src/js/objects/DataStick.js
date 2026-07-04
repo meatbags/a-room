@@ -11,6 +11,7 @@ class DataStick extends ObjectBaseNode {
   static defaultPromptText = '[e] read log';
   static modifierPrompt = 'data-stick-prompt';
   static modifierMessage = 'data-stick-message';
+  static reading = false;
 
   constructor(props={}) {
     super({ name: props.name ?? 'DataStick' });
@@ -61,7 +62,7 @@ class DataStick extends ObjectBaseNode {
 
     // camera listener
     this._getSceneNode('Camera').addEventListener('move', p => {
-      if (this._displayActive && !this._canInteract()) {
+      if (this._displayActive && ! this._canInteract()) {
         this._removeMessage();
       }
     });
@@ -82,6 +83,7 @@ class DataStick extends ObjectBaseNode {
   /** display message */
   _displayMessage() {
     this._locked = true;
+    DataStick.reading = true;
     this._displayActive = true;
     this._destroyPrompt();
     this._hoverable.disable();
@@ -141,7 +143,10 @@ class DataStick extends ObjectBaseNode {
       this._animation.destroy();
       this._animation = null;
     }
-    this._displayActive = false;
+    if (this._displayActive) {
+      this._displayActive = false;
+      DataStick.reading = false;
+    }
     this._destroyPrompt();
     setTimeout(() => {
       this._hoverable.enable();

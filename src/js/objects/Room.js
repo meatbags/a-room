@@ -131,9 +131,13 @@ class Room extends SceneNode {
       this._manifest.buttons.forEach((p, i) => {
         const name = `${this.name}_Button_${i+1}`;
         const state = `button_${i+1}`;
-        const position = new THREE.Vector3().fromArray([p[0], p[1], p[2]]).add(this._position);
-        const size = p.length > 3 ? p[3] : 0.125;
-        const button = new Button({ name, position, size });
+        const position = new THREE.Vector3().fromArray(p[0]).add(this._position);
+        const size = p.length > 1 ? p[1] : 0.125;
+        const orientation = p.length > 2 && Array.isArray(p[2]) 
+          ? new THREE.Vector3().fromArray(p[2]).normalize()
+          : null;
+        const visible = p.length > 3 ? p[3] : true;
+        const button = new Button({ name, position, size, visible, orientation });
         button.addEventListener('press', () => {
           const current = this.getState( state );
           this.setState({ [state]: current == 1 ? 0 : 1 });

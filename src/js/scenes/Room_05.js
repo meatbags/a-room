@@ -22,7 +22,7 @@ class Room_05 extends Room {
           1.5 + ((y - 1.5) * -step),
           4.6875
         ).applyAxisAngle(up, Math.PI / 6);
-        buttons.push([ p.x, p.y, p.z, 0.125 ]);
+        buttons.push([ [p.x, p.y, p.z], 0.125 ]);
       }
     }
 

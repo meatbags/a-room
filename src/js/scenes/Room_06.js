@@ -34,14 +34,14 @@ class Room_06 extends Room {
       [ [Math.cos(theta285) * r, h3, -Math.sin(theta285) * r], [Math.cos(theta285), 0, -Math.sin(theta285)] ],
     ];
     manifest.buttons = [
-      [ 0, h1, -r, 0.125 ],
-      [ -r, h1, 0, 0.125 ],
-      [ 0, h1, r, 0.125 ],
-      [ Math.cos(theta315) * r, h2, -Math.sin(theta315) * r ],
-      [ Math.cos(theta135) * r, h2, -Math.sin(theta135) * r ],
-      [ Math.cos(theta105) * r, h3, -Math.sin(theta105) * r ],
-      [ Math.cos(theta225) * r, h3, -Math.sin(theta225) * r ],
-      [ Math.cos(theta345) * r, h3, -Math.sin(theta345) * r ]
+      [ [0, h1, -r], 0.125 ],
+      [ [-r, h1, 0], 0.125 ],
+      [ [0, h1, r], 0.125 ],
+      [ [Math.cos(theta315) * r, h2, -Math.sin(theta315) * r], 0.125 ],
+      [ [Math.cos(theta135) * r, h2, -Math.sin(theta135) * r], 0.125 ],
+      [ [Math.cos(theta105) * r, h3, -Math.sin(theta105) * r], 0.125 ],
+      [ [Math.cos(theta225) * r, h3, -Math.sin(theta225) * r], 0.125 ],
+      [ [Math.cos(theta345) * r, h3, -Math.sin(theta345) * r], 0.125 ]
     ];
 
     // setup

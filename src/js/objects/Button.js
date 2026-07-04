@@ -12,14 +12,19 @@ class Button extends ObjectBaseNode {
 
     this.isButton = true;
     this._position = props.position ?? new THREE.Vector3();
-    this._size = props.size ?? 0.125;
+    this._orientation = props.orientation ?? null;
+    const size = (props.size ?? 0.125);
+    this._size = Array.isArray(size) 
+      ? new THREE.Vector3().fromArray(size) 
+      : new THREE.Vector3().setScalar(size);
+    this._visible = props.visible ?? false;
     this._enabled = true;
   }
 
   /** init */
   _init() {
     // visual
-    if (!Button.materials.default) {
+    if ( ! Button.materials.default ) {
       Button.materials.default = new THREE.MeshPhysicalMaterial({
         color: 0xFFFFFF, 
         metalness: 0.05, 
@@ -38,19 +43,27 @@ class Button extends ObjectBaseNode {
         });
       });
     }
-    this._mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(this._size/2, 12, 12),
-      Button.materials.default,
-    );
-    this._mesh.position.copy(this._position);
-    this._addToScene(this._mesh);
+
+    // create mesh
+    if (this._visible) {
+      const radius = Math.max(this._size.x, this._size.y, this._size.z) / 2;
+      this._mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 12, 12),
+        Button.materials.default,
+      );
+      this._mesh.position.copy(this._position);
+      this._addToScene(this._mesh);
+    }
 
     // hoverable
     const box = new THREE.Mesh(
-      new THREE.BoxGeometry(this._size, this._size, this._size), 
+      new THREE.BoxGeometry(this._size.x, this._size.y, this._size.z), 
       new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
     );
     box.visible = false;
+    if (this._orientation) {
+      box.lookAt(this._orientation);
+    }
     box.position.copy(this._position);
     this._hoverable = new Hoverable(box, {
       name: `${this.name}_Hoverable`,
@@ -94,6 +107,7 @@ class Button extends ObjectBaseNode {
 
   /** set button colour */
   setHex(hex) {
+    if ( ! this._visible ) return;
     if (hex === 0) {
       this._mesh.material = Button.materials.default;
     } else {
