@@ -2,7 +2,7 @@
 
 import { SceneNode, MapObjectByName, Hoverable } from 'engine';
 import * as THREE from 'three';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 import ObjectBaseNode from './ObjectBaseNode';
 
 class HexagonalControl extends ObjectBaseNode {

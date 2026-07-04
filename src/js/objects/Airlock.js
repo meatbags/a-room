@@ -2,7 +2,7 @@
 
 import { SceneNode, Animation, MapObjectByName, Carryable, Hoverable, CentrePivot, SetPivot } from 'engine';
 import * as THREE from 'three';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 import ObjectBaseNode from "./ObjectBaseNode";
 
 class Airlock extends ObjectBaseNode {  

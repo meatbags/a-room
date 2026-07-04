@@ -6,7 +6,7 @@ import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
-import SharedAssets from '../objects/SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Room_06 extends Room {
   constructor() {

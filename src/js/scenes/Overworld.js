@@ -124,23 +124,33 @@ class Overworld extends SceneNode {
 
   /** create platforms */
   createPlatforms() {
-    // manifest
+    // map
+    //           D
+    //           |
+    //       B - A - C
+    //           |   |
+    //   6 - 4 - 3 - 7 - 9
+    //       |   |   |
+    //       5   2   8
+    //           |
+    //           1
+
     const transforms1 = [
-      [ new THREE.Vector3(0, 0, 0), 0 ], 
+      [ new THREE.Vector3(0, 0, 96), 0 ], // room 01 - cryo
+      [ new THREE.Vector3(0, 0, 0), 0 ], // room 03 - hub
+      [ new THREE.Vector3(-48, 0, 0), 0 ], // room 04 - quarters
+      [ new THREE.Vector3(-96, 0, 0), 0 ], // room 06 - engineering
     ];
     const transforms2 = [
-      [ new THREE.Vector3(48, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, 48), 0 ], 
-      [ new THREE.Vector3(-48, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, -48), 0 ], 
-      [ new THREE.Vector3(-48, 0, -48), 0 ], 
-      [ new THREE.Vector3(48, 0, -48), 0 ], 
-      [ new THREE.Vector3(48, 0, 48), 0 ], 
-      [ new THREE.Vector3(-48, 0, 48), 0 ], 
-      [ new THREE.Vector3(96, 0, 0), 0 ], 
-      [ new THREE.Vector3(-96, 0, 0), 0 ], 
-      [ new THREE.Vector3(0, 0, 96), 0 ], 
-      [ new THREE.Vector3(0, 0, -96), 0 ],
+      [ new THREE.Vector3(0, 0, 48), 0 ], // room 02 - medical
+      [ new THREE.Vector3(-48, 0, 48), 0 ], // room 05 - greenhouse
+      [ new THREE.Vector3(48, 0, 0), 0 ], // room 07 - 
+      [ new THREE.Vector3(48, 0, 48), 0 ], // room 08 - 
+      [ new THREE.Vector3(96, 0, 0), 0 ], // room 09 - 
+      [ new THREE.Vector3(0, 0, -48), 0 ], // room 10 - 
+      [ new THREE.Vector3(-48, 0, -48), 0 ], // room 11 - 
+      [ new THREE.Vector3(48, 0, -48), 0 ], // room 12 - observatory
+      [ new THREE.Vector3(0, 0, -96), 0 ], // room 13 - command
     ];
 
     // create platforms

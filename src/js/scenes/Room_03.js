@@ -3,10 +3,7 @@
 import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
-import Ball from '../objects/Ball';
-import Socket from '../objects/Socket';
-import Door from '../objects/Door';
-import SharedAssets from '../objects/SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Room_03 extends Room {
   constructor() {

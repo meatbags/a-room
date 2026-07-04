@@ -3,7 +3,7 @@
 import { SceneNode, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Terminal extends SceneNode {
   static RADIUS = 2.5;

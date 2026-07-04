@@ -3,7 +3,7 @@
 import { SceneNode, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Ball from './Ball';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Socket extends SceneNode {
   constructor(props={}) {

@@ -3,7 +3,7 @@
 import { SceneNode, Carryable, Prompt } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Ball extends SceneNode {
   static ATTACH_RADIUS = 2;

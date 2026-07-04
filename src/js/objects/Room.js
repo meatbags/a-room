@@ -3,7 +3,7 @@
 import { SceneNode, Ladder } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 import LOD from '../util/LOD';
 import Ball from './Ball';
 import Button from './Button';
@@ -90,25 +90,6 @@ class Room extends SceneNode {
       cosmetic.position.copy(this._position);
       this._addToScene(cosmetic);
     }
-
-    // add lod, lowpoly map
-    /*
-    const lowpolyKey = `${this.name.toLowerCase()}_low`;
-    const lowpoly = SharedAssets.requestAsset(lowpolyKey);
-    if (lowpoly && cosmetic) {
-      ExtractMeshes( lowpoly ).forEach(mesh => {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-      });
-      lowpoly.position.copy( this._position );
-      this._addToScene( lowpoly );
-
-      // create LOD
-      this._lod = new LOD( this._position );
-      this._lod.addLevel( cosmetic, 0 );
-      this._lod.addLevel( lowpoly, 36 );
-    }
-    */
 
     // add collision map
     const collision = this._getCollisionMap();
@@ -240,7 +221,7 @@ class Room extends SceneNode {
       });
     }
 
-    // add airlock/s
+    // add airlocks
     if (this._manifest.airlocks) {
       this._manifest.airlocks.forEach((poc, i) => {
         const name = `${this.name}_Airlock_${i+1}`;
@@ -264,8 +245,42 @@ class Room extends SceneNode {
         const ladder = new Ladder({ position, normal, width, height });
         this._map[name] = ladder;
         this.add( ladder );
+
+        // visual
+        const temp = new THREE.Object3D();
+        temp.lookAt(normal);
+        temp.position.copy(position);
+        const index = SharedAssets.getInstancedMeshIndex('ladder', temp);
+
+        // collision
+        const geo = new THREE.BoxGeometry(width, height - 0.375, 0.25);
+        geo.translate(0, -0.375, -0.25);
+        geo.rotateY(Math.atan2( normal.x, normal.z ));
+        const collision = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({}));
+        collision.position.copy(position);
+        this._addObjectToPhysicsWorld(collision);
+        this._addToScene(collision);
       });
     }
+
+    // todo -- add lods/lowpoly maps
+    /*
+    const lowpolyKey = `${this.name.toLowerCase()}_low`;
+    const lowpoly = SharedAssets.requestAsset(lowpolyKey);
+    if (lowpoly && cosmetic) {
+      ExtractMeshes( lowpoly ).forEach(mesh => {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      });
+      lowpoly.position.copy( this._position );
+      this._addToScene( lowpoly );
+
+      // create LOD
+      this._lod = new LOD( this._position );
+      this._lod.addLevel( cosmetic, 0 );
+      this._lod.addLevel( lowpoly, 36 );
+    }
+    */
   }
 
   /** util: get cosmetic map for room */

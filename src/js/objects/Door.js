@@ -2,7 +2,7 @@
 
 import { SceneNode } from 'engine';
 import * as THREE from 'three';
-import SharedAssets from './SharedAssets';
+import SharedAssets from '../core/SharedAssets';
 
 class Door extends SceneNode {
   constructor(props={}) {

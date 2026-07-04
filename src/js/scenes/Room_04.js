@@ -21,8 +21,6 @@ class Room_04 extends Room {
 
     super({
       name: 'Room_04',
-      map: './models/rooms/room-04.fbx',
-      collisionMap: './models/rooms/room-04-collision.fbx',
       position: new THREE.Vector3(-48, 0, 0),
       manifest: {
         ladders: [ [ [-1.5, 4.25, 0], [1, 0, 0], [1.5, 8.5] ] ],
@@ -51,7 +49,7 @@ class Room_04 extends Room {
     super._init();
 
     // get hatch target
-    this._mapped = MapObjectByName(this.getAsset('map'));
+    this._mapped = MapObjectByName(this._getCosmeticMap());
     if (this._mapped.hatch) {
       this._initHatch();
     } else {
@@ -172,6 +170,22 @@ class Room_04 extends Room {
     this.add(animation);
   }
 
+  _doorCondition( door, power, total, state ) {
+    if (door == 1) {
+      return power && (
+        ( total == 4 && state.button_2 && state.button_3 && state.button_7 && state.button_8 ) ||
+        ( total == 6 && ! state.button_2 && ! state.button_6)
+      );
+    } else if (door == 2) {
+      return power;
+    } else {
+      return power && (
+        ( total == 4 && state.button_1 && state.button_2 && state.button_4 && state.button_5 ) ||
+        ( total == 6 && ! state.button_2 && ! state.button_6)
+      );
+    }
+  }
+
   /** on state changed */
   _onStateChanged( changed ) {
     const state = this.getState();
@@ -190,9 +204,9 @@ class Room_04 extends Room {
     }
 
     // set doors
-    this._map.Room_04_Door_1.setOpen( power && total == 4 && state.button_2 && state.button_3 && state.button_7 && state.button_8 );
-    this._map.Room_04_Door_2.setOpen( power );
-    this._map.Room_04_Door_3.setOpen( power && total == 4 && state.button_1 && state.button_2 && state.button_4 && state.button_5 );
+    this._map.Room_04_Door_1.setOpen( this._doorCondition(1, power, total, state) );
+    this._map.Room_04_Door_2.setOpen( this._doorCondition(2, power, total, state) );
+    this._map.Room_04_Door_3.setOpen( this._doorCondition(3, power, total, state) );
 
     // set hatch
     if (changed.hatch) {

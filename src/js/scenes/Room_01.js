@@ -2,12 +2,7 @@
 
 import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot } from 'engine';
 import * as THREE from 'three';
-import ExtractMeshes from '../util/ExtractMeshes';
-import FindObject from '../util/FindObject';
 import Room from '../objects/Room';
-import Ball from '../objects/Ball';
-import Socket from '../objects/Socket';
-import Door from '../objects/Door';
 
 class Room_01 extends Room {
   constructor() {
