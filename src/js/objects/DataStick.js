@@ -7,6 +7,7 @@ import ExtractMeshes from '../util/ExtractMeshes';
 import ObjectBaseNode from './ObjectBaseNode';
 
 class DataStick extends ObjectBaseNode {
+  static placeholderText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`;
   static defaultPromptText = '[e] read log';
   static modifierPrompt = 'data-stick-prompt';
   static modifierMessage = 'data-stick-message';
@@ -22,7 +23,7 @@ class DataStick extends ObjectBaseNode {
     this._rotationSpeed = Math.PI * 0.02;
     this._displayActive = false;
     this._promptText = props.promptText ?? DataStick.defaultPromptText;
-    this._text = props.text ?? '...';
+    this._text = props.text || DataStick.placeholderText;
   }
 
   /** init */
@@ -44,6 +45,7 @@ class DataStick extends ObjectBaseNode {
     box.visible = false;
     box.position.copy(this._position);
     this._hoverable = new Hoverable(box, {
+      name: `${this.name}_Hoverable`,
       radius: 1.5,
       onHover: () => {
         if ( ! this._canInteract() ) return;

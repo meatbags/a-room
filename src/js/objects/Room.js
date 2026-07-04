@@ -233,8 +233,7 @@ class Room extends SceneNode {
       this._manifest.dataSticks.forEach((prt, i) => {
         const name = `${this.name}_DataStick_${i}`;
         const position = new THREE.Vector3().fromArray(prt[0]).add(this._position);
-        // const rotation = new THREE.Euler().fromArray(prt[1]);
-        const text = prt[1];
+        const text = prt.length > 1 ? prt[1] : null;
         const dataStick = new DataStick({ name, position, text });
         this._map[name] = dataStick;
         this.add( dataStick );

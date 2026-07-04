@@ -6,13 +6,12 @@ import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
+import SharedAssets from '../objects/SharedAssets';
 
 class Room_03 extends Room {
   constructor() {
     super({
       name: 'Room_03',
-      map: './models/rooms/room-03.fbx',
-      collisionMap: './models/rooms/room-03-collision.fbx',
       position: new THREE.Vector3(0, 0, 0),
       manifest: {
         balls: [
@@ -31,6 +30,7 @@ class Room_03 extends Room {
           [ [0, 2.125, -5.5], [0, 0, -1] ],
           [ [-5.5, 2.125, 0], [-1, 0, 0] ],
         ],
+        dataSticks: [ [[-1.5, 1.25, 17], null ] ],
       }
     });
 
@@ -45,10 +45,10 @@ class Room_03 extends Room {
 
     // create map visualiser
     this._materialInactive = new THREE.MeshPhysicalMaterial({ color: 0x888888 });
-    this._materialActive1 = new THREE.MeshPhysicalMaterial({ emissive: 0xFFFFFF, emissiveIntensity: 1 });
-    this._materialActive2 = new THREE.MeshPhysicalMaterial({ emissive: 0xFFFF00, emissiveIntensity: 1 });
-    this._materialActive3 = new THREE.MeshPhysicalMaterial({ emissive: 0xFF00FF, emissiveIntensity: 1 });
-    this._materialActive4 = new THREE.MeshPhysicalMaterial({ emissive: 0x00FFFF, emissiveIntensity: 1 });
+    this._materialActive1 = SharedAssets.getEmissiveMaterial( 0xFFFFFF );
+    this._materialActive2 = SharedAssets.getEmissiveMaterial( 0xFFFF00 );
+    this._materialActive3 = SharedAssets.getEmissiveMaterial( 0xFF00FF );
+    this._materialActive4 = SharedAssets.getEmissiveMaterial( 0x00FFFF );
     const group = new THREE.Group();
     const positions = [
       [ 0, 0, -1 ],
@@ -77,9 +77,6 @@ class Room_03 extends Room {
   }
 
   _afterInit() {
-    // super._afterInit();
-   
-    // set initial attachment
     this._map.Room_03_Ball_1.attach( this._map.Room_03_Socket_2, true );
   }
 

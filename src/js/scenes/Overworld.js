@@ -14,6 +14,7 @@ class Overworld extends SceneNode {
     this._assetList = [
       'background',
       'platform',
+      'platform_tapered',
       'bridge_alt',
       'bridge_large_alt',
       'module_airlock',
@@ -27,6 +28,7 @@ class Overworld extends SceneNode {
       'module_roof_square',
       'module_observation',
       'platform_collision',
+      'platform_tapered_collision',
       'bridge_alt_collision',
       'bridge_large_alt_collision',
       'module_airlock_collision',
@@ -123,8 +125,10 @@ class Overworld extends SceneNode {
   /** create platforms */
   createPlatforms() {
     // manifest
-    const transforms = [
+    const transforms1 = [
       [ new THREE.Vector3(0, 0, 0), 0 ], 
+    ];
+    const transforms2 = [
       [ new THREE.Vector3(48, 0, 0), 0 ], 
       [ new THREE.Vector3(0, 0, 48), 0 ], 
       [ new THREE.Vector3(-48, 0, 0), 0 ], 
@@ -140,8 +144,10 @@ class Overworld extends SceneNode {
     ];
 
     // create platforms
-    this._createInstancedMeshes(this.getAsset('platform'), transforms);   
-    this._createCollisions(this.getAsset('platform_collision'), transforms);   
+    this._createInstancedMeshes(this.getAsset('platform_tapered'), transforms1);
+    this._createCollisions(this.getAsset('platform_tapered_collision'), transforms1);
+    this._createInstancedMeshes(this.getAsset('platform'), transforms2);
+    this._createCollisions(this.getAsset('platform_collision'), transforms2);
   }
 
   /** create bridges */
