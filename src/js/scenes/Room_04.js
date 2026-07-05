@@ -37,8 +37,8 @@ class Room_04 extends Room {
         airlocks: [
           [[0, 0, -6.5], [0, 0, -1], [3, 4, 5, 6]]
         ],
-        dataSticks: [ [[2.5, 9.25, 2.5], 
-          `I've rewired the CO₂ scrubbers to the door controls. Should make it hard for SOROKIN to move around the station. Sleep with the hatch closed!`
+        dataSticks: [ [[3.5, 9.25, 1], 
+          `I've rewired the CO₂ scrubbers to the door controls; should make it harder for the others to move about. Sleep with the hatch closed. We'll get through this.`
         ] ],
         buttons,
       }
@@ -144,6 +144,24 @@ class Room_04 extends Room {
         const current = this.getState('hatch');
         this.setState({ hatch: ! current });
       });
+
+    // create fan animation
+    this._fans = [];
+    for (let i=0; i<8; i++) {
+      const object = new THREE.Object3D();
+      const button = this._manifest.buttons[i];
+      const axis = new THREE.Vector3().fromArray(button[2]).negate();
+      const position = new THREE.Vector3(
+        button[0][0] + this._position.x + axis.x * 0.03125,
+        4.75,
+        button[0][2] + this._position.z + axis.z * 0.03125,
+      );
+      object.lookAt( axis );
+      object.position.copy( position );
+      object.updateMatrix();
+      const index = SharedAssets.getInstancedMeshIndex('box_fan', object);
+      this._fans.push({ index, object, position, axis });
+    }
   }
 
   /** after init */
@@ -221,6 +239,8 @@ class Room_04 extends Room {
         this._mapped[`lever_${n}`].position.y = state[key] ? -0.625 : 0;
         this._mapped[`indicator_${n}`].material = 
           SharedAssets.getEmissiveMaterial(power && state[key] ? 0x00FF00 : 0xFF0000);
+        const i = parseInt(n) - 1;
+        this._fans[i].frequency = power && state[key] ? 1 : 0;
       }
     }
 
@@ -234,6 +254,18 @@ class Room_04 extends Room {
     if (changed.hatch) {
       this._setHatch( this.getState('hatch') );
     }
+  }
+
+  _update(delta) {
+    this._fans.forEach(fan => {
+      if ( ! fan.meshes ) {
+        fan.meshes = SharedAssets.getInstancedMesh('box_fan');
+        fan.object.rotation.z = Math.random() * Math.PI;
+      }
+      fan.object.rotation.z += (fan.frequency ?? 0) * Math.PI * 2 * delta;
+      fan.object.updateMatrix();
+      fan.meshes[1].setMatrixAt(fan.index, fan.object.matrix);
+    });
   }
 }
 

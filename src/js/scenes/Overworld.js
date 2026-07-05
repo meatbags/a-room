@@ -27,6 +27,7 @@ class Overworld extends SceneNode {
       'module_roof_triangular',
       'module_roof_square',
       'module_observation',
+      'module_quarters',
       'platform_collision',
       'platform_tapered_collision',
       'bridge_alt_collision',
@@ -41,6 +42,7 @@ class Overworld extends SceneNode {
       'module_roof_triangular_collision',
       'module_roof_square_collision',
       'module_observation_collision',
+      'module_quarters_collision',
       'pylon',
       'rock'
     ];
@@ -92,8 +94,8 @@ class Overworld extends SceneNode {
 
     // room 04
     manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
-    manifest.module_square.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
-    manifest.module_roof_square.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
+    manifest.module_quarters.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
+    manifest.module_roof_circular.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
 
     // room 05
     manifest.module_observation.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );

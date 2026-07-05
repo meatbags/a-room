@@ -18,7 +18,10 @@ class Room_02 extends Room {
           [[-3, 0.53125, 0], [0, 1, 0]], 
         ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1] ] ],
-        dataSticks: [ [[2.875, 1.25, 4.188], null ] ],
+        dataSticks: [ [
+          [2.875, 1.25, 4.188], 
+          'Completed post-cryo psychological exam of the crew. Hallucinations within acceptable parameters. Anti-psychotics prescribed as necessary.'
+        ] ],
       },
     });
 

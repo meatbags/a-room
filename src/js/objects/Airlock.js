@@ -134,7 +134,7 @@ class Airlock extends ObjectBaseNode {
       this._map[key].userData.collisionMesh = collision;
     }); 
   
-    console.log(this._map);
+    // console.log(this._map);
   }
 
   /** after init */
