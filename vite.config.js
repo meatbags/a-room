@@ -7,6 +7,7 @@ import topLevelAwait from "vite-plugin-top-level-await";
 export default {
   base: './',
   build: {
+    target: 'esnext',
     rollupOptions: {
       treeshake: false,
     }

@@ -9,6 +9,7 @@ class SharedAssets extends SceneNode {
   static _instancedMeshes = {};
   static _map = null;
   static _emissiveMaterials = {};
+  static _wireframeMaterials = {};
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
@@ -132,6 +133,17 @@ class SharedAssets extends SceneNode {
       });
     }
     return SharedAssets._emissiveMaterials[hex];
+  }
+
+  /** util: get shared wireframe material */
+  static getWireframeMaterial(hex) {
+    if ( ! SharedAssets._wireframeMaterials[hex] ) {
+      SharedAssets._wireframeMaterials[hex] = new THREE.MeshBasicMaterial({
+        color: hex,
+        wireframe: true,
+      });
+    }
+    return SharedAssets._wireframeMaterials[hex];
   }
 }
 
