@@ -17,7 +17,8 @@ class Room_05 extends Room {
       position: new THREE.Vector3(-48, 0, 48),
       manifest: {
         doors: [
-          [ [0, 2.125, 5.5], [0, 0, -1] ] // to airlock
+          [ [0, 2.125, 5.5], [0, 0, -1] ], // to airlock
+          [ [0, 2.125, -5.5], [0, 0, 1] ] // to quarters
         ],
         balls: [ [0, 0.25, 8] ],
       },
@@ -36,6 +37,9 @@ class Room_05 extends Room {
       wheel_8: 0,
       wheel_9: 0,
       wheel_10: 0,
+      wheel_11: 0,
+      wheel_12: 0,
+      wheel_13: 0,
     });
   }
 
@@ -155,18 +159,6 @@ class Room_05 extends Room {
 
   /** init puzzle */
   _initPuzzle() {
-    // set puzzle positions
-    const r1 = - Math.PI / 6;
-    const offset = -4.75;
-    this._mapped.pipes_1.position.set( Math.sin(r1) * offset, 1.75, Math.cos(r1) * offset );
-    this._mapped.pipes_1.rotation.y = r1;
-    const r2 = Math.PI * 1.375;
-    this._mapped.pipes_2.position.set( -2.25, 1.5, -1 );
-    this._mapped.pipes_2.rotation.y = r2;
-    const r3 = Math.PI * 5/6;
-    this._mapped.pipes_3.position.set( Math.sin(r3) * offset, 1.75, Math.cos(r3) * offset );
-    this._mapped.pipes_3.rotation.y = r3;
-
     // utils
     const createPrompt = text => {
       destroyPrompt();
@@ -188,7 +180,7 @@ class Room_05 extends Room {
 
     // get wheels
     this._hoverableObjects = [];
-    for (let i=0; i<10; i+=1) {
+    for (let i=0; i<13; i+=1) {
       const n = i + 1;
       const key = `wheel_${n}`;
       CentrePivot( this._mapped[key] );
@@ -196,6 +188,7 @@ class Room_05 extends Room {
         new THREE.BoxGeometry(0.25, 0.25, 0.25), 
         SharedAssets.getWireframeMaterial(0x00FF00)
       );
+      mesh.visible = false;
       const hoverable = new Hoverable(mesh, {
         name: `${this.name}_${key}_hoverable`,
         radius: 2.5,
@@ -229,9 +222,22 @@ class Room_05 extends Room {
           }
         });
       });
-  }
 
-  _afterInit() {}
+    // set puzzle positions
+    const r1 = - Math.PI / 6;
+    const offset = -4.75;
+    this._mapped.pipes_1.position.set( Math.sin(r1) * offset, 1.75, Math.cos(r1) * offset );
+    this._mapped.pipes_1.rotation.y = r1;
+    const r2 = Math.PI * 1.375;
+    this._mapped.pipes_2.position.set( -2.25, 1.5, -1 );
+    this._mapped.pipes_2.rotation.y = r2;
+    const r3 = Math.PI * 5/6;
+    this._mapped.pipes_3.position.set( Math.sin(r3) * offset, 1.75, Math.cos(r3) * offset );
+    this._mapped.pipes_3.rotation.y = r3;
+    const r4 = Math.PI * 0.5;
+    this._mapped.pipes_4.position.set( -1.375, 1.625, -9.03125 );
+    this._mapped.pipes_4.rotation.y = r4;
+  }
 
   /** on wheel */
   _onWheel( name ) {
@@ -262,49 +268,79 @@ class Room_05 extends Room {
       obj.rotation = state[obj.key] ? Math.PI : 0;
     });
 
-    // set solution matrix
-    if ( ! this._matrix ) {
-      this._matrix = [
+    // set solution matrices
+    if ( ! this._matrix_4x4 ) {
+      this._matrix_4x4 = [
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0
       ];
+      this._matrix_3x2 = [
+        0, 0, 0,
+        0, 0, 0
+      ];
     }
-    this._matrix[0] = state.wheel_1 ^ state.wheel_7;
-    this._matrix[1] = state.wheel_2 ^ state.wheel_4 ^ state.wheel_7;
-    this._matrix[2] = state.wheel_2;
-    this._matrix[3] = state.wheel_2 ^ state.wheel_9;
-    this._matrix[4] = state.wheel_1 ^ state.wheel_6;
-    this._matrix[5] = state.wheel_4 ^ state.wheel_7;
-    this._matrix[6] = state.wheel_4 ^ state.wheel_8;
-    this._matrix[7] = state.wheel_2 ^ state.wheel_4 ^ state.wheel_9;
-    this._matrix[8] = state.wheel_1 ^ state.wheel_6 ^ state.wheel_10;
-    this._matrix[9] = state.wheel_1 ^ state.wheel_5 ^ state.wheel_7;
-    this._matrix[10] = state.wheel_1 ^ state.wheel_5 ^ state.wheel_8;
-    this._matrix[11] = state.wheel_2 ^ state.wheel_5 ^ state.wheel_9;
-    this._matrix[12] = state.wheel_3 ^ state.wheel_6;
-    this._matrix[13] = state.wheel_3 ^ state.wheel_5 ^ state.wheel_7;
-    this._matrix[14] = state.wheel_1 ^ state.wheel_8;
-    this._matrix[15] = state.wheel_2 ^ state.wheel_9;
 
-    // set indicator, get total
-    let total = 0;
-    this._matrix.forEach((x, i) => {
-      const name = `indicator_${i}`;
-      this._mapped[name].material = SharedAssets.getEmissiveMaterial(x ? 0x0000FF : 0x000022);
-      total += x;
+    // set 4x4 matrix
+    this._matrix_4x4[0] = state.wheel_1 ^ state.wheel_7;
+    this._matrix_4x4[1] = state.wheel_2 ^ state.wheel_4 ^ state.wheel_7;
+    this._matrix_4x4[2] = state.wheel_2;
+    this._matrix_4x4[3] = state.wheel_2;
+    this._matrix_4x4[4] = state.wheel_1 ^ state.wheel_6;
+    this._matrix_4x4[5] = state.wheel_4 ^ state.wheel_7;
+    this._matrix_4x4[6] = state.wheel_4 ^ state.wheel_8;
+    this._matrix_4x4[7] = state.wheel_2 ^ state.wheel_4 ^ state.wheel_9;
+    this._matrix_4x4[8] = state.wheel_1 ^ state.wheel_6 ^ state.wheel_10;
+    this._matrix_4x4[9] = state.wheel_1 ^ state.wheel_5 ^ state.wheel_7;
+    this._matrix_4x4[10] = state.wheel_1 ^ state.wheel_5 ^ state.wheel_8;
+    this._matrix_4x4[11] = state.wheel_2 ^ state.wheel_5 ^ state.wheel_9;
+    this._matrix_4x4[12] = state.wheel_3 ^ state.wheel_6;
+    this._matrix_4x4[13] = state.wheel_3 ^ state.wheel_5 ^ state.wheel_8;
+    this._matrix_4x4[14] = state.wheel_1 ^ state.wheel_8;
+    this._matrix_4x4[15] = state.wheel_2;
+
+    // set 3x2 matrix
+    this._matrix_3x2[0] = state.wheel_11;
+    this._matrix_3x2[1] = 0;
+    this._matrix_3x2[2] = state.wheel_12;
+    this._matrix_3x2[3] = state.wheel_11 ^ state.wheel_13;
+    this._matrix_3x2[4] = state.wheel_11 ^ state.wheel_13;
+    this._matrix_3x2[5] = state.wheel_13;
+
+    // set indicators, get totals
+    let total4x4 = 0
+    let total3x2 = 0;
+    this._matrix_4x4.forEach((x, i) => {
+      this._mapped[`indicator_${i}`].material = SharedAssets.getEmissiveMaterial(x ? 0x0000FF : 0x000022);
+      total4x4 += x;
+    });
+    this._matrix_3x2.forEach((x, i) => {
+      this._mapped[`indicator_${i+16}`].material = SharedAssets.getEmissiveMaterial(x ? 0x0000FF : 0x000022);
+      total3x2 += x;
     });
 
-    // check door
-    this._map.Room_05_Door_1.setOpen(
-      total === 5 &&
-      this._matrix[0] &&
-      this._matrix[6] &&
-      this._matrix[7] &&
-      this._matrix[10] &&
-      this._matrix[12]
-    );
+    // check solutions, set door states
+    const solved4x4 = total4x4 === 6 && this._matrix_4x4[0] && this._matrix_4x4[6] && this._matrix_4x4[7] && this._matrix_4x4[8] && this._matrix_4x4[10] && this._matrix_4x4[12];
+    const solved3x2 = total3x2 === 3 && this._matrix_3x2[0] && this._matrix_3x2[2] && this._matrix_3x2[5]
+    this._map.Room_05_Door_1.setOpen( solved4x4 );
+    this._map.Room_05_Door_2.setOpen( solved3x2 );
+
+    // set solved indicator
+    if (solved4x4) {
+      this._matrix_4x4.forEach((x, i) => {
+        if (x) {
+          this._mapped[`indicator_${i}`].material = SharedAssets.getEmissiveMaterial( 0x00FF00 );
+        }
+      });
+    }
+    if (solved3x2) {
+      this._matrix_3x2.forEach((x, i) => {
+        if (x) {
+          this._mapped[`indicator_${i+16}`].material = SharedAssets.getEmissiveMaterial( 0x00FF00 );
+        }
+      });
+    }
   }
 
   /** update */
