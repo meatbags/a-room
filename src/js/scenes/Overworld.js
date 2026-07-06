@@ -5,50 +5,11 @@ import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import { CreateInstancedMeshes } from '../util/CreateInstancedMeshes';
 import Config from '../config/Config';
+import SharedAssets from '../core/SharedAssets';
 
 class Overworld extends SceneNode {
   constructor() {
     super({ name: 'Overworld' });
-
-    // load assets
-    this._assetList = [
-      'background',
-      'platform',
-      'platform_tapered',
-      'bridge_alt',
-      'bridge_large_alt',
-      'module_airlock',
-      'module_circular',
-      'module_circular_single',
-      'module_circular_blank',
-      'module_triangular',
-      'module_square',
-      'module_roof_circular',
-      'module_roof_triangular',
-      'module_roof_square',
-      'module_observation',
-      'module_quarters',
-      'platform_collision',
-      'platform_tapered_collision',
-      'bridge_alt_collision',
-      'bridge_large_alt_collision',
-      'module_airlock_collision',
-      'module_circular_collision',
-      'module_circular_single_collision',
-      'module_circular_blank_collision',
-      'module_triangular_collision',
-      'module_square_collision',
-      'module_roof_circular_collision',
-      'module_roof_triangular_collision',
-      'module_roof_square_collision',
-      'module_observation_collision',
-      'module_quarters_collision',
-      'pylon',
-      'rock'
-    ];
-    this._assetList.forEach(key => {
-      this.load(key, `./models/overworld/${key}.fbx`);
-    })
 
     // instance ref
     this._instances = {};
@@ -57,14 +18,14 @@ class Overworld extends SceneNode {
   /** override */
   _init() {
     // cosmetic background
-    const background = this.getAsset('background');
+    const background = SharedAssets.requestAsset('background', false);
     ExtractMeshes( background ).forEach( mesh => {
       mesh.receiveShadow = true;
       mesh.castShadow = true;
     });
     this._addToScene( background );
 
-    // bridge instanced
+    // create structure
     this.createModules();
     this.createPlatforms();
     this.createBridges();
@@ -73,60 +34,64 @@ class Overworld extends SceneNode {
 
   /** create modules */
   createModules() {
-    // manifest
+    // create manifest
     const manifest = {};
-    this._assetList.forEach(key => manifest[key] = []);
+    Object.keys(SharedAssets.getMap()).forEach(key => {
+      if (key.indexOf('module') !== -1) {
+        manifest[key] = [];
+      }
+    });
 
     // room 01
     manifest.module_circular_single.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 96), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 16, 96), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(0, 16, 96), 0 ] );
 
     // room 02
-    manifest.module_triangular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
-    manifest.module_roof_triangular.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
+    manifest.module_semicircular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
+    manifest.module_semicircular_roof.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
 
     // room 03
     manifest.module_circular.push( [ new THREE.Vector3(0, 0, 0), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 0), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(0, 16, 0), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(0, 24, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(0, 24, 0), 0 ] );
 
     // room 04
     manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
     manifest.module_quarters.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
 
     // room 05
-    manifest.module_observation.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
+    manifest.module_observatory.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(-48, 8, 48), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(-48, 16, 48), 0 ] );
-    manifest.module_airlock.push( [ new THREE.Vector3(-48, 0, 48), Math.PI ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-48, 16, 48), 0 ] );
 
     // room 06
     manifest.module_circular_single.push( [ new THREE.Vector3(-96, 0, 0), Math.PI * 1.5 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 8, 0), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 16, 0), 0 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 24, 0), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(-96, 32, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-96, 32, 0), 0 ] );
 
     // room 07
     manifest.module_circular.push( [ new THREE.Vector3(48, 0, 0), 0 ] );
     manifest.module_circular_single.push( [ new THREE.Vector3(48, 8, 0), Math.PI * 0.5 ] );
     manifest.module_circular_blank.push( [ new THREE.Vector3(48, 16, 0), 0 ] );
-    manifest.module_roof_circular.push( [ new THREE.Vector3(48, 24, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(48, 24, 0), 0 ] );
 
     // create modules
     for (const key in manifest) {
       if ( ! manifest[key].length ) continue;
-      this._createInstancedMeshes(this.getAsset(key), manifest[key]);
-      this._createCollisions(this.getAsset(`${key}_collision`), manifest[key]);
+      this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, true), manifest[key] );
+      this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, true), manifest[key] );
     }
   }
 
   /** create platforms */
   createPlatforms() {
-    // map
+    // world map
+    //
     //           D
     //           |
     //       B - A - C
@@ -137,29 +102,32 @@ class Overworld extends SceneNode {
     //           |
     //           1
 
-    const transforms1 = [
-      [ new THREE.Vector3(0, 0, 96), 0 ], // room 01 - cryo
-      [ new THREE.Vector3(0, 0, 0), 0 ], // room 03 - hub
-      [ new THREE.Vector3(-48, 0, 0), 0 ], // room 04 - quarters
-      [ new THREE.Vector3(-96, 0, 0), 0 ], // room 06 - engineering
-    ];
-    const transforms2 = [
-      [ new THREE.Vector3(0, 0, 48), 0 ], // room 02 - medical
-      [ new THREE.Vector3(-48, 0, 48), 0 ], // room 05 - greenhouse
-      [ new THREE.Vector3(48, 0, 0), 0 ], // room 07 - 
-      [ new THREE.Vector3(48, 0, 48), 0 ], // room 08 - 
-      [ new THREE.Vector3(96, 0, 0), 0 ], // room 09 - 
-      [ new THREE.Vector3(0, 0, -48), 0 ], // room 10 - 
-      [ new THREE.Vector3(-48, 0, -48), 0 ], // room 11 - 
-      [ new THREE.Vector3(48, 0, -48), 0 ], // room 12 - observatory
-      [ new THREE.Vector3(0, 0, -96), 0 ], // room 13 - command
-    ];
+    const manifest = {
+      platform_circular: [
+        [ new THREE.Vector3(0, 0, 96), 0 ], // room 01 - cryo
+        [ new THREE.Vector3(0, 0, 0), 0 ], // room 03 - hub
+        [ new THREE.Vector3(-48, 0, 0), 0 ], // room 04 - quarters
+        [ new THREE.Vector3(-96, 0, 0), 0 ], // room 06 - engineering
+      ],
+      platform: [
+        [ new THREE.Vector3(0, 0, 48), 0 ], // room 02 - medical
+        [ new THREE.Vector3(-48, 0, 48), 0 ], // room 05 - greenhouse
+        [ new THREE.Vector3(48, 0, 0), 0 ], // room 07 - 
+        [ new THREE.Vector3(48, 0, 48), 0 ], // room 08 - 
+        [ new THREE.Vector3(96, 0, 0), 0 ], // room 09 - 
+        [ new THREE.Vector3(0, 0, -48), 0 ], // room 10 - 
+        [ new THREE.Vector3(-48, 0, -48), 0 ], // room 11 - 
+        [ new THREE.Vector3(48, 0, -48), 0 ], // room 12 - observatory
+        [ new THREE.Vector3(0, 0, -96), 0 ], // room 13 - command
+      ]
+    };
 
-    // create platforms
-    this._createInstancedMeshes(this.getAsset('platform_tapered'), transforms1);
-    this._createCollisions(this.getAsset('platform_tapered_collision'), transforms1);
-    this._createInstancedMeshes(this.getAsset('platform'), transforms2);
-    this._createCollisions(this.getAsset('platform_collision'), transforms2);
+    // create instanced meshes, collisions
+    for (const key in manifest) {
+      const transforms = manifest[key];
+      this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, false), transforms );
+      this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, false), transforms );
+    }
   }
 
   /** create bridges */
@@ -167,36 +135,39 @@ class Overworld extends SceneNode {
     // manifest
     const halfPi = Math.PI / 2;
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
-    const transforms = [
-      [ new THREE.Vector3(72, 0, 0), halfPi],
-      [ new THREE.Vector3(-72, 0, 0), halfPi],
-      [ new THREE.Vector3(0, 0, 72), 0],
-      [ new THREE.Vector3(0, 0, -72), 0],
-      [ new THREE.Vector3(-48, 0, 24), 0],
-      [ new THREE.Vector3(48, 0, 24), 0],
-      [ new THREE.Vector3(48, 0, -24), 0],
-      [ new THREE.Vector3(24, 0, -48), halfPi],
-      [ new THREE.Vector3(-24, 0, -48), halfPi]
-    ];
-    const transforms2 = [
-      [ new THREE.Vector3(24, 0, 0), halfPi],
-      [ new THREE.Vector3(-24, 0, 0), halfPi * 3],
-      [ new THREE.Vector3(0, 0, 24), 0],
-      [ new THREE.Vector3(0, 0, -24), Math.PI],
-    ];
+    const manifest = {
+      bridge: [
+        [ new THREE.Vector3(72, 0, 0), halfPi],
+        [ new THREE.Vector3(-72, 0, 0), halfPi],
+        [ new THREE.Vector3(0, 0, 72), 0],
+        [ new THREE.Vector3(0, 0, -72), 0],
+        [ new THREE.Vector3(-48, 0, 24), 0],
+        [ new THREE.Vector3(48, 0, 24), 0],
+        [ new THREE.Vector3(48, 0, -24), 0],
+        [ new THREE.Vector3(24, 0, -48), halfPi],
+        [ new THREE.Vector3(-24, 0, -48), halfPi]
+      ],
+      bridge_large: [
+        [ new THREE.Vector3(24, 0, 0), halfPi],
+        [ new THREE.Vector3(-24, 0, 0), halfPi * 3],
+        [ new THREE.Vector3(0, 0, 24), 0],
+        [ new THREE.Vector3(0, 0, -24), Math.PI],
+      ]
+    };
 
-    // create bridges
-    this._createInstancedMeshes(this.getAsset('bridge_alt'), transforms);
-    this._createInstancedMeshes(this.getAsset('bridge_large_alt'), transforms2);
-    this._createCollisions(this.getAsset('bridge_alt_collision'), transforms);
-    this._createCollisions(this.getAsset('bridge_large_alt_collision'), transforms2);
+    // create instanced meshes, collisions
+    for (const key in manifest) {
+      const transforms = manifest[key];
+      this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, false), transforms );
+      this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, false), transforms );
+    }
   }
 
   /** create asteroid field */
   createAsteroidField() {
     // instanced
     const n = 600;
-    const mesh = ExtractMeshes(this.getAsset('rock'))[0];
+    const mesh = ExtractMeshes( SharedAssets.requestAsset('asteroid', false) )[0];
     const instanced = new THREE.InstancedMesh(
       mesh.geometry, mesh.material, n
     );

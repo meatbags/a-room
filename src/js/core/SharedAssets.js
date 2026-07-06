@@ -14,8 +14,10 @@ class SharedAssets extends SceneNode {
     super({ name: 'SharedAssets' });
 
     // load assets
-    this.load('interactive_group', './models/interactive_group.fbx');
+    this.load('objects_group', './models/objects_group.fbx');
     this.load('rooms_group', './models/rooms_group.fbx');
+    this.load('modules_group', './models/modules_group.fbx');
+    this.load('structures_group', './models/structures_group.fbx');
 
     SharedAssets._instance = this;
   }
@@ -51,10 +53,18 @@ class SharedAssets extends SceneNode {
   static map() {
     if ( ! SharedAssets._map ) {
       SharedAssets._map = {
-        ...MapObjectByName( this._instance.getAsset('interactive_group') ),
-        ...MapObjectByName( this._instance.getAsset('rooms_group') )
+        ...MapObjectByName( this._instance.getAsset('objects_group') ),
+        ...MapObjectByName( this._instance.getAsset('rooms_group') ),
+        ...MapObjectByName( this._instance.getAsset('modules_group') ),
+        ...MapObjectByName( this._instance.getAsset('structures_group') ),
       };
     }
+  }
+
+  /** get map */
+  static getMap() {
+    SharedAssets.map();
+    return SharedAssets._map;
   }
 
   /** request asset */
