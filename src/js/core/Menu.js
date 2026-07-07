@@ -1,6 +1,6 @@
 /** Menu */
 
-import { GetRoot, SceneNode } from 'engine';
+import { GetRoot, SceneNode, Element } from 'engine';
 import * as THREE from 'three';
 import MenuAnimation from './MenuAnimation';
 
@@ -53,6 +53,36 @@ export default class Menu extends SceneNode {
       buttons: {
         '&larr; back': () => overlay.openScreen('home'),
       }
+    });
+
+    // loading screen
+    this._loadingScreen = root.getModule('LoadingScreen');
+    this._loadingScreen.setHTML('loading');
+
+    // progress element
+    this._progress = Element({
+      class: 'custom-progress',
+      children: [{
+        class: 'custom-progress__text',
+        innerText: 'initialising...',
+      }],
+    });
+    const target = this._progress.querySelector('.custom-progress__text');
+    const callback = t => target.innerText = `fetching assets... ${Math.round(t * 100)}%`;
+
+    // load events
+    root.getModule('LoadingScreen').addCustomProgressBar(this._progress, callback);
+    root.addEventListener('load', () => { target.innerText = 'compiling shaders...'; } );
+    root.addEventListener('precompile', () => {
+      setTimeout(() => {
+        target.innerText = 'initialising world...';
+      }, 150);
+    });
+    root.getModule('MainLoop').addEventListener('ready', () => {
+      target.innerText = 'ready';
+      setTimeout(() => {
+        this._progress.dataset.ready = 1;
+      }, 250);
     });
   }
 }

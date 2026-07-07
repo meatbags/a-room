@@ -73,6 +73,11 @@ export default {
       },
     }
   },
+  MainLoop: {
+    fixedDelta: false,
+    warmup: true,
+    // warmupFrames: 15,
+  },
   Physics: {
     gravity: -2.3,
     stepHeight: 0.5,
