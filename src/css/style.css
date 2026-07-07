@@ -169,7 +169,9 @@ body {
           top: calc(100% - 80px);
         }
 
-        &[data-modifier='data-stick-prompt'] {}
+        &[data-modifier='data-stick-prompt'] {
+          pointer-events: none;
+        }
 
         &[data-modifier='data-stick-message'] {
           top: 50%;
