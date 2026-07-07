@@ -37,7 +37,10 @@ class Room_04 extends Room {
         airlocks: [
           [[0, 0, -6.5], [0, 0, -1], [3, 4, 5, 6]]
         ],
-        dataSticks: [ [[3.5, 9.25, 1], 
+        terminals: [
+          [ [3.5, 8.875, 0], Math.PI ]
+        ],
+        dataSticks: [ [[3.3125, 9.25, 1.5], 
           `I've rewired the CO₂ scrubbers to the door controls; should make it harder for the others to move about. Sleep with the hatch closed. We'll get through this.`
         ] ],
         buttons,
