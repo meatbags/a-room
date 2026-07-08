@@ -4,7 +4,7 @@ import { SceneNode, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import SharedAssets from '../core/SharedAssets';
-import Computer from './Computer';
+import Computer from './computer/Computer';
 
 class Terminal extends SceneNode {
   static RADIUS = 2.5;
@@ -67,6 +67,7 @@ class Terminal extends SceneNode {
     this._rayCaster = new THREE.Raycaster(
       new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0, Terminal.RADIUS_SQUARED);
     this._cursor = new THREE.Vector2(Terminal.SCREEN_SIZE/2, Terminal.SCREEN_SIZE/2);
+    this._cursorScreen = new THREE.Vector2();
     this._plane = new THREE.Mesh(
       new THREE.PlaneGeometry(0.55, 0.55), 
       SharedAssets.getWireframeMaterial( 0x00FF00 ),
@@ -82,9 +83,13 @@ class Terminal extends SceneNode {
     this._refCamera = SceneNode.getSceneNode('Camera');
     this._refCamera.addEventListener('move', p => this._onCameraMove(p));
     this._refCamera.addEventListener('pan', () => this._onCameraPan());
-    SceneNode.getSceneNode('UserInterface').addEventListener('click', controls => {
-      this._onClick(controls);
-    });
+
+    // ui mouse events
+    const ui = SceneNode.getSceneNode('UserInterface');
+    ui.addEventListener('click', controls => this._onClick(controls));
+    ui.addEventListener('pointerdown', controls => this._onPointerDown(controls));
+    ui.addEventListener('pointerup', controls => this._onPointerUp(controls));
+    ui.addEventListener('wheel', evt => this._onWheel(evt));
 
     // add
     this._addToScene(this._group);
@@ -116,31 +121,60 @@ class Terminal extends SceneNode {
 
     // intersect screen
     const intersect = this._getScreenIntersect();
-    if (!intersect.length) return;
+    this._hasIntersect = intersect.length > 0;
+    if (!this._hasIntersect) return;
 
     // set cursor from plane uv, hover
     this._cursor.set( intersect[0].uv.x, 1 - intersect[0].uv.y );
-    this._pc.hover(
+    this._cursorScreen.set(
       Math.floor(this._cursor.x * Terminal.SCREEN_SIZE ),
       Math.floor(this._cursor.y * Terminal.SCREEN_SIZE )
     );
+    this._pc.hover(this._cursorScreen.x, this._cursorScreen.y);
 
     // update screen
     this._needsDraw = true;
   }
 
+  /** on click */
   _onClick(controls) {
-    if (!this._active || !this._canInteract) return;
-
-    // intersect screen
-    const intersect = this._getScreenIntersect();
-    if (!intersect.length) return;
+    if (!this._active || !this._canInteract || !this._hasIntersect) return;
 
     // click
-    this._pc.click(
-      Math.floor(this._cursor.x * Terminal.SCREEN_SIZE ),
-      Math.floor(this._cursor.y * Terminal.SCREEN_SIZE )
-    );
+    this._pc.click(this._cursorScreen.x, this._cursorScreen.y);
+
+    this._needsDraw = true;
+  }
+
+  /** on pointer down */
+  _onPointerDown(controls) {
+    if (!this._active || !this._canInteract || !this._hasIntersect) return;
+
+    // pointer down
+    this._pc.pointerDown(this._cursorScreen.x, this._cursorScreen.y);
+
+    // set flags
+    this._pointerIsDown = true;
+    this._needsDraw = true;
+  }
+
+  /** on pointer up */
+  _onPointerUp(controls) {
+    if (!this._pointerIsDown) return;
+
+    // on pointer up
+    this._pc.pointerUp();
+
+    this._pointerIsDown = true;
+    this._needsDraw = true;
+  }
+  
+  /** on wheel */
+  _onWheel(evt) {
+    if (!this._active || !this._canInteract || !this._hasIntersect) return;
+
+    // on wheel
+    this._pc.wheel(evt);
 
     this._needsDraw = true;
   }
@@ -148,6 +182,11 @@ class Terminal extends SceneNode {
   /** get canvas context */
   get context() {
     return this._context;
+  }
+
+  /** force draw */
+  set needsDraw(value) {
+    this._needsDraw = value;
   }
 
   /** turn on  */
