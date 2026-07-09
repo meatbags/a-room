@@ -174,6 +174,10 @@ class CircularControl extends ObjectBaseNode {
     this._setMaterial( this._map.indicator_e, state.cursor === 'button_e' );
     this._setMaterial( this._map.indicator_s, state.cursor === 'button_s' );
     this._setMaterial( this._map.indicator_w, state.cursor === 'button_w' );
+    this._setMaterial( this._map.indicator_n_out, state.cursor === 'button_n' );
+    this._setMaterial( this._map.indicator_e_out, state.cursor === 'button_e' );
+    this._setMaterial( this._map.indicator_s_out, state.cursor === 'button_s' );
+    this._setMaterial( this._map.indicator_w_out, state.cursor === 'button_w' );
     this._setMaterial( this._map.pipe_n, state.pipe_n );
     this._setMaterial( this._map.pipe_e, state.pipe_e );
     this._setMaterial( this._map.pipe_s, state.pipe_s );

@@ -55,6 +55,7 @@ class Terminal extends SceneNode {
     this._context = canvas.getContext('2d');
     this._screenTexture = new THREE.CanvasTexture( canvas );
     this._screen.material = new THREE.MeshPhysicalMaterial({
+      name: `__Terminal_MeshPhysicalMaterial_${this.name}`,
       color: 0x000022,
       emissive: 0xFFFFFF,
       emissiveMap: this._screenTexture,

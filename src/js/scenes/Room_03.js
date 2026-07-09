@@ -41,7 +41,7 @@ class Room_03 extends Room {
     super._init();
 
     // create map visualiser
-    this._materialInactive = new THREE.MeshPhysicalMaterial({ color: 0x888888 });
+    this._materialInactive = SharedAssets.getEmissiveMaterial( 0x888888 );
     this._materialActive1 = SharedAssets.getEmissiveMaterial( 0xFFFFFF );
     this._materialActive2 = SharedAssets.getEmissiveMaterial( 0xFFFF00 );
     this._materialActive3 = SharedAssets.getEmissiveMaterial( 0xFF00FF );

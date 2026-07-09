@@ -94,10 +94,10 @@ class Scrollbar {
     ctx.lineTo(Config.right - size, Config.bottom);
     ctx.moveTo(Config.right - spacing * 1.5, Config.top + spacing * 1.25);
     ctx.lineTo(Config.right - spacing, Config.top + spacing * 0.75);
-    ctx.lineTo(Config.right + spacing * 1.5, Config.top + spacing * 1.25);
-    ctx.moveTo(Config.right - spacing * 0.5, Config.bottom - spacing * 0.75);
+    ctx.lineTo(Config.right - spacing * 0.5, Config.top + spacing * 1.25);
+    ctx.moveTo(Config.right - spacing * 1.5, Config.bottom - spacing * 0.75);
     ctx.lineTo(Config.right - spacing, Config.bottom - spacing * 1.25);
-    ctx.lineTo(Config.right + spacing * 0.5, Config.bottom - spacing * 0.75);
+    ctx.lineTo(Config.right - spacing * 0.5, Config.bottom - spacing * 0.75);
     const barTop = Config.top + size + spacing;
     const barBottom = Config.bottom - size - spacing;
     const barRange = barBottom - barTop;

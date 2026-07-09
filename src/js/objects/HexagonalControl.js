@@ -198,6 +198,12 @@ class HexagonalControl extends ObjectBaseNode {
     this._setMaterial( this._map.indicator_4, state.cursor === 'button_4' );
     this._setMaterial( this._map.indicator_5, state.cursor === 'button_5' );
     this._setMaterial( this._map.indicator_6, state.cursor === 'button_6' );
+    this._setMaterial( this._map.indicator_1_out, state.cursor === 'button_1' );
+    this._setMaterial( this._map.indicator_2_out, state.cursor === 'button_2' );
+    this._setMaterial( this._map.indicator_3_out, state.cursor === 'button_3' );
+    this._setMaterial( this._map.indicator_4_out, state.cursor === 'button_4' );
+    this._setMaterial( this._map.indicator_5_out, state.cursor === 'button_5' );
+    this._setMaterial( this._map.indicator_6_out, state.cursor === 'button_6' );
     this._setMaterial( this._map.pipe_c1, state.pipe_c1 );
     this._setMaterial( this._map.pipe_c2, state.pipe_c2 );
     this._setMaterial( this._map.pipe_c3, state.pipe_c3 );

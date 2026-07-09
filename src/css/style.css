@@ -216,7 +216,7 @@ body {
         position: absolute;
         top: 0;
         left: 0;
-        background-color: #000000;
+        background-color: #00000088;
         z-index: 3;
         display: flex;
         justify-content: center;
@@ -233,6 +233,12 @@ body {
           opacity: 0;
           pointer-events: none;
           display: none;
+        }
+      }
+
+      &:not(:has(.loading-screen .custom-progress[data-ready="1"])) {
+        .engine__menu {
+          opacity: 0;
         }
       }
     }

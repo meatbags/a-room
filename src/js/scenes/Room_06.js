@@ -10,7 +10,7 @@ import SharedAssets from '../core/SharedAssets';
 
 class Room_06 extends Room {
   constructor() {
-    const r = 1.5625;
+    const r = 1.625;
     const h1 = 1.5;
     const h2 = 5.7;
     const h3 = 9.9;
@@ -57,27 +57,30 @@ class Room_06 extends Room {
 
     // add solutions
     this._solution = {};
-    this._solution.Button_1 = { pipe_nw: 1, pipe_ne: 1, pipe_se: 1, pipe_sw: 1 };
-    this._solution.Button_2 = { pipe_e: 1, pipe_ne: 1, pipe_nw: 1, pipe_w: 1, pipe_s: 1 };
-    this._solution.Button_3 = { pipe_nw: 1, pipe_s: 1, pipe_se: 1, pipe_e: 1 };
-    this._solution.Button_4 = { pipe_n: 1, pipe_s: 1, pipe_e: 1, pipe_w: 1 };
-    this._solution.Button_5 = { pipe_n: 1, pipe_s: 1, pipe_e: 1, pipe_w: 1, pipe_ne: 1, pipe_se: 1, pipe_sw: 1, pipe_nw: 1 };
-    this._solution.Button_6 = { pipe_c1: 1, pipe_c2: 1, pipe_c3: 1, pipe_c4: 1, pipe_c5: 1, pipe_c6: 1, pipe_12: 1, pipe_23: 1, pipe_34: 1, pipe_45: 1, pipe_56: 1, pipe_61: 1 };
-    this._solution.Button_7 = { pipe_c1: 1, pipe_c2: 0, pipe_c3: 1, pipe_c4: 1, pipe_c5: 1, pipe_c6: 0, pipe_12: 1, pipe_23: 1, pipe_34: 1, pipe_45: 1, pipe_56: 0, pipe_61: 1 };
-    this._solution.Button_8 = { pipe_c1: 1, pipe_c2: 1, pipe_c3: 1, pipe_c4: 1, pipe_c5: 1, pipe_c6: 1, pipe_12: 1, pipe_23: 1, pipe_34: 1, pipe_45: 1, pipe_56: 1, pipe_61: 0 };
+    this._solution.Button_1 = { cursor: ['button_s'], pipe_nw: 1, pipe_ne: 1, pipe_se: 1, pipe_sw: 1 };
+    this._solution.Button_2 = { cursor: ['button_s'], pipe_e: 1, pipe_ne: 1, pipe_nw: 1, pipe_w: 1, pipe_s: 1 };
+    this._solution.Button_3 = { cursor: ['button_w'], pipe_nw: 1, pipe_s: 1, pipe_se: 1, pipe_e: 1 };
+    this._solution.Button_4 = { cursor: ['button_s', 'button_w'], pipe_n: 1, pipe_s: 1, pipe_e: 1, pipe_w: 1 };
+    this._solution.Button_5 = { cursor: ['button_s', 'button_n'], pipe_n: 1, pipe_s: 1, pipe_e: 1, pipe_w: 1, pipe_ne: 1, pipe_se: 1, pipe_sw: 1, pipe_nw: 1 };
+    this._solution.Button_6 = { cursor: ['button_3', 'button_5', 'button_5'], pipe_c1: 1, pipe_c2: 1, pipe_c3: 1, pipe_c4: 0, pipe_c5: 1, pipe_c6: 0, pipe_12: 1, pipe_23: 1, pipe_34: 0, pipe_45: 0, pipe_56: 1, pipe_61: 0 };
+    this._solution.Button_7 = { cursor: ['button_3', 'button_3', 'button_5'], pipe_c1: 1, pipe_c2: 1, pipe_c3: 1, pipe_c4: 0, pipe_c5: 1, pipe_c6: 0, pipe_12: 1, pipe_23: 1, pipe_34: 1, pipe_45: 1, pipe_56: 1, pipe_61: 0 };
+    this._solution.Button_8 = { cursor: ['button_5', 'button_3', 'button_3'], pipe_c1: 1, pipe_c2: 1, pipe_c3: 0, pipe_c4: 0, pipe_c5: 0, pipe_c6: 0, pipe_12: 1, pipe_23: 1, pipe_34: 0, pipe_45: 0, pipe_56: 1, pipe_61: 0 };
 
     // add boxes, clues
     const object = SharedAssets.requestAsset('lidded_box');
     const clue = SharedAssets.requestAsset('circular_control_clue');
     const clueHex = SharedAssets.requestAsset('hexagonal_control_clue');
+    
     const mapped = MapObjectByName(object);
     SetPivot( mapped.lid, new THREE.Vector3(0, 0.25, 0) );
+
     this._manifest.buttons.forEach((button, i) => {
       // create box
       const clone = object.clone();
-      const orientation = new THREE.Vector3(button[0], 0, button[2]).normalize();
+      const p = button[0];
+      const orientation = new THREE.Vector3(p[0], 0, p[2]).normalize();
       clone.lookAt(orientation);
-      clone.position.set(button[0], button[1], button[2]).add(this._position);
+      clone.position.set(p[0], p[1], p[2]).add(this._position);
       const name = `Room_06_Lid_${i+1}`;
       this._map[name] = clone.getObjectByName('lid');
       this._addToScene( clone );
@@ -87,7 +90,7 @@ class Room_06 extends Room {
       if (!solution) return;
       const clone2 = i >= 5 ? clueHex.clone() : clue.clone();
       clone2.lookAt(orientation);
-      clone2.position.set(button[0], button[1] + 0.5, button[2]).add(this._position);
+      clone2.position.set(p[0], p[1] + 0.5, p[2]).add(this._position);
       this._addToScene(clone2);
       clone2.traverse(obj => {
         if (obj.isMesh && ! solution[obj.name]) {
@@ -111,8 +114,12 @@ class Room_06 extends Room {
     controls.forEach(c => {
       const state = c.getState();
       for (const key in state) {
-        if (key === 'cursor') continue;
-        if (combined[key] === undefined) {
+        if (key === 'cursor') {
+          if ( ! combined.cursor ) {
+            combined.cursor = [];
+          }
+          combined.cursor.push( state[key] );
+        } else if (combined[key] === undefined) {
           combined[key] = state[key];
         } else {
           combined[key] = combined[key] ^ state[key];
@@ -124,7 +131,12 @@ class Room_06 extends Room {
     const solution = this._solution[`Button_${n}`];
     let enabled = true;
     for (const key in combined) {
-      if (
+      if ( key === 'cursor' ) {
+        if ( ! solution.cursor || solution.cursor.join(';') !== combined[key].join(';') ) {
+          enabled = false;
+          break;
+        }
+      } else if (
         ( combined[key] === 1 && ( solution[key] === undefined || solution[key] !== 1 ) ) ||
         ( (solution[key] !== undefined && solution[key] === 1) && combined[key] !== 1 )
       ) {

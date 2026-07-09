@@ -12,7 +12,8 @@ export default class Menu extends SceneNode {
     const root = GetRoot();
 
     // menu animation
-    root.getModule('MainLoop').add(new MenuAnimation());
+    const menuAnimation = new MenuAnimation();
+    root.getModule('MainLoop').add( menuAnimation );
 
     // create menu screens
     const overlay = root.getModule('Overlay');
@@ -75,11 +76,12 @@ export default class Menu extends SceneNode {
     root.addEventListener('load', () => { target.innerText = 'compiling shaders...'; } );
     root.addEventListener('precompile', () => {
       setTimeout(() => {
-        target.innerText = 'initialising world...';
+        target.innerText = 'building world...';
       }, 150);
     });
     root.getModule('MainLoop').addEventListener('ready', () => {
-      target.innerText = 'warming up';
+      target.innerText = 'initialising...';
+      menuAnimation.ready = true;
       setTimeout(() => {
         this._progress.dataset.ready = 1;
       }, 250);

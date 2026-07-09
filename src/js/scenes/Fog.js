@@ -17,6 +17,8 @@ class Fog extends SceneNode {
   constructor() {
     super({ name: 'Fog' });
 
+    console.log( 'FOG???' );
+
     this._fogLights = [];
   }
 

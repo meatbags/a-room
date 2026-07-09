@@ -82,7 +82,10 @@ class Airlock extends ObjectBaseNode {
 
     // set lever
     box.setFromObject( this._map.codebox_lever );
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(.5, .5, 1), new THREE.MeshBasicMaterial({color:0x0000FF, wireframe:true}));  
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(.5, .5, 1), 
+      SharedAssets.getEmissiveMaterial( 0x0000FF )
+    );
     mesh.visible = false;
     box.getCenter(mesh.position);
     this._map.cosmetic.add(mesh);
