@@ -2,6 +2,7 @@
 
 import Screen from './Screen';
 import PinScreen from './PinScreen';
+import UserScreen from './UserScreen';
 import Button from './Button';
 import Text from './Text';
 import Map from './Map';
@@ -14,95 +15,64 @@ class Computer {
     this._screens = [];
     this._currentScreen = null;
 
-    // spacing
-    let title = Config.top + Config.margin * 0.75;
+    // create screens
+    Config.manifest.screens.forEach(conf => {
+      // create screen
+      let screen = null;
+      if (conf.type === undefined) {
+        screen = new Screen(conf.name);
+      } else if (conf.type === 'pinScreen') {
+        screen = new PinScreen(conf, username => {
+          const user = this._screens.find(s => s.name === 'user');
+          user.setUser(username);
+          this._openScreen('user');
+          this._root.needsDraw = true;
+        });
+      } else if (conf.type === 'userScreen') {
+        screen = new UserScreen(conf);
+      }
+      
+      // create elements
+      (conf.elements ?? []).forEach(e => {
+        if (e.type === 'text') {
+          screen.add( new Text({ ...e }) );
+        } else if (e.type === 'button') {
+          screen.add( new Button({
+            ...e,
+            onClick: () => {
+              if (!e.onClick) return;
 
-    // home screen
-    const home = new Screen('home');
-    home.add( new Text({ text: '[ MAGELLANIC INTRANET ]', x: Config.centreX, y: title }));
-    home.add( new Button({ label: 'SIGN IN', x: Config.centreX, y: title + Config.margin * 1.5, onClick: () => this._openScreen('login') }) );
-    home.add( new Button({ label: 'STATION MAP', x: Config.centreX, y: title + Config.margin * 2.5, onClick: () => this._openScreen('map') }) );
-    home.add( new Button({ label: 'LOGS', x: Config.centreX, y: title + Config.margin * 3.5, onClick: () => this._openScreen('logs') }) );
+              // open screen
+              if (e.onClick.screen) {
+                this._openScreen(e.onClick.screen);
 
-    // login/user screens
-    const userScreens = [];
-    const login = new Screen('login');
-    login.add( new Text({ text: '[ SELECT ACCOUNT ]', x: Config.centreX, y: title }));
-    ['BOHM', 'HARI', 'KELVIN', 'KOLODNY', 'RIJNDAEL', 'SOROKIN', 'TAO'].forEach((name, i) => {
-      // add login button
-      login.add(
-        new Button({
-          label: name,
-          x: Config.centreX,
-          y: title + (i + 1) * Config.margin,
-          onClick: () => {
-            pin.setLogin( name );
-            this._openScreen('pin');
-          }
-        })
-      );
+              // open pin screen
+              } else if (e.onClick.pin) {
+                const pin = this._screens.find(s => s.name === 'pin');
+                pin.setLogin(e.onClick.pin);
+                this._openScreen('pin');
+              }
+            }
+          }))
+        } else if (e.type === 'map') {
+          screen.add( new Map({ ...e }) );
+        }
+      });
 
-      // add user screen
-      const screen = new Screen(`user_${ name.toLowerCase() }`);
-      screen.add( new Text({ text: `[ WELCOME: ${name} ]`, x: Config.centreX, y: title }));
-      screen.add( Button.createBackButton(() => this._openScreen('login') ));
-      userScreens.push(screen);
+      // add back button
+      if (conf.parent) {
+        screen.add(
+          Button.createBackButton(() => this._openScreen(conf.parent))
+        );
+      }
+
+      // add screen
+      this._screens.push(screen);
     });
-    login.add( Button.createBackButton(() => this._openScreen('home')) );
 
-    // pin screen
-    const pin = new PinScreen('pin', user => {
-      this._openScreen(`user_${user.toLowerCase()}`);
-      this._root.needsDraw = true;
-    });
-    pin.add( Button.createBackButton(() => this._openScreen('login') ));
-
-    // map screen
-    const map = new Screen('map');
-    map.add( Button.createBackButton(() => this._openScreen('home')) );
-    map.add( new Map() );
-
-    // data screen
-    const logs = new Screen('logs');
-    logs.add( new Text({ text: '[ LOGS ]', x: Config.centreX, y: title }));
-    const logsWidth = Config.characterWidth * 26;
-    const logsRows = [
-      'VFP MAGELLANIC',
-      '-------+------------------',
-      'MFR    | ACX HEAVY INDS',
-      'CLASS  | Catalan',
-      'REG    | 513793/CTA',
-      'GT     | 19,000',
-      'COSPAR | 2096-638C',
-      '-------+------------------',
-      '',
-      'CREW MANIFEST',
-      '--------------------------',
-      'POSITION   | NAME',
-      '-----------+--------------',
-      'Captain    | D. BOHM ',
-      'Pilot      | R. KOLODNY',
-      'Engineer   | C. KELVIN',
-      'Engineer   | T. TAO ',
-      'Biologist  | N. HARI ',
-      'Medical    | J. RIJNDAEL',
-      'Navigator  | V. SOROKIN',
-      '-----------+--------------',
-    ];
-    logs.add( new Text({
-      x: 80,
-      y: title + Config.margin,
-      width: logsWidth,
-      height: logsRows.length * Config.lineHeight,
-      rows: logsRows,
-    }));
-    logs.add( Button.createBackButton(() => this._openScreen('home')) );
-
-    // add screens
-    this._screens.push(home, login, pin, map, logs, ...userScreens);
-  
-    // open home
-    this._openScreen('user_bohm');
+    const user = this._screens.find(s => s.name === 'user');
+    user.setUser('hari');
+    this._openScreen('user');
   }
 
   /** go to screen */

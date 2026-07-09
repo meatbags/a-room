@@ -5,7 +5,7 @@ import Config from "./Config";
 class Button {
   constructor(props) {
     // props
-    this.label = props.label ?? '';
+    this.text = props.text ?? '';
     this.x = props.x ?? 0;
     this.y = props.y ?? 0;
     this.width = props.width ?? Config.buttonWidth;
@@ -79,7 +79,7 @@ class Button {
       ctx.strokeRect(x - 2, y - 2, w + 4, h + 4);
       ctx.lineWidth = 1;
     }
-    ctx.fillText(this.label, this.x, this.y);
+    ctx.fillText(this.text, this.x, this.y);
     if (transform) {
       ctx.setTransform(transform);
     }
@@ -104,7 +104,7 @@ class Button {
   /** util: common back button */
   static createBackButton( onClick=null ) {
     return new Button({
-      label: '←',
+      text: '←',
       x: Config.left + 32,
       y: Config.top + 32,
       width: 32,

@@ -7,34 +7,15 @@ import Text from "./Text";
 import Button from "./Button";
 
 class PinScreen extends Screen {
-  constructor(name, onSolve) {
-    super(name);
+  constructor(props, onSolve) {
+    super(props.name);
 
     // on solve callback
+    this.users = props.users;
     this.onSolve = onSolve;
 
     // internals
     this._user = null;
-    this._manifest = {
-      hint: {
-        bohm: 'bohm hint',
-        hari: 'hari hint',
-        kelvin: 'kelvin hint',
-        kolodny: 'kolodny hint',
-        rijndael: 'rijndael hint',
-        sorokin: 'sorokin hint',
-        tao: 'tao hint',
-      },
-      solution: {
-        bohm: [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1],
-        hari: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        kelvin: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        kolodny: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        rijndael: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        sorokin: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        tao: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      },
-    };
     this._showHint = false;
     this._configuration = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -44,13 +25,7 @@ class PinScreen extends Screen {
     const cx = Config.centreX;
     const cy = Config.centreY - Config.margin * 0.25;
     const unit = 32;
-    const k = [
-      [0, -2],
-      [-1, -1], [0, -1], [1, -1],
-      [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0],
-      [-1, 1], [0, 1], [1, 1],
-      [0, 2],
-    ];
+    const k = [ [0, -2], [-1, -1], [0, -1], [1, -1], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [-1, 1], [0, 1], [1, 1], [0, 2] ];
     k.forEach((p, i) => {
       const button = new Button({
         label: '', 
@@ -66,7 +41,7 @@ class PinScreen extends Screen {
       this._buttons.push( button );
     });
     this._submitButton = new Button({
-      label: 'SUBMIT',
+      text: 'SUBMIT',
       x: Config.centreX - 80,
       y: Config.centreY + 4 * unit,
       width: 128,
@@ -75,7 +50,7 @@ class PinScreen extends Screen {
       }
     });
     this._clearButton = new Button({
-      label: 'X',
+      text: 'X',
       x: Config.centreX + 32,
       y: Config.centreY + 4 * unit,
       width: 64,
@@ -84,7 +59,7 @@ class PinScreen extends Screen {
       }
     });
     this._hintButton = new Button({
-      label: '?',
+      text: '?',
       x: Config.centreX + 112,
       y: Config.centreY + 4 * unit,
       width: 64,
@@ -112,12 +87,18 @@ class PinScreen extends Screen {
   }
 
   /** init logic */
-  setLogin(name) {
-    this._user = name;
-    this._title.text = `[ user: ${name} ]`;
-    const key = name.toLowerCase();
-    this._hint.text = this._manifest.hint[key] ?? 'Not found.';
-    this._solution = this._manifest.solution[key] ?? null;
+  setLogin( username ) {
+    this._user = username;
+    this._title.text = `[ user: ${username} ]`;
+    const settings = this.users[ username ];
+    if (!settings) {
+      console.warn('User not found', username);
+    }
+    this._hint.text = settings.hint ?? 'Not found.';
+    this._solution = [];
+    for (let i=0; i<13; i++) {
+      this._solution.push( (settings.password >> (12 - i)) & 1 );
+    }
   }
 
   /** click */

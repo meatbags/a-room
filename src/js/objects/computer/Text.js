@@ -10,7 +10,7 @@ class Text {
     this.x = props.x ?? 0;
     this.y = props.y ?? 0;
     this.width = props.width ?? 0;
-    this.height = props.height ?? 0;
+    this.height = props.height ?? (this.rows ? this.rows.length * Config.lineHeight : 0);
     this.hidden = props.hidden ?? false;
     this.background = props.background ?? false;
     

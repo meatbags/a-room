@@ -11,44 +11,26 @@ class Map {
     this._lines = [];
 
     // initial text
-    this._title = new Text({
-      text: 'VFP Magellanic',
-      x: Config.centreX,
-      y: Config.bottom - 32,
-      hidden: true,
-    });
+    this._title = new Text({ text: props.title ?? '[ ]', x: Config.centreX, y: Config.bottom - 32, hidden: true });
     this._text.push(this._title);
 
     // module buttons
     const unit = Config.margin;
     const cx = Config.centreX;
     const cy = Config.centreY - unit * 0.25;
-    const modules = [
-      [ 'Cryo', 0, 2 ],
-      [ 'Medical', 0, 1 ],
-      [ 'Hub', 0, 0 ],
-      [ 'Quarters 1', -1, 0 ],
-      [ 'Greenhouse', -1, 1 ],
-      [ 'Engineering', -2, 0 ],
-      [ '7', 1, 0 ],
-      [ '8', 1, 1 ],
-      [ '9', 2, 0 ],
-      [ '10', 0, -1 ],
-      [ '11', -1, -1 ],
-      [ 'Observatory', 1, -1 ],
-      [ 'Command', 0, -2 ],
+    const kernel = [
+      [ 0, 2 ], [ 0, 1 ], [ 0, 0 ], [ -1, 0 ], [ -1, 1 ],
+      [ -2, 0 ], [ 1, 0 ], [ 1, 1 ], [ 2, 0 ], [ 0, -1 ],
+      [ -1, -1 ], [ 1, -1 ], [ 0, -2 ],
     ];
-    modules.forEach((m, i) => {
-      const text = new Text({
-        text: m[0],
-        x: Config.centreX,
-        y: Config.bottom - 32,
-        hidden: true,
+    (props.modules ?? []).forEach((name, i) => {
+      const text = new Text({ 
+        text: name, x: Config.centreX, y: Config.bottom - 32, hidden: true
       });
       const button = new Button({
         label: '',
-        x: cx + m[1] * unit,
-        y: cy + m[2] * unit,
+        x: cx + kernel[i][0] * unit,
+        y: cy + kernel[i][1] * unit,
         width: 32,
         height: 32,
         onClick: () => {
