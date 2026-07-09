@@ -9,7 +9,7 @@ import Computer from './computer/Computer';
 class Terminal extends SceneNode {
   static RADIUS = 2.5;
   static RADIUS_SQUARED = 5.125;
-  static SCREEN_SIZE = 512;
+  static SCREEN_SIZE = 1024;
   static PLANE_VERTICAL_OFFSET = 0.3125;
   static PLANE_NORMAL_OFFSET = 0.225;
   

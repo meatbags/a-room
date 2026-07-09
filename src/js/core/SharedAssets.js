@@ -1,6 +1,6 @@
 /** SharedAssets */
 
-import { SceneNode, MapObjectByName } from 'engine';
+import { SceneNode, MapObjectByName, SharedMaterials } from 'engine';
 import * as THREE from 'three';
 import { CreateInstancedMeshes, optimisationInteractiveMaterial } from '../util/CreateInstancedMeshes';
 
@@ -8,8 +8,6 @@ class SharedAssets extends SceneNode {
   static _instance = null;
   static _instancedMeshes = {};
   static _map = null;
-  static _emissiveMaterials = {};
-  static _wireframeMaterials = {};
 
   constructor(props={}) {
     super({ name: 'SharedAssets' });
@@ -126,24 +124,12 @@ class SharedAssets extends SceneNode {
 
   /** util: get shared emissive material */
   static getEmissiveMaterial(hex) {
-    if ( ! SharedAssets._emissiveMaterials[hex] ) {
-      SharedAssets._emissiveMaterials[hex] = new THREE.MeshPhysicalMaterial({
-        emissive: hex,
-        emissiveIntensity: 1,
-      });
-    }
-    return SharedAssets._emissiveMaterials[hex];
+    return SharedMaterials.emissiveMaterial( hex );
   }
 
   /** util: get shared wireframe material */
   static getWireframeMaterial(hex) {
-    if ( ! SharedAssets._wireframeMaterials[hex] ) {
-      SharedAssets._wireframeMaterials[hex] = new THREE.MeshBasicMaterial({
-        color: hex,
-        wireframe: true,
-      });
-    }
-    return SharedAssets._wireframeMaterials[hex];
+    return SharedMaterials.wireframeMaterial( hex );
   }
 }
 

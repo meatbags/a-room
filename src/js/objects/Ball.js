@@ -20,8 +20,10 @@ class Ball extends SceneNode {
 
   _init() {
     // set up dummy mesh
-    this._mesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), 
-      new THREE.MeshBasicMaterial({color:0x888888}));
+    this._mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.25, 8, 8),
+      SharedAssets.getEmissiveMaterial( 0x888888 )
+    );
     this._mesh.visible = false;
     this._mesh.position.copy(this._position);
 
@@ -71,7 +73,6 @@ class Ball extends SceneNode {
     if (warp) {
       this._carryable.warp( socket.position );
     }
-    this._mesh.material.emissive = new THREE.Color(0xFFFFFF);
     this._emissiveTarget = 1;
   }
 

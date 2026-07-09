@@ -3,10 +3,9 @@
 import { SceneNode, Carryable, Hoverable, Prompt } from 'engine';
 import * as THREE from 'three';
 import ObjectBaseNode from './ObjectBaseNode';
+import SharedAssets from '../core/SharedAssets';
 
 class Button extends ObjectBaseNode {
-  static materials = {};
-
   constructor(props={}) {
     super({ name: props.name ?? 'Button' });
 
@@ -23,33 +22,12 @@ class Button extends ObjectBaseNode {
 
   /** init */
   _init() {
-    // visual
-    if ( ! Button.materials.default ) {
-      Button.materials.default = new THREE.MeshPhysicalMaterial({
-        color: 0xFFFFFF, 
-        metalness: 0.05, 
-        roughness: 0.95,
-        emissive: 0x00FF00,
-        emissiveIntensity: 0.05,
-      });
-      // create common colours
-      [0xFF0000, 0x00FF00, 0x0000FF].forEach(hex => {
-        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
-          color: 0xFFFFFF, 
-          metalness: 0.05, 
-          roughness: 0.95,
-          emissive: hex,
-          emissiveIntensity: 1,
-        });
-      });
-    }
-
     // create mesh
     if (this._visible) {
       const radius = Math.max(this._size.x, this._size.y, this._size.z) / 2;
       this._mesh = new THREE.Mesh(
         new THREE.SphereGeometry(radius, 12, 12),
-        Button.materials.default,
+        SharedAssets.getEmissiveMaterial( 0x001100 )
       );
       this._mesh.position.copy(this._position);
       this._addToScene(this._mesh);
@@ -57,8 +35,8 @@ class Button extends ObjectBaseNode {
 
     // hoverable
     const box = new THREE.Mesh(
-      new THREE.BoxGeometry(this._size.x, this._size.y, this._size.z), 
-      new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
+      new THREE.BoxGeometry(this._size.x, this._size.y, this._size.z),
+      SharedAssets.getWireframeMaterial( 0x00FF00 )
     );
     box.visible = false;
     if (this._orientation) {
@@ -109,18 +87,9 @@ class Button extends ObjectBaseNode {
   setHex(hex) {
     if ( ! this._visible ) return;
     if (hex === 0) {
-      this._mesh.material = Button.materials.default;
+      this._mesh.material = SharedAssets.getEmissiveMaterial( 0x001100 );
     } else {
-      if ( ! Button.materials[hex] ) {
-        Button.materials[hex] = new THREE.MeshPhysicalMaterial({
-          color: 0xFFFFFF, 
-          metalness: 0.05, 
-          roughness: 0.95,
-          emissive: hex,
-          emissiveIntensity: 1,
-        });
-      }
-      this._mesh.material = Button.materials[hex];
+      this._mesh.material = SharedAssets.getEmissiveMaterial( hex );
     }
   }
 }

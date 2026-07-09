@@ -92,7 +92,7 @@ class Screen {
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 1;
-    ctx.font = '23px monospace';
+    ctx.font = '36px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 

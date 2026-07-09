@@ -49,13 +49,13 @@ class Game extends SceneNode {
     this.add( new Overworld() );
 
     // rooms
-    //this.add( new Room_01() );
-    //this.add( new Room_02() );
-    //this.add( new Room_03() );
+    this.add( new Room_01() );
+    this.add( new Room_02() );
+    this.add( new Room_03() );
     this.add( new Room_04() );
-    //this.add( new Room_05() );
-    //this.add( new Room_06() );
-    //this.add( new Room_07() );
+    this.add( new Room_05() );
+    // this.add( new Room_06() );
+    // this.add( new Room_07() );
     /*
     this.add( new Room_08() );
     this.add( new Room_09() );
@@ -80,6 +80,12 @@ class Game extends SceneNode {
       this.stats.dom.style.right = '0px';
       this.stats.begin();
     }
+  }
+
+  _afterInit() {
+    const env = SceneNode.getSceneNode('Environment');
+    console.log( env._parsedCache );
+    console.log( env._materialCache );
   }
 
   resetPlayer() {

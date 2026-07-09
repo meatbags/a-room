@@ -79,7 +79,7 @@ export default class Menu extends SceneNode {
       }, 150);
     });
     root.getModule('MainLoop').addEventListener('ready', () => {
-      target.innerText = 'ready';
+      target.innerText = 'warming up';
       setTimeout(() => {
         this._progress.dataset.ready = 1;
       }, 250);

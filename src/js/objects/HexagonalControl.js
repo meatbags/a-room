@@ -6,8 +6,6 @@ import SharedAssets from '../core/SharedAssets';
 import ObjectBaseNode from './ObjectBaseNode';
 
 class HexagonalControl extends ObjectBaseNode {
-  static activeMaterial = null;
-
   constructor(props={}) {
     super({ name: props.name ?? 'HexagonalControl' });
 
@@ -38,14 +36,6 @@ class HexagonalControl extends ObjectBaseNode {
 
   /** init */
   _init() {
-    // create shared material
-    if ( ! HexagonalControl.activeMaterial ) {
-      HexagonalControl.activeMaterial = new THREE.MeshPhysicalMaterial({
-        emissive: 0xFFFFFF,
-        emissiveIntensity: 1
-      });
-    }
-
     // get object
     const object = SharedAssets.requestAsset('hexagonal_control');
     object.lookAt(this._orientation);
@@ -193,7 +183,7 @@ class HexagonalControl extends ObjectBaseNode {
     if ( ! mesh.userData.material ) {
       mesh.userData.material = mesh.material;
     }
-    mesh.material = state ? HexagonalControl.activeMaterial : mesh.userData.material;
+    mesh.material = state ? SharedAssets.getEmissiveMaterial( 0xFFFFFF ) : mesh.userData.material;
   }
 
   /** on state changed */

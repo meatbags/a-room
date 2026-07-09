@@ -9,12 +9,14 @@ class Scrollbar {
     this.max = 0;
     this.scroll = 0;
     this.scrollMax = 0;
-    this.scrollSpeed = 15;
+    this.scrollSpeed = Config.margin / 4;
 
     // elements
+    const size = Config.margin / 2;
+    const spacing = Config.margin / 4;
     this.buttons = [
-      new Button({label: '', x:Config.right-16, y:Config.top+16, width:32, height:32, onClick: () => {}}),
-      new Button({label: '', x:Config.right-16, y:Config.bottom-16, width:32, height:32, onClick: () => {}})
+      new Button({label: '', x:Config.right-spacing, y:Config.top+spacing, width:size, height:size, onClick: () => {}}),
+      new Button({label: '', x:Config.right-spacing, y:Config.bottom-spacing, width:size, height:size, onClick: () => {}})
     ];
 
     // internal
@@ -85,22 +87,24 @@ class Scrollbar {
     this.buttons.forEach(button => button.draw(ctx, delta));
 
     // draw scrollbar
+    const size = Config.margin / 2;
+    const spacing = Config.margin / 4;
     ctx.beginPath();
-    ctx.moveTo(Config.right - 32, Config.top);
-    ctx.lineTo(Config.right - 32, Config.bottom);
-    ctx.moveTo(Config.right - 16 - 8, Config.top + 16 + 4);
-    ctx.lineTo(Config.right - 16, Config.top + 16 - 4);
-    ctx.lineTo(Config.right - 16 + 8, Config.top + 16 + 4);
-    ctx.moveTo(Config.right - 16 - 8, Config.bottom - 16 - 4);
-    ctx.lineTo(Config.right - 16, Config.bottom - 16 + 4);
-    ctx.lineTo(Config.right - 16 + 8, Config.bottom - 16 - 4);
-    const barTop = Config.top + 32 + 16;
-    const barBottom = Config.bottom - 32 - 16;
+    ctx.moveTo(Config.right - size, Config.top);
+    ctx.lineTo(Config.right - size, Config.bottom);
+    ctx.moveTo(Config.right - spacing * 1.5, Config.top + spacing * 1.25);
+    ctx.lineTo(Config.right - spacing, Config.top + spacing * 0.75);
+    ctx.lineTo(Config.right + spacing * 1.5, Config.top + spacing * 1.25);
+    ctx.moveTo(Config.right - spacing * 0.5, Config.bottom - spacing * 0.75);
+    ctx.lineTo(Config.right - spacing, Config.bottom - spacing * 1.25);
+    ctx.lineTo(Config.right + spacing * 0.5, Config.bottom - spacing * 0.75);
+    const barTop = Config.top + size + spacing;
+    const barBottom = Config.bottom - size - spacing;
     const barRange = barBottom - barTop;
     const barSize = Config.innerHeight / (Config.innerHeight + this.scrollMax) * (barRange);
     const barOffset = this.scroll / this.scrollMax * (barRange - barSize);
-    ctx.moveTo(Config.right - 16, barTop + barOffset );
-    ctx.lineTo(Config.right - 16, barTop + barOffset + barSize );
+    ctx.moveTo(Config.right - spacing, barTop + barOffset );
+    ctx.lineTo(Config.right - spacing, barTop + barOffset + barSize );
     ctx.stroke();
 
     return needsDraw;

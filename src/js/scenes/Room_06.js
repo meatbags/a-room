@@ -47,8 +47,6 @@ class Room_06 extends Room {
     // setup
     super({
       name: 'Room_06',
-      map: './models/rooms/room-06.fbx',
-      collisionMap: './models/rooms/room-06-collision.fbx',
       position: new THREE.Vector3(-96, 0, 0),
       manifest
     });

@@ -41,7 +41,7 @@ class DataStick extends ObjectBaseNode {
     // hoverable
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(0.2, 0.2, 0.2), 
-      new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
+      SharedAssets.getWireframeMaterial( 0x00FF00 )
     );
     box.visible = false;
     box.position.copy(this._position);

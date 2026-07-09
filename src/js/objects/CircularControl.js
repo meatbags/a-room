@@ -6,8 +6,6 @@ import SharedAssets from '../core/SharedAssets';
 import ObjectBaseNode from './ObjectBaseNode';
 
 class CircularControl extends ObjectBaseNode {
-  static activeMaterial = null;
-
   constructor(props={}) {
     super({ name: props.name ?? 'CircularControl' });
 
@@ -34,14 +32,6 @@ class CircularControl extends ObjectBaseNode {
 
   /** init */
   _init() {
-    // create shared material
-    if ( ! CircularControl.activeMaterial ) {
-      CircularControl.activeMaterial = new THREE.MeshPhysicalMaterial({
-        emissive: 0xFFFFFF,
-        emissiveIntensity: 1
-      });
-    }
-
     // get object
     const object = SharedAssets.requestAsset('circular_control');
     object.lookAt(this._orientation);
@@ -169,7 +159,9 @@ class CircularControl extends ObjectBaseNode {
     if ( ! mesh.userData.material ) {
       mesh.userData.material = mesh.material;
     }
-    mesh.material = state ? CircularControl.activeMaterial : mesh.userData.material;
+    mesh.material = state 
+      ? SharedAssets.getEmissiveMaterial( 0xFFFFFF )
+      : mesh.userData.material;
   }
 
   /** on state changed */

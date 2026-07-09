@@ -11,7 +11,7 @@ class Map {
     this._lines = [];
 
     // initial text
-    this._title = new Text({ text: props.title ?? '[ ]', x: Config.centreX, y: Config.bottom - 32, hidden: true });
+    this._title = new Text({ text: props.title ?? '[ ]', x: Config.centreX, y: Config.bottom - Config.margin / 2, hidden: true });
     this._text.push(this._title);
 
     // module buttons
@@ -25,14 +25,14 @@ class Map {
     ];
     (props.modules ?? []).forEach((name, i) => {
       const text = new Text({ 
-        text: name, x: Config.centreX, y: Config.bottom - 32, hidden: true
+        text: name, x: Config.centreX, y: Config.bottom - Config.margin / 2, hidden: true
       });
       const button = new Button({
         label: '',
         x: cx + kernel[i][0] * unit,
         y: cy + kernel[i][1] * unit,
-        width: 32,
-        height: 32,
+        width: Config.margin / 2,
+        height: Config.margin / 2,
         onClick: () => {
           this._text.forEach(t => t.hide());
           text.reveal();

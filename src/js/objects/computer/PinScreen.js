@@ -24,7 +24,7 @@ class PinScreen extends Screen {
     this._buttons = [];
     const cx = Config.centreX;
     const cy = Config.centreY - Config.margin * 0.25;
-    const unit = 32;
+    const unit = Config.margin / 2;
     const k = [ [0, -2], [-1, -1], [0, -1], [1, -1], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [-1, 1], [0, 1], [1, 1], [0, 2] ];
     k.forEach((p, i) => {
       const button = new Button({
@@ -42,27 +42,27 @@ class PinScreen extends Screen {
     });
     this._submitButton = new Button({
       text: 'SUBMIT',
-      x: Config.centreX - 80,
+      x: Config.centreX - Config.margin * 1.25,
       y: Config.centreY + 4 * unit,
-      width: 128,
+      width: Config.margin * 2,
       onClick: () => {
         this._checkAnswer();
       }
     });
     this._clearButton = new Button({
       text: 'X',
-      x: Config.centreX + 32,
+      x: Config.centreX + Config.margin / 2,
       y: Config.centreY + 4 * unit,
-      width: 64,
+      width: Config.margin,
       onClick: () => {
         this._configuration = this._configuration.map(x => 0);
       }
     });
     this._hintButton = new Button({
       text: '?',
-      x: Config.centreX + 112,
+      x: Config.centreX + Config.margin * 1.75,
       y: Config.centreY + 4 * unit,
-      width: 64,
+      width: Config.margin,
       onClick: () => {
         this._showHint = ! this._showHint;
       }

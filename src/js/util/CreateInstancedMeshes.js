@@ -9,6 +9,7 @@ const optimisationMaterial = new THREE.MeshPhysicalMaterial({
   emissive: 0xFFFFFF,
   emissiveIntensity: 0.1,
 });
+optimisationMaterial.name = '_createInstancedMeshes_optimisationMaterial';
 const optimisationInteractiveMaterial = new THREE.MeshPhysicalMaterial({
   color: 0xFFFFFF, 
   metalness: 0.05, 
@@ -16,8 +17,10 @@ const optimisationInteractiveMaterial = new THREE.MeshPhysicalMaterial({
   emissive: 0x00FF00,
   emissiveIntensity: 0.25,
 });
+optimisationMaterial.name = '_createInstancedMeshes_optimisationInteractiveMaterial';
 const optimisationMaterialTransparent = new THREE.MeshPhysicalMaterial({
   color: 0xFFFFFF, metalness: 0, roughness: 0, transmission: 1 });
+optimisationMaterial.name = '_createInstancedMeshes_optimisationMaterialTransparent';
 
 /** check should cast shadow */
 const ShouldCastShadow = (material) => {

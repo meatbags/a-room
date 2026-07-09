@@ -260,7 +260,7 @@ class Room extends SceneNode {
         const geo = new THREE.BoxGeometry(width, height - 0.375, 0.25);
         geo.translate(0, -0.375, -0.25);
         geo.rotateY(Math.atan2( normal.x, normal.z ));
-        const collision = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({}));
+        const collision = new THREE.Mesh(geo, SharedAssets.getWireframeMaterial(0x888888) );
         collision.position.copy(position);
         this._addObjectToPhysicsWorld(collision);
         this._addToScene(collision);

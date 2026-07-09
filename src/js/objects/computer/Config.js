@@ -2,12 +2,12 @@
 
 const Config = {};
 
-Config.size = 512;
-Config.margin = 64;
-Config.buttonWidth = 256;
-Config.buttonHeight = 48;
-Config.lineHeight = 24;
-Config.characterWidth = 13;
+Config.size = 1024;
+Config.margin = 128;
+Config.buttonWidth = 512;
+Config.buttonHeight = 96;
+Config.lineHeight = 36;
+Config.characterWidth = 20;
 Config.buttonHoverColour = '#000088';
 Config.backgroundColour = '#000';
 Config.centreX = Config.size / 2;
@@ -143,7 +143,7 @@ Config.manifest = {
     parent: 'home',
     elements: [
       { type: 'text', text: '[ LOGS ]', x: cx, y: title },
-      { type: 'text', x: 80, y: title + margin, width: Config.characterWidth * 26, rows: [
+      { type: 'text', x: Config.margin + Config.margin / 4, y: title + margin, width: Config.characterWidth * 26, rows: [
         'VFP MAGELLANIC',
         '-------+------------------',
         'MFR    | ACX HEAVY INDS',

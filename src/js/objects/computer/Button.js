@@ -105,10 +105,10 @@ class Button {
   static createBackButton( onClick=null ) {
     return new Button({
       text: '←',
-      x: Config.left + 32,
-      y: Config.top + 32,
-      width: 32,
-      height: 32,
+      x: Config.left + Config.margin / 2,
+      y: Config.top + Config.margin / 2,
+      width: Config.margin / 2,
+      height: Config.margin / 2,
       fixed: true,
       onClick: onClick,
     });
