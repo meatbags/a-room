@@ -232,6 +232,22 @@ class Lighting extends SceneNode {
         } else if (conf.type === 'point') {
           light = new THREE.PointLight(conf.color ?? 0xFFFFFF, conf.intensity ?? 0, conf.distance ?? 100, conf.decay ?? 2);
           light.position.copy(new THREE.Vector3().fromArray(conf.position ?? [0, 1, 0]));
+        
+        // rectarea
+        } else if (conf.type === 'rectarea') {
+          if ( ! this._rectAreaInitialised ) {
+            WebGPU.RectAreaLightNode.setLTC( RectAreaLightTexturesLib.init() );
+            this._rectAreaInitialised = true;
+          }
+
+          light = new WebGPU.RectAreaLight(
+            conf.color ?? 0xFFFFFF,
+            conf.intensity ?? 1,
+            conf.width ?? 1,
+            conf.height ?? 1,
+          );
+          light.position.copy(new THREE.Vector3().fromArray(conf.position ?? [0, 1, 0]));
+          light.lookAt(new THREE.Vector3().fromArray(conf.lookAt ?? [0, 0, 0]));
         }
 
         // create shadow / csm

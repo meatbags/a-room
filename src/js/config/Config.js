@@ -49,7 +49,7 @@ export default {
       default: {
         type: 'default',
         lighting: {
-          ambient: { type: 'ambient', intensity: 0.025 },
+          ambient: { type: 'ambient', intensity: 0.25 },
           directional: { type: 'directional', intensity: 0.05, position: [-1, 1, -1] },
           directional_shadow: { 
             type: 'directional', 
@@ -68,6 +68,12 @@ export default {
             }
           },
           point: { type: 'point', color: 0x0000FF, intensity: 10, position: [0, 3, 0] },
+          rectArea: { 
+            type: 'rectarea', color: 0xFFFFFF, intensity: 5, width: 1.25, height: 0.3125, 
+            position: [-48, 14.75, -2.875], lookAt: [-48, 0, -2.75] },
+          rectArea2: { 
+            type: 'rectarea', color: 0xFFFFFF, intensity: 5, width: 1.25, height: 0.3125, 
+            position: [-48, 14.75, 2.875], lookAt: [-48, 0, 2.75] },
           envMapIntensity: 0.35,
         }
       },
