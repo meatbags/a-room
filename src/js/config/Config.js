@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 
 const getPointLight = () => {
+  return null;
   const light = new THREE.PointLight(0x0000FF, 0.25, 10);
   //light.castShadow = true;
   return light;
@@ -60,7 +61,6 @@ export default {
               cameraSize: 5,
               cameraNear: 0.5,
               cameraFar: 512,
-              //csmMaxFar: 20,
               csmMaxFar: 64,
               csmCascades: 4,
               csmFade: true,
@@ -81,7 +81,7 @@ export default {
   },
   MainLoop: {
     fixedDelta: false,
-    warmup: true,
+    warmup: false,
     // warmupFrames: 15,
   },
   Physics: {
@@ -106,6 +106,6 @@ export default {
     useWebGPU: true,
     useShadows: true,
     width: 1280,
-    height: 720,
+    height: 640,
   },
 };

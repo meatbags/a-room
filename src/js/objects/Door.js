@@ -33,9 +33,12 @@ class Door extends SceneNode {
   }
 
   /** util: set state */
-  setOpen( open ) {
-    if (open) this.open();
-    else this.close();
+  setOpen(open) {
+    if (open) {
+      this.open();
+    } else {
+      this.close();
+    }
   }
 
   /** set transform */

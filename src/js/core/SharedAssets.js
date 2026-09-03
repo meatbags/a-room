@@ -1,6 +1,6 @@
 /** SharedAssets */
 
-import { SceneNode, MapObjectByName, SharedMaterials } from 'engine';
+import { SceneNode, MapObjectByName, SharedMaterials, ApplyCallbackToMaterial } from 'engine';
 import * as THREE from 'three';
 import { CreateInstancedMeshes, optimisationInteractiveMaterial } from '../util/CreateInstancedMeshes';
 
@@ -21,14 +21,44 @@ class SharedAssets extends SceneNode {
     SharedAssets._instance = this;
   }
 
+  /**
+   * Onload callback.
+   */
+  _onLoad() {
+    const _materials = {};
+    
+    // helper
+    const mergeMaterial = m => {
+      if ( ! _materials[m.name] ) {
+        _materials[m.name] = m;
+        return m;
+      } else {
+        return _materials[m.name];
+      }
+    };
+
+    // merge materials
+    this.getAssets().forEach(group => {
+      group.traverse(obj => {
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material = obj.material.map(m => mergeMaterial(m));
+          } else {
+            obj.material = mergeMaterial(obj.material);
+          }
+        }
+      })
+    });
+  }
+
   /** create instanced geometry */
   _afterInit() {
     SharedAssets.map();
     
-    // create instanced
+    // create instanced meshes
     for (const key in SharedAssets._instancedMeshes) {
       const asset = SharedAssets._map[key];
-      if ( ! asset ) {
+      if (!asset) {
         console.warn( 'Could not create instanced mesh, asset not found:', key );
         continue;
       }
@@ -105,7 +135,7 @@ class SharedAssets extends SceneNode {
   /** deep clone material -- nb: forces rebuild */
   static deepCloneMaterial( material ) {
     if (Array.isArray(material)) {
-      return SharedAssets.deepCloneMaterialArray(material);
+      return material.map(m => SharedAssets.deepCloneMaterial(m));
     }
     const clone = new ( material.constructor )();
     for (const key in material) {
@@ -113,12 +143,6 @@ class SharedAssets extends SceneNode {
         clone[key] = material[key];
       }
     }
-    return clone;
-  }
-
-  /** material array */
-  static deepCloneMaterialArray(materials) {
-    const clone = materials.map(mat => SharedAssets.deepCloneMaterial(mat));
     return clone;
   }
 
