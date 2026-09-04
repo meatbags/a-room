@@ -154,7 +154,10 @@ class Room_05 extends Room {
       instanced3.setMatrixAt(i, helper.matrix);
     }
     
-    this._addToScene(instanced, instanced2, instanced3);
+    const instancedGroup = new THREE.Group();
+    instancedGroup.add(instanced, instanced2, instanced3);
+    this._addToScene(instancedGroup);
+    this._addToLOD(instancedGroup);
   }
 
   /** init puzzle */

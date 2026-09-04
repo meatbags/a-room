@@ -3,35 +3,46 @@
 import { GetRoot } from 'engine';
 
 class LOD {
+
+  /**
+   * Constructor.
+   * 
+   * @param {Vector3} position 
+   */
   constructor(position) {
     this._position = position;
-    this.levels = [];
-    GetRoot().getSceneNode('Camera').addEventListener('move', p => {
-      this.update(p);
+    this._objects = [];
+    GetRoot().getSceneNode('Camera').addEventListener('move', position => {
+      this.setVisible(position);
     });
   }
 
-  /** add level */
-  addLevel( object, distance ) {
-    this.levels.push({ object, distanceSquared: distance * distance });
-    this.levels.sort((a,b) => a.distanceSquared - b.distanceSquared);
-    this.levels.forEach((level, i) => {
-      level.min = i == 0 ? 0 : level.distanceSquared;
-      level.max = i == this.levels.length-1 ? Infinity : this.levels[i+1].distanceSquared;
+  /**
+   * Add object to LOD array.
+   * 
+   * @param {Object3D} object
+   * @param {number} distanceMin
+   * @param {number} distanceMax
+   */
+  add( object, distanceMin=0, distanceMax=1 ) {
+    this._objects.push({
+      object,
+      min: distanceMin,
+      max: distanceMax,
+      minSqr: distanceMin * distanceMin,
+      maxSqr: distanceMax * distanceMax,
     });
   }
 
-  /** update LODs */
-  update(p) {
-    const d = this._position.distanceToSquared(p);
-    let found = false;
-    this.levels.forEach(level => {
-      if (!found && d >= level.min && d <= level.max) {
-        level.object.visible = true;
-        found = true;
-      } else {
-        level.object.visible = false;
-      }
+  /**
+   * Update LOD objects visibility.
+   * 
+   * @param {Vector3} position
+   */
+  setVisible(position) {
+    const distSqr = this._position.distanceToSquared(position);
+    this._objects.forEach(item => {
+      item.object.visible = distSqr >= item.minSqr && distSqr < item.maxSqr;
     });
   }
 }

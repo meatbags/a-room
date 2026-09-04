@@ -20,6 +20,7 @@ import HexagonalControl from './HexagonalControl';
 
 class Room extends SceneNode {
   static ACTIVE_DISTANCE = 32;
+  static LOD_DISTANCE = 12;
 
   constructor(props={}) {
     super({ name: props.name ?? 'Room' });
@@ -81,6 +82,7 @@ class Room extends SceneNode {
   /** init room */
   _init() {
     // add cosmetic map
+    this._group = new THREE.Group();
     const cosmetic = this._getCosmeticMap();
     if (cosmetic) {
       ExtractMeshes(cosmetic).forEach(mesh => {
@@ -89,6 +91,9 @@ class Room extends SceneNode {
       });
       cosmetic.position.copy(this._position);
       this._addToScene(cosmetic);
+
+      // create lod
+      this._addToLOD(cosmetic);
     }
 
     // add collision map
@@ -285,6 +290,14 @@ class Room extends SceneNode {
       this._lod.addLevel( lowpoly, 36 );
     }
     */
+  }
+
+  /** util: add object to LOD */
+  _addToLOD(object, min=0, max=null) {
+    if (!this._lod) {
+      this._lod = new LOD(this._position.clone());
+    }
+    this._lod.add(object, min, max ?? Room.LOD_DISTANCE);
   }
 
   /** util: get cosmetic map for room */

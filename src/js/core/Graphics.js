@@ -83,57 +83,72 @@ export default class Graphics extends SceneNode {
       return colorToDirection( scenePassNormal.sample( uv ) );
     });
 
+    // add passes
+    let _outputPass = scenePassColor;
+    const useGI = true;
+    const useVolumetricFog = false;
+    const useBloom = false;
+    const useToneMapping = true;
+
     // gi pass
-    // const giPass = ssgi( scenePassColor, scenePassDepth, sceneNormal, camera );
-    const giPass = ssgi_extended( scenePassColor, scenePassDepth, sceneNormal, camera );
-    giPass.rangeStart.value = 4;
-    giPass.rangeStop.value = 8;
-    giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
-    giPass.stepCount.value = 2;
-    giPass.aoIntensity.value = 2.0; // default=1, [0, 4]
-    giPass.giIntensity.value = 3.5;
-    giPass.radius.value = 2.0; // default=12, [1, 25]
-    giPass.useScreenSpaceSampling.value = true;
-    giPass.expFactor.value = 2;
-    giPass.thickness.value = 1;
-    giPass.useLinearThickness.value = false;
-    giPass.backfaceLighting.value = 0.75;
-    giPass.useTemporalFiltering = true;
-    
-    // change settings for webgl
-    if (Config.Renderer.forceWebGL) {
-      giPass.sliceCount.value = 4;
-      giPass.stepCount.value = 1;
-      giPass.expFactor.value = 1;
+    if (useGI) {
+      const giPass = ssgi_extended( scenePassColor, scenePassDepth, sceneNormal, camera );
+      giPass.rangeStart.value = 4;
+      giPass.rangeStop.value = 10;
+      giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
+      giPass.stepCount.value = 2;
+      giPass.aoIntensity.value = 3.0; // default=1, [0, 4]
+      giPass.giIntensity.value = 1.5;
+      giPass.radius.value = 4.0; // default=12, [1, 25]
+      giPass.useScreenSpaceSampling.value = true;
+      giPass.expFactor.value = 2;
+      giPass.thickness.value = 0.5;
+      giPass.useLinearThickness.value = false;
+      giPass.backfaceLighting.value = 0.75;
+      giPass.useTemporalFiltering = true;
+      
+      // change settings for webgl
+      if (Config.Renderer.forceWebGL) {
+        giPass.sliceCount.value = 4;
+        giPass.stepCount.value = 1;
+        giPass.expFactor.value = 1;
+      }
+
+      // composite
+      const gi = giPass.rgb;
+      const ao = giPass.a;
+      const compositePass = vec4(
+        add(
+          scenePassColor.rgb.mul(ao),
+          scenePassDiffuse.rgb.mul(gi)
+        ),
+        scenePassColor.a
+      );
+      
+      // traa pass
+      _outputPass = traa( compositePass, scenePassDepth, scenePassVelocity, camera );
     }
 
-    // composite
-    const gi = giPass.rgb;
-    const ao = giPass.a;
-    const compositePass = vec4(
-      add(
-        scenePassColor.rgb.mul(ao),
-        scenePassDiffuse.rgb.mul(gi)
-      ),
-      scenePassColor.a
-    );
-    
-    // traa pass
-    const traaPass = traa( compositePass, scenePassDepth, scenePassVelocity, camera );
-
     // volumetric fog pass
-    const fogPass = traaPass.add( ssvf( scenePassDepth, camera ) );
+    if (useVolumetricFog) {
+      _outputPass = _outputPass.add( ssvf( scenePassDepth, camera ) );
+    }
 
     // bloom pass
-    const strength = 0.3;
-    const radius = 0.35;
-    const threshold = 0.95;
-    const bloomPass = fogPass.add(bloom(scenePassColor, strength, radius, threshold))
+    if (useBloom) {
+      const strength = 0.3;
+      const radius = 0.35;
+      const threshold = 0.95;
+      _outputPass = _outputPass.add(bloom(scenePassColor, strength, radius, threshold));
+    }
 
     // tone mapping pass
-    //const toneMapping = acesFilmicToneMapping(bloomPass, 1.2);
-    const toneMapping = cineonToneMapping(bloomPass, 1.25);
-    renderPipeline.outputNode = toneMapping;
+    if (useToneMapping) {
+      const exposure = 1.25;
+      _outputPass = cineonToneMapping(_outputPass, exposure);
+    }
+
+    renderPipeline.outputNode = _outputPass;
   }
 
   /** update */

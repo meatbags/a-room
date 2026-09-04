@@ -25,7 +25,7 @@ export default {
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: 0.454375,
+    envMapIntensityDefault: 0.1, // 0.45,
   },
   Graphics: {
     fog: {
@@ -50,8 +50,8 @@ export default {
       default: {
         type: 'default',
         lighting: {
-          ambient: { type: 'ambient', intensity: 0.25 },
-          directional: { type: 'directional', intensity: 0.05, position: [-1, 1, -1] },
+          ambient: { type: 'ambient', intensity: 0.5 },
+          directional: { type: 'directional', intensity: 0.35, position: [-1, 1, -1] },
           directional_shadow: { 
             type: 'directional', 
             intensity: 0.375, 
