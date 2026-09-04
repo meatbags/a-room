@@ -86,7 +86,7 @@ export default class Graphics extends SceneNode {
     // add passes
     let _outputPass = scenePassColor;
     const useGI = true;
-    const useVolumetricFog = false;
+    const useVolumetricFog = true;
     const useBloom = false;
     const useToneMapping = true;
 
