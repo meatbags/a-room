@@ -1,6 +1,6 @@
 /** LOD */
 
-import { GetRoot } from 'engine';
+import { GetRoot, Clamp } from 'engine';
 
 class LOD {
 
@@ -24,14 +24,27 @@ class LOD {
    * @param {number} distanceMin
    * @param {number} distanceMax
    */
-  add( object, distanceMin=0, distanceMax=1 ) {
-    this._objects.push({
+  add( object, distanceMin=0, distanceMax=1, lightFade=1 ) {
+    const item = {
       object,
       min: distanceMin,
       max: distanceMax,
       minSqr: distanceMin * distanceMin,
       maxSqr: distanceMax * distanceMax,
-    });
+    };
+
+    // additional settings for lights
+    if (object.isLight) {
+      item.light = {};
+      item.light.intensity = object.intensity;
+      item.light.parent = object.parent;
+      item.light.fadeRadiusSqr = Math.pow(distanceMax - lightFade, 2);
+      item.light.fadeRadiusRange = item.maxSqr - item.light.fadeRadiusSqr;
+
+      console.log(item);
+    }
+
+    this._objects.push(item);
   }
 
   /**
@@ -42,7 +55,12 @@ class LOD {
   setVisible(position) {
     const distSqr = this._position.distanceToSquared(position);
     this._objects.forEach(item => {
-      item.object.visible = distSqr >= item.minSqr && distSqr < item.maxSqr;
+      if ( ! item.light ) {
+        item.object.visible = distSqr >= item.minSqr && distSqr < item.maxSqr;
+      } else {
+        const t = 1 - Clamp((distSqr - item.light.fadeRadiusSqr) / item.light.fadeRadiusRange, 0, 1);
+        item.object.intensity = t * item.light.intensity;
+      }
     });
   }
 }
