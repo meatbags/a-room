@@ -1,10 +1,9 @@
 /** SceneNode */
 
 import Config from '../config/Config';
-import { SceneNode, SpotLightFog, Blend } from 'engine';
+import { SceneNode, SpotLightFog, Blend, Clamp } from 'engine';
 import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 import { RectAreaLightTexturesLib } from 'three/addons/lights/RectAreaLightTexturesLib.js';
-// import { CSMShadowNode } from '../shader/CSMShadowNode.js';
 import { CSMShadowNode } from 'three/addons/csm/CSMShadowNode';
 import * as WebGPU from 'three/webgpu';
 import * as THREE from 'three';
@@ -13,6 +12,16 @@ import LOD from '../util/LOD';
 class Lighting extends SceneNode {
   static lodRadius = 20;
   static lodFadeDistance = 10;
+  static roomAmbientRadius = 20;
+  static roomAmbientFade = 15;
+  static roomAmbientFadeStartSqr = Math.pow(Lighting.roomAmbientRadius - Lighting.roomAmbientFade, 2);
+  static roomAmbientFadeStopSqr = Math.pow(Lighting.roomAmbientRadius, 2);
+  static roomAmbientFadeRange = Lighting.roomAmbientFadeStopSqr - Lighting.roomAmbientFadeStartSqr;
+  static roomAmbientColorMin = {r:0, g:0, b:1};
+  static roomAmbientColorMax = {r:0.75, g:0.75, b:1};
+  static roomAmbientMin = 0.05;
+  static roomAmbientMax = 0.35;
+  static roomAmbientRange = Lighting.roomAmbientMax - Lighting.roomAmbientMin;
 
   constructor() {
     super({ name: 'Lighting' });
@@ -51,6 +60,12 @@ class Lighting extends SceneNode {
     this.lights = {};
     this.shadowLights = [];
 
+    // global ambience
+    this.lights._globalAmbient = new THREE.AmbientLight(0xFFFFFF, 0);
+    this.lights._globalAmbient.userData.target = 0;
+    scene.add(this.lights._globalAmbient);
+
+    // config lights
     for (const k in Config.Lighting.lights) {
       // create light
       let light = null;
@@ -133,16 +148,18 @@ class Lighting extends SceneNode {
 
   /**
    * On camera move callback.
+   * 
+   * @param {Vector3} position
    */
-  _onCameraMove(p) {
+  _onCameraMove(position) {
     // move directional shadow light camera
     this.shadowLights.forEach(light => {
-      light.target.position.copy(p);
+      light.target.position.copy(position);
       const dist = light.shadow.camera.far / 2;
       light.position.set(
-        p.x + light.userData.offset.x * dist,
-        p.y + light.userData.offset.y * dist,
-        p.z + light.userData.offset.z * dist
+        position.x + light.userData.offset.x * dist,
+        position.y + light.userData.offset.y * dist,
+        position.z + light.userData.offset.z * dist
       );
 
       // update frustums
@@ -150,6 +167,52 @@ class Lighting extends SceneNode {
         light.shadow.shadowNode.updateFrustums();
       }
     });
+
+    // check global room ambience
+    if ( ! this._roomRefs ) {
+      this._roomRefs = [];
+      SceneNode.getSceneNode('LogicRoot').traverse(node => {
+        if (node.isRoom) {
+          this._roomRefs.push(node);
+          node.addEventListener('change', () => {
+            this._onCameraMove(SceneNode.getSceneNode('Camera').getCamera().position);
+          });
+        }
+      });
+    }
+    let nearest = null;
+    let minDist = -1;
+    this._roomRefs.forEach(room => {
+      const d = room.position.distanceToSquared(position);
+      if (nearest == null || d < minDist) {
+        nearest = room;
+        minDist = d;
+      }
+    });
+    if (nearest) {
+      const t = (typeof nearest.hasPower == 'function' && nearest.hasPower() ? 1 : 0) * (1 - Clamp((minDist - Lighting.roomAmbientFadeStartSqr) / Lighting.roomAmbientFadeRange, 0, 1));
+      this.lights._globalAmbient.userData.target = Blend(Lighting.roomAmbientMin, Lighting.roomAmbientMax, t);
+    }
+  }
+
+  /**
+   * Update.
+   *
+   * @param {number} delta 
+   */
+  _update(delta) {
+    if (this.lights._globalAmbient.intensity !== this.lights._globalAmbient.userData.target) {
+      this.lights._globalAmbient.intensity += (this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) * 0.01;
+      const t = (this.lights._globalAmbient.intensity - Lighting.roomAmbientMin) / Lighting.roomAmbientRange;
+      this.lights._globalAmbient.color.setRGB(
+        Blend(Lighting.roomAmbientColorMin.r, Lighting.roomAmbientColorMax.r, t),
+        Blend(Lighting.roomAmbientColorMin.g, Lighting.roomAmbientColorMax.g, t),
+        Blend(Lighting.roomAmbientColorMin.b, Lighting.roomAmbientColorMax.b, t)
+      );
+      if (Math.abs(this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) < 0.001) {
+        this.lights._globalAmbient.intensity = this.lights._globalAmbient.userData.target;
+      }
+    }
   }
 }
 

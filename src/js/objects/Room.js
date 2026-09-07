@@ -26,6 +26,7 @@ class Room extends SceneNode {
     super({ name: props.name ?? 'Room' });
 
     // props
+    this.isRoom = true;
     this._map = {};
     this._manifest = props.manifest ?? {};
     this._position = props.position ?? new THREE.Vector3();
@@ -292,10 +293,17 @@ class Room extends SceneNode {
     */
   }
 
+  /** get position */
+  get position() {
+    return this._position;
+  }
+
   /** util: add object to LOD */
   _addToLOD(object, min=0, max=null) {
     if (!this._lod) {
-      this._lod = new LOD(this._position.clone());
+      this._lod = new LOD(this._position.clone(), {
+        useLoadingScreen: true,
+      });
     }
     this._lod.add(object, min, max ?? Room.LOD_DISTANCE);
   }

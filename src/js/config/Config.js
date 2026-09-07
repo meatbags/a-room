@@ -47,12 +47,11 @@ export default {
   },
   Lighting: {
     lights: {
-      ambient: { type: 'ambient', intensity: 0.5 },
-      directional: { type: 'directional', intensity: 0.35, position: [-1, 1, -1] },
+      directional: { type: 'directional', intensity: 0.35, position: [-0.375, 1, -1] },
       directional_shadow: { 
         type: 'directional', 
         intensity: 0.375, 
-        position: [-1, 1, -1],
+        position: [-0.375, 1, -1],
         shadow: {
           mapSize: 4096,
           cameraSize: 5,

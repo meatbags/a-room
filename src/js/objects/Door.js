@@ -30,7 +30,6 @@ class Door extends SceneNode {
     const group = SharedAssets.requestAsset('door');
     this._object.add(group);
     this._map = MapObjectByName(group);
-    this._map.door_frame.geometry.translate(0, -0.005859375, 0);
     this._addToScene(this._object);
 
     // collider

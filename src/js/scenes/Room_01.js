@@ -79,6 +79,15 @@ class Room_01 extends Room {
       });
     }
   }
+
+  /**
+   * Assert room has power.
+   * 
+   * @return {boolean}
+   */
+  hasPower() {
+    return this.getState('power_1');
+  }
 }
 
 export default Room_01;

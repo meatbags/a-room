@@ -29,7 +29,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     return 'ScreenSpaceVolumetricFogNode';
   }
 
-  constructor( depthNode, camera ) {
+  constructor( depthNode, camera, props={} ) {
     super('vec4');
 
     // nodes
@@ -53,6 +53,13 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     this._material = new NodeMaterial();
 		this._material.name = 'SSVF';
     this._textureNode = passTexture( this, this._ssvfRenderTarget.texture );
+
+    // fog properties
+    this._fogColor = props.color ?? 0xFFFFFF;
+    this._fogTimeScale = props.timeScale ?? 1;
+    this._fogPositionScale = props.positionScale ?? 1;
+    this._fogInfluenceNoise = props.influenceNoise ?? 0.5;
+    this._fogInfluenceVolumetric = props.influenceVolumetric ?? 0.5;
   }
 
   /** get texture node */
@@ -124,7 +131,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
 
   /** setup fog node */
   setupFogNode() {
-    // fog settings
+    // fog constants
     const FOG_START = 1;
     const FOG_STOP = 50;
     const FOG_DISTANCE_MULTIPLIER = 20;
@@ -148,9 +155,6 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     
     const VOLUME_FIXED_STEP = 0.35;
     const VOLUME_MAX_RANDOM_OFFSET = 0.3;
-
-    const INFLUENCE_FOG_NOISE = 0.1;
-    const INFLUENCE_VOLUMETRIC = 0.08;
 
     // ray marching node
     const Raymarch = ( worldPosition, rayOrigin, rayDirection, rayMin, rayMax, raySteps, callback ) => {
@@ -289,8 +293,8 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
       } );
 
       return fogGradient.oneMinus()
-        .mix( color( 0x0000FF ), fogSurfaceNoise.mul( INFLUENCE_FOG_NOISE ) )
-        .add( fogVolumetric.mul( INFLUENCE_VOLUMETRIC ) )
+        .mix( color( this._fogColor ), fogSurfaceNoise.mul( this._fogInfluenceNoise ) )
+        .add( fogVolumetric.mul( this._fogInfluenceVolumetric ) )
         .mul( fogHeightFadeFactor );
     });
   }
@@ -301,9 +305,11 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
     
     // setup 3d texture
     const COMPUTE_TEXTURE_SIZE = 50;
-    const COMPUTE_TIME_SCALE = 0.1;
-    const COMPUTE_POSITION_SCALE = 0.12;
-    this.setupComputeTexture({ size: COMPUTE_TEXTURE_SIZE, timeScale: COMPUTE_TIME_SCALE, positionScale: COMPUTE_POSITION_SCALE });
+    this.setupComputeTexture({ 
+      size: COMPUTE_TEXTURE_SIZE, 
+      timeScale: this._fogTimeScale, 
+      positionScale: this._fogPositionScale
+    });
     builder.renderer.compute( this.computeNode );
 
     // setup fog node
@@ -348,6 +354,7 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
 	}
 }
 
-export const ssvf = (depthNode, camera) => {
-  return new ScreenSpaceVolumetricFogNode(depthNode, camera);
+export const ssvf = (depthNode, camera, props={}) => {
+  console.log(props);
+  return new ScreenSpaceVolumetricFogNode(depthNode, camera, props);
 };

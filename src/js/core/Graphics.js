@@ -131,7 +131,15 @@ export default class Graphics extends SceneNode {
 
     // volumetric fog pass
     if (useVolumetricFog) {
-      _outputPass = _outputPass.add( ssvf( scenePassDepth, camera ) );
+      const fogColor = 0x000088;
+
+      _outputPass = _outputPass.add( ssvf( scenePassDepth, camera, {
+        color: fogColor,
+        timeScale: 0.05,
+        positionScale: 0.12,
+        influenceNoise: 0.15,
+        influenceVolumetric: 0.1,
+      }) );
     }
 
     // bloom pass

@@ -1,17 +1,32 @@
 /** LOD */
 
-import { GetRoot, Clamp } from 'engine';
+import { GetRoot, Clamp, Element } from 'engine';
 
 class LOD {
+  static loadingScreen = null;
 
   /**
    * Constructor.
    * 
    * @param {Vector3} position 
    */
-  constructor(position) {
+  constructor(position, props={}) {
     this._position = position;
     this._objects = [];
+    this._useLoadingScreen = props.useLoadingScreen ?? false;
+    
+    // create shared loading screen
+    if (!LOD.loadingScreen) {
+      LOD.loadingScreen = Element({ 
+        class: 'LODLoadingScreen', 
+        children: {
+          innerHTML: 'Loading.',
+        },
+      });
+      GetRoot().getOverlayElement().appendChild(LOD.loadingScreen);
+    }
+
+    // events
     GetRoot().getSceneNode('Camera').addEventListener('move', position => {
       this.setVisible(position);
     });
@@ -40,11 +55,38 @@ class LOD {
       item.light.parent = object.parent;
       item.light.fadeRadiusSqr = Math.pow(distanceMax - lightFade, 2);
       item.light.fadeRadiusRange = item.maxSqr - item.light.fadeRadiusSqr;
-
-      console.log(item);
     }
 
     this._objects.push(item);
+  }
+
+  /**
+   * Show loading screen.
+   * 
+   * @param {object} item
+   */
+  revealAfterLoadingScreen(item) {
+    // lock item
+    item.locked = true;
+    
+    // show loading screen
+    LOD.loadingScreen.dataset.active = 1;
+
+    // reveal object
+    setTimeout(() => {
+      item.object.visible = true;
+
+      // unlock
+      setTimeout(() => {
+        item.loaded = true;
+        item.locked = false;
+  
+        // hide loading screen
+        setTimeout(() => {
+          LOD.loadingScreen.dataset.active = 0;
+        }, 100);
+      }, 10);
+    }, 10);
   }
 
   /**
@@ -55,8 +97,25 @@ class LOD {
   setVisible(position) {
     const distSqr = this._position.distanceToSquared(position);
     this._objects.forEach(item => {
+      if ( item.locked ) {
+        return;
+      }
       if ( ! item.light ) {
-        item.object.visible = distSqr >= item.minSqr && distSqr < item.maxSqr;
+        const visible = distSqr >= item.minSqr && distSqr < item.maxSqr;
+
+        // deferred reveal
+        if (this._useLoadingScreen && ! item.object.visible && ! item.loaded) {
+          if (visible) {
+            this.revealAfterLoadingScreen(item);
+          } else {
+            item.object.visible = false;
+          }
+
+        // reveal
+        } else {
+          item.object.visible = visible;
+          item.loaded = item.loaded || visible;
+        }
       } else {
         const t = 1 - Clamp((distSqr - item.light.fadeRadiusSqr) / item.light.fadeRadiusRange, 0, 1);
         item.object.intensity = t * item.light.intensity;
