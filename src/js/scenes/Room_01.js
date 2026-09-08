@@ -103,7 +103,7 @@ class Room_01 extends Room {
   /**
    * Update.
    * 
-   * @param {number} delta 
+   * @param {number} delta
    */
   _update( delta ) {
     // lighting
