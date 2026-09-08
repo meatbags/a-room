@@ -25,7 +25,7 @@ export default {
       }
     }],
     envMapDefault: 'envMap',
-    envMapIntensityDefault: 0.1, // 0.45,
+    envMapIntensityDefault: 0.5, // 0.45,
   },
   Graphics: {
     fog: {
@@ -50,9 +50,10 @@ export default {
       directional: { type: 'directional', intensity: 0.35, position: [-0.375, 1, -1] },
       directional_shadow: { 
         type: 'directional', 
-        intensity: 0.375, 
+        intensity: 0.5, 
         position: [-0.375, 1, -1],
         shadow: {
+          intensity: 0.5,
           mapSize: 4096,
           cameraSize: 5,
           cameraNear: 0.5,
@@ -63,7 +64,8 @@ export default {
           csmMode: 'practical', // practical, uniform, logarithmic
         }
       },
-      point: { type: 'point', color: 0x0000FF, intensity: 10, position: [0, 3, 0] },
+      // point: { type: 'point', color: 0x0000FF, intensity: 10, position: [0, 3, 0] },
+      /*
       rectArea: { 
         type: 'rectarea',
         color: 0xFFFFFF,
@@ -82,7 +84,7 @@ export default {
         position: [-48, 14.75, 2.875],
         lookAt: [-48, 0, 2.75]
       },
-      envMapIntensity: 0.35,
+      */
     }
   },
   MainLoop: {
@@ -104,8 +106,8 @@ export default {
     shape: 'cylinder',
     positionDampingVertical: 0.2,
     jumpEnabled: false,
-    crouchEnabled: false,
-    playerLight: getPointLight(),
+    crouchEnabled: true,
+    playerLight: null, // getPointLight(),
   },
   Renderer: {
     localClippingEnabled: false,

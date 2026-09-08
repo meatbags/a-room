@@ -1,8 +1,9 @@
 /** Demo Room */
 
-import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot } from 'engine';
+import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot, Clamp } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
+import { CloneMaterial } from '../util/MaterialUtils';
 
 class Room_01 extends Room {
   constructor() {
@@ -11,7 +12,7 @@ class Room_01 extends Room {
       position: new THREE.Vector3(0, 0, 96),
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
-        sockets: [ [[0, 0.53125, 0], [0, 1, 0], Math.PI/6] ],
+        sockets: [ [[0, -0.175, 0], [0, 1, 0], Math.PI/6] ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1]] ],
       }
     });
@@ -33,6 +34,24 @@ class Room_01 extends Room {
         mesh.userData.speed = (Math.random() * 0.2 + 0.3) * (Math.random() > 0.5 ? 1 : -1);
       });
     }
+
+    // replace lights with single light material
+    const neon = new THREE.MeshPhysicalMaterial({color: 0x0, emissive: 0xFFFFFF, emissiveIntensity: 0, roughness: 1, metalness: 0});
+    this._lights = [];
+    this._getCosmeticMap().traverse(obj => {
+      if (obj.material) {
+        obj.material = CloneMaterial(obj.material, mat => {
+          if (mat.emissiveIntensity == 1) {
+            const clone = neon.clone();
+            clone.userData.intensityRate = 0.5 + Math.random() * 0.5;
+            this._lights.push(clone);
+            return clone;
+          } else {
+            return mat;
+          }
+        });
+      }
+    });
 
     // open doors
     if (this._mapped.pod_door_right && this._mapped.pod_door_left) {
@@ -72,21 +91,33 @@ class Room_01 extends Room {
     }
   }
 
-  _update( delta ) {
-    if (this._mapped.glass_shards) {
-      this._mapped.glass_shards.children.forEach(mesh => {
-        mesh.rotation[mesh.userData.axis] += delta * mesh.userData.speed;
-      });
-    }
-  }
-
   /**
-   * Assert room has power.
+   * Assert has power.
    * 
    * @return {boolean}
    */
   hasPower() {
     return this.getState('power_1');
+  }
+
+  /**
+   * Update.
+   * 
+   * @param {number} delta 
+   */
+  _update( delta ) {
+    // lighting
+    const di = (this.hasPower() ? 1 : -1) * delta;
+    this._lights.forEach(light => {
+      light.emissiveIntensity = Clamp(light.emissiveIntensity + di * light.userData.intensityRate, 0, 1);
+    });
+
+    // rotate objects
+    if (this._mapped.glass_shards) {
+      this._mapped.glass_shards.children.forEach(mesh => {
+        mesh.rotation[mesh.userData.axis] += delta * mesh.userData.speed;
+      });
+    }
   }
 }
 

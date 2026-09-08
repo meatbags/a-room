@@ -87,7 +87,7 @@ export default class Graphics extends SceneNode {
     let _outputPass = scenePassColor;
     const useGI = true;
     const useVolumetricFog = true;
-    const useBloom = false;
+    const useBloom = true;
     const useToneMapping = true;
 
     // gi pass
@@ -97,9 +97,9 @@ export default class Graphics extends SceneNode {
       giPass.rangeStop.value = 10;
       giPass.sliceCount.value = 2; // NB: iter = sliceCount * stepCount * 2
       giPass.stepCount.value = 2;
-      giPass.aoIntensity.value = 3.0; // default=1, [0, 4]
+      giPass.aoIntensity.value = 2.0; // default=1, [0, 4]
       giPass.giIntensity.value = 1.5;
-      giPass.radius.value = 4.0; // default=12, [1, 25]
+      giPass.radius.value = 1.25; // default=12, [1, 25]
       giPass.useScreenSpaceSampling.value = true;
       giPass.expFactor.value = 2;
       giPass.thickness.value = 0.5;
@@ -109,9 +109,9 @@ export default class Graphics extends SceneNode {
       
       // change settings for webgl
       if (Config.Renderer.forceWebGL) {
-        giPass.sliceCount.value = 4;
-        giPass.stepCount.value = 1;
-        giPass.expFactor.value = 1;
+        // giPass.sliceCount.value = 4;
+        // giPass.stepCount.value = 1;
+        // giPass.expFactor.value = 1;
       }
 
       // composite
@@ -137,7 +137,7 @@ export default class Graphics extends SceneNode {
         color: fogColor,
         timeScale: 0.05,
         positionScale: 0.12,
-        influenceNoise: 0.15,
+        influenceNoise: 0.1,
         influenceVolumetric: 0.1,
       }) );
     }
@@ -153,7 +153,7 @@ export default class Graphics extends SceneNode {
     // tone mapping pass
     if (useToneMapping) {
       const exposure = 1.25;
-      _outputPass = cineonToneMapping(_outputPass, exposure);
+      _outputPass = acesFilmicToneMapping(_outputPass, exposure);
     }
 
     renderPipeline.outputNode = _outputPass;

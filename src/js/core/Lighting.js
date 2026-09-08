@@ -18,9 +18,9 @@ class Lighting extends SceneNode {
   static roomAmbientFadeStopSqr = Math.pow(Lighting.roomAmbientRadius, 2);
   static roomAmbientFadeRange = Lighting.roomAmbientFadeStopSqr - Lighting.roomAmbientFadeStartSqr;
   static roomAmbientColorMin = {r:0, g:0, b:1};
-  static roomAmbientColorMax = {r:0.75, g:0.75, b:1};
+  static roomAmbientColorMax = {r:1, g:1, b:1};
   static roomAmbientMin = 0.05;
-  static roomAmbientMax = 0.35;
+  static roomAmbientMax = 0.5;
   static roomAmbientRange = Lighting.roomAmbientMax - Lighting.roomAmbientMin;
 
   constructor() {
@@ -202,7 +202,7 @@ class Lighting extends SceneNode {
    */
   _update(delta) {
     if (this.lights._globalAmbient.intensity !== this.lights._globalAmbient.userData.target) {
-      this.lights._globalAmbient.intensity += (this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) * 0.01;
+      this.lights._globalAmbient.intensity += (this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) * 0.035;
       const t = (this.lights._globalAmbient.intensity - Lighting.roomAmbientMin) / Lighting.roomAmbientRange;
       this.lights._globalAmbient.color.setRGB(
         Blend(Lighting.roomAmbientColorMin.r, Lighting.roomAmbientColorMax.r, t),
