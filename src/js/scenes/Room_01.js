@@ -1,18 +1,19 @@
 /** Demo Room */
 
-import { SceneNode, Animation, Carryable, CentrePivot, MapObjectByName, SetPivot, Clamp } from 'engine';
+import { Animation, Blend, CentrePivot, MapObjectByName, SetPivot, Clamp } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
 import { CloneMaterial } from '../util/MaterialUtils';
+import Overworld from './Overworld';
 
 class Room_01 extends Room {
   constructor() {
     super({
       name: 'Room_01',
-      position: new THREE.Vector3(0, 0, 96),
+      position: new THREE.Vector3(0, 0, Overworld.step*2),
       manifest: {
         balls: [ [-3, 0.25, -1.5] ],
-        sockets: [ [[0, -0.175, 0], [0, 1, 0], Math.PI/6] ],
+        sockets: [ [[0, 0.9375, 0], [0, 1, 0], Math.PI/6] ],
         doors: [ [[0, 2.125, -5.5], [0, 0, -1]] ],
       }
     });
@@ -36,16 +37,19 @@ class Room_01 extends Room {
     }
 
     // replace lights with single light material
-    const neon = new THREE.MeshPhysicalMaterial({color: 0x0, emissive: 0xFFFFFF, emissiveIntensity: 0, roughness: 1, metalness: 0});
-    this._lights = [];
+    this._light = {};
+    this._light.material = new THREE.MeshPhysicalMaterial({color: 0x0, emissive: 0xFFFFFF, emissiveIntensity: 0, roughness: 1, metalness: 0});
+    this._light.age = 0;
+    this._light.emissive = 0;
+    this._light.emissiveRate = 1.0;
+    this._light.oscillator = 0;
+    this._light.oscillationRate = 0.125;
+    this._light.oscillatorMidpoint = 0.2;
     this._getCosmeticMap().traverse(obj => {
       if (obj.material) {
         obj.material = CloneMaterial(obj.material, mat => {
           if (mat.emissiveIntensity == 1) {
-            const clone = neon.clone();
-            clone.userData.intensityRate = 0.5 + Math.random() * 0.5;
-            this._lights.push(clone);
-            return clone;
+            return this._light.material;
           } else {
             return mat;
           }
@@ -76,8 +80,6 @@ class Room_01 extends Room {
     }
   }
 
-  _afterInit() {}
-
   _onStateChanged(changed) {
     const state = this.getState();
     if (state.power_1) {
@@ -106,11 +108,13 @@ class Room_01 extends Room {
    * @param {number} delta
    */
   _update( delta ) {
-    // lighting
+    // light material animation
     const di = (this.hasPower() ? 1 : -1) * delta;
-    this._lights.forEach(light => {
-      light.emissiveIntensity = Clamp(light.emissiveIntensity + di * light.userData.intensityRate, 0, 1);
-    });
+    this._light.age += delta;
+    this._light.oscillator = this._light.oscillatorMidpoint - Math.cos(this._light.oscillationRate * Math.PI * 2 * this._light.age) * this._light.oscillatorMidpoint;
+    this._light.emissive = Clamp(this._light.emissive + this._light.emissiveRate * di, 0, 1);
+    this._light.material.emissiveIntensity = Blend(this._light.oscillator, 1, this._light.emissive);
+    this._light.material.emissive.setRGB(1, this._light.emissive, this._light.emissive);
 
     // rotate objects
     if (this._mapped.glass_shards) {

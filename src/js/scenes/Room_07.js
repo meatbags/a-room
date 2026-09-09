@@ -4,6 +4,7 @@ import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
 import SharedAssets from '../core/SharedAssets';
+import Overworld from './Overworld';
 
 class Room_07 extends Room {
   constructor() {
@@ -11,7 +12,7 @@ class Room_07 extends Room {
       name: 'Room_07',
       map: './models/rooms/room-07.fbx',
       collisionMap: './models/rooms/room-07-collision.fbx',
-      position: new THREE.Vector3(48, 0, 0),
+      position: new THREE.Vector3(Overworld.step, 0, 0),
       manifest: {
         airlocks: [
           [[-6.5, 8, 0], [-1, 0, 0], [1, 2, 7, 8]]

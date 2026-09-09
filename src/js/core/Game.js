@@ -29,7 +29,7 @@ import Room_12 from '../scenes/Room_12';
 import Room_13 from '../scenes/Room_13';
 
 const FALL_THRESHOLD = -32;
-const RESET_POSITION = { x: 3.3125, y: 0.19, z: 92.725 };
+const RESET_POSITION = { x: 3, y: 0, z: 77 };
 const RESET_DIRECTION = { pitch: 0.06, yaw: 2.35 };
 
 class Game extends SceneNode {
@@ -50,7 +50,7 @@ class Game extends SceneNode {
 
     // rooms
     this.add( new Room_01() );
-    //this.add( new Room_02() );
+    this.add( new Room_02() );
     //this.add( new Room_03() );
     //this.add( new Room_04() );
     //this.add( new Room_05() );

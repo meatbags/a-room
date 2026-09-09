@@ -7,6 +7,7 @@ import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
 import SharedAssets from '../core/SharedAssets';
+import Overworld from './Overworld';
 
 class Room_06 extends Room {
   constructor() {
@@ -47,7 +48,7 @@ class Room_06 extends Room {
     // setup
     super({
       name: 'Room_06',
-      position: new THREE.Vector3(-96, 0, 0),
+      position: new THREE.Vector3(-Overworld.step * 2, 0, 0),
       manifest
     });
   }

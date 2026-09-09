@@ -4,6 +4,7 @@ import { SceneNode, Carryable, CentrePivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
 import SharedAssets from '../core/SharedAssets';
+import Overworld from './Overworld';
 
 class Room_03 extends Room {
   constructor() {

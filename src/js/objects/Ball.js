@@ -21,20 +21,12 @@ class Ball extends SceneNode {
   _init() {
     // get mesh
     this._mesh = SharedAssets.requestAsset('sphere');
+    this._mesh.traverse(obj => {
+      if (obj.material) {
+        obj.material = SharedAssets.getEmissiveMaterial( 0x00FF00 );
+      }
+    });
     this._mesh.position.copy(this._position);
-
-    // set up dummy mesh
-    /*
-    this._mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.25, 8, 8),
-      SharedAssets.getEmissiveMaterial( 0x888888 )
-    );
-    */
-    // this._mesh.visible = false;
-
-    // register instanced
-    // this._instancedMeshIndex = SharedAssets.getInstancedMeshIndex('sphere');
-    // this._instancedMeshes = null;
 
     // build socket cache once
     if ( ! Ball.socketCache ) {
@@ -86,18 +78,6 @@ class Ball extends SceneNode {
     socket.detach();
     this._emissiveTarget = 0;
   }
-
-  /** set position 
-  _setInstancedPosition() {
-    if (!this._instancedMeshes) {
-      this._instancedMeshes = SharedAssets.getInstancedMesh('sphere');
-    }
-    this._mesh.updateMatrix();
-    this._instancedMeshes.forEach(mesh => {
-      mesh.setMatrixAt(this._instancedMeshIndex, this._mesh.matrix);
-    });
-  }
-  */
   
   /** update */
   _update() {
@@ -125,19 +105,6 @@ class Ball extends SceneNode {
     } else {
       this._destroyPrompt();
     }
-
-    // set visual
-    // this._setPosition();
-
-    /** update emissive */
-    /*
-    if (this._mesh.material.emissiveIntensity !== this._emissiveTarget) {
-      this._mesh.material.emissiveIntensity += (this._emissiveTarget - this._mesh.material.emissiveIntensity) * 0.05;
-      if (Math.abs(this._emissiveTarget - this._mesh.material.emissiveIntensity) < 0.001) {
-        this._mesh.material.emissiveIntensity = this._emissiveTarget;
-      }
-    }
-    */
   }
 
   /** create prompt */

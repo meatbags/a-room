@@ -8,6 +8,7 @@ import Socket from '../objects/Socket';
 import Door from '../objects/Door';
 import SharedAssets from '../core/SharedAssets';
 import DataStick from '../objects/DataStick';
+import Overworld from './Overworld';
 
 class Room_04 extends Room {
   constructor() {
@@ -23,7 +24,7 @@ class Room_04 extends Room {
 
     super({
       name: 'Room_04',
-      position: new THREE.Vector3(-48, 0, 0),
+      position: new THREE.Vector3(-Overworld.step, 0, 0),
       manifest: {
         ladders: [ [ [-0.875, 4.25, 0], [1, 0, 0], [1.5, 8.5] ] ],
         doors: [

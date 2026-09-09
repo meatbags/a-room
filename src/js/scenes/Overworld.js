@@ -8,6 +8,8 @@ import Config from '../config/Config';
 import SharedAssets from '../core/SharedAssets';
 
 class Overworld extends SceneNode {
+  static step = 40;
+
   constructor() {
     super({ name: 'Overworld' });
 
@@ -43,13 +45,13 @@ class Overworld extends SceneNode {
     });
 
     // room 01
-    manifest.module_circular_single.push( [ new THREE.Vector3(0, 0, 96), 0 ] );
-    // manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, 96), 0 ] );
-    manifest.module_circular_roof.push( [ new THREE.Vector3(0, 8, 96), 0 ] );
+    manifest.module_circular_single.push( [ new THREE.Vector3(0, 0, Overworld.step * 2), 0 ] );
+    // manifest.module_circular_blank.push( [ new THREE.Vector3(0, 8, Overworld.step * 2), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(0, 8, Overworld.step * 2), 0 ] );
 
     // room 02
-    manifest.module_semicircular.push( [ new THREE.Vector3(0, 0, 48), 0 ] );
-    manifest.module_semicircular_roof.push( [ new THREE.Vector3(0, 8, 48), 0 ] );
+    manifest.module_semicircular.push( [ new THREE.Vector3(0, 0, Overworld.step), 0 ] );
+    manifest.module_semicircular_roof.push( [ new THREE.Vector3(0, 8, Overworld.step), 0 ] );
 
     // room 03
     manifest.module_circular.push( [ new THREE.Vector3(0, 0, 0), 0 ] );
@@ -58,27 +60,27 @@ class Overworld extends SceneNode {
     manifest.module_circular_roof.push( [ new THREE.Vector3(0, 24, 0), 0 ] );
 
     // room 04
-    manifest.module_circular.push( [ new THREE.Vector3(-48, 0, 0), 0 ] );
-    manifest.module_quarters.push( [ new THREE.Vector3(-48, 8, 0), 0 ] );
-    manifest.module_circular_roof.push( [ new THREE.Vector3(-48, 16, 0), 0 ] );
+    manifest.module_circular.push( [ new THREE.Vector3(-Overworld.step, 0, 0), 0 ] );
+    manifest.module_quarters.push( [ new THREE.Vector3(-Overworld.step, 8, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-Overworld.step, 16, 0), 0 ] );
 
     // room 05
-    manifest.module_observatory.push( [ new THREE.Vector3(-48, 0, 48), 0 ] );
-    manifest.module_circular_blank.push( [ new THREE.Vector3(-48, 8, 48), 0 ] );
-    manifest.module_circular_roof.push( [ new THREE.Vector3(-48, 16, 48), 0 ] );
+    manifest.module_observatory.push( [ new THREE.Vector3(-Overworld.step, 0, Overworld.step), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(-Overworld.step, 8, Overworld.step), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-Overworld.step, 16, Overworld.step), 0 ] );
 
     // room 06
-    manifest.module_circular_single.push( [ new THREE.Vector3(-96, 0, 0), Math.PI * 1.5 ] );
-    manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 8, 0), 0 ] );
-    manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 16, 0), 0 ] );
-    manifest.module_circular_blank.push( [ new THREE.Vector3(-96, 24, 0), 0 ] );
-    manifest.module_circular_roof.push( [ new THREE.Vector3(-96, 32, 0), 0 ] );
+    manifest.module_circular_single.push( [ new THREE.Vector3(-Overworld.step * 2, 0, 0), Math.PI * 1.5 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(-Overworld.step * 2, 8, 0), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(-Overworld.step * 2, 16, 0), 0 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(-Overworld.step * 2, 24, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(-Overworld.step * 2, 32, 0), 0 ] );
 
     // room 07
-    manifest.module_circular.push( [ new THREE.Vector3(48, 0, 0), 0 ] );
-    manifest.module_circular_single.push( [ new THREE.Vector3(48, 8, 0), Math.PI * 0.5 ] );
-    manifest.module_circular_blank.push( [ new THREE.Vector3(48, 16, 0), 0 ] );
-    manifest.module_circular_roof.push( [ new THREE.Vector3(48, 24, 0), 0 ] );
+    manifest.module_circular.push( [ new THREE.Vector3(Overworld.step, 0, 0), 0 ] );
+    manifest.module_circular_single.push( [ new THREE.Vector3(Overworld.step, 8, 0), Math.PI * 0.5 ] );
+    manifest.module_circular_blank.push( [ new THREE.Vector3(Overworld.step, 16, 0), 0 ] );
+    manifest.module_circular_roof.push( [ new THREE.Vector3(Overworld.step, 24, 0), 0 ] );
 
     // create modules
     for (const key in manifest) {
@@ -104,21 +106,21 @@ class Overworld extends SceneNode {
 
     const manifest = {
       platform_circular: [
-        [ new THREE.Vector3(0, 0, 96), 0 ], // room 01 - cryo
+        [ new THREE.Vector3(0, 0, Overworld.step * 2), 0 ], // room 01 - cryo
         [ new THREE.Vector3(0, 0, 0), 0 ], // room 03 - hub
-        [ new THREE.Vector3(-48, 0, 0), 0 ], // room 04 - quarters
-        [ new THREE.Vector3(-96, 0, 0), 0 ], // room 06 - engineering
+        [ new THREE.Vector3(-Overworld.step, 0, 0), 0 ], // room 04 - quarters
+        [ new THREE.Vector3(-Overworld.step * 2, 0, 0), 0 ], // room 06 - engineering
       ],
       platform: [
-        [ new THREE.Vector3(0, 0, 48), 0 ], // room 02 - medical
-        [ new THREE.Vector3(-48, 0, 48), 0 ], // room 05 - greenhouse
-        [ new THREE.Vector3(48, 0, 0), 0 ], // room 07 - 
-        [ new THREE.Vector3(48, 0, 48), 0 ], // room 08 - 
-        [ new THREE.Vector3(96, 0, 0), 0 ], // room 09 - 
-        [ new THREE.Vector3(0, 0, -48), 0 ], // room 10 - 
-        [ new THREE.Vector3(-48, 0, -48), 0 ], // room 11 - 
-        [ new THREE.Vector3(48, 0, -48), 0 ], // room 12 - observatory
-        [ new THREE.Vector3(0, 0, -96), 0 ], // room 13 - command
+        [ new THREE.Vector3(0, 0, Overworld.step), 0 ], // room 02 - medical
+        [ new THREE.Vector3(-Overworld.step, 0, Overworld.step), 0 ], // room 05 - greenhouse
+        [ new THREE.Vector3(Overworld.step, 0, 0), 0 ], // room 07 - 
+        [ new THREE.Vector3(Overworld.step, 0, Overworld.step), 0 ], // room 08 - 
+        [ new THREE.Vector3(Overworld.step * 2, 0, 0), 0 ], // room 09 - 
+        [ new THREE.Vector3(0, 0, -Overworld.step), 0 ], // room 10 - 
+        [ new THREE.Vector3(-Overworld.step, 0, -Overworld.step), 0 ], // room 11 - 
+        [ new THREE.Vector3(Overworld.step, 0, -Overworld.step), 0 ], // room 12 - observatory
+        [ new THREE.Vector3(0, 0, -Overworld.step * 2), 0 ], // room 13 - command
       ]
     };
 
@@ -137,21 +139,21 @@ class Overworld extends SceneNode {
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const manifest = {
       bridge: [
-        [ new THREE.Vector3(72, 0, 0), halfPi],
-        [ new THREE.Vector3(-72, 0, 0), halfPi],
-        [ new THREE.Vector3(0, 0, 72), 0],
-        [ new THREE.Vector3(0, 0, -72), 0],
-        [ new THREE.Vector3(-48, 0, 24), 0],
-        [ new THREE.Vector3(48, 0, 24), 0],
-        [ new THREE.Vector3(48, 0, -24), 0],
-        [ new THREE.Vector3(24, 0, -48), halfPi],
-        [ new THREE.Vector3(-24, 0, -48), halfPi]
+        [ new THREE.Vector3(Overworld.step * 1.5, 0, 0), halfPi],
+        [ new THREE.Vector3(-Overworld.step * 1.5, 0, 0), halfPi],
+        [ new THREE.Vector3(0, 0, Overworld.step * 1.5), 0],
+        [ new THREE.Vector3(0, 0, -Overworld.step * 1.5), 0],
+        [ new THREE.Vector3(-Overworld.step, 0, Overworld.step * 0.5), 0],
+        [ new THREE.Vector3(Overworld.step, 0, Overworld.step * 0.5), 0],
+        [ new THREE.Vector3(Overworld.step, 0, -Overworld.step * 0.5), 0],
+        [ new THREE.Vector3(Overworld.step * 0.5), halfPi],
+        [ new THREE.Vector3(-Overworld.step * 0.5, 0, -Overworld.step), halfPi]
       ],
       bridge_large: [
-        [ new THREE.Vector3(24, 0, 0), halfPi],
-        [ new THREE.Vector3(-24, 0, 0), halfPi * 3],
-        [ new THREE.Vector3(0, 0, 24), 0],
-        [ new THREE.Vector3(0, 0, -24), Math.PI],
+        [ new THREE.Vector3(Overworld.step * 0.5, 0, 0), halfPi],
+        [ new THREE.Vector3(-Overworld.step * 0.5, 0, 0), halfPi * 3],
+        [ new THREE.Vector3(0, 0, Overworld.step * 0.5), 0],
+        [ new THREE.Vector3(0, 0, -Overworld.step * 0.5), Math.PI],
       ]
     };
 

@@ -9,12 +9,13 @@ import Door from '../objects/Door';
 import SharedAssets from '../core/SharedAssets';
 import { CreateInstancedMeshes } from '../util/CreateInstancedMeshes';
 import ExtractMeshes from '../util/ExtractMeshes';
+import Overworld from './Overworld';
 
 class Room_05 extends Room {
   constructor() {
     super({
       name: 'Room_05',
-      position: new THREE.Vector3(-48, 0, 48),
+      position: new THREE.Vector3(-Overworld.step, 0, Overworld.step),
       manifest: {
         doors: [
           [ [0, 2.125, 5.5], [0, 0, -1] ], // to airlock

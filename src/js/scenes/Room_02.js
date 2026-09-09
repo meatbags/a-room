@@ -3,12 +3,13 @@
 import { SceneNode, Carryable, CentrePivot, SetPivot, MapObjectByName } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
+import Overworld from './Overworld';
 
 class Room_02 extends Room {
   constructor() {
     super({
       name: 'Room_02',
-      position: new THREE.Vector3(0, 0, 48),
+      position: new THREE.Vector3(0, 0, Overworld.step),
       manifest: {
         balls: [ [ -3.5, 0.25, 2.5 ], [ -3.5, 0.25, -2.5 ] ],
         sockets: [

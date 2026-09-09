@@ -6,6 +6,7 @@ import Room from '../objects/Room';
 import Ball from '../objects/Ball';
 import Socket from '../objects/Socket';
 import Door from '../objects/Door';
+import Overworld from './Overworld';
 
 class Room_13 extends Room {
   constructor() {
@@ -13,7 +14,7 @@ class Room_13 extends Room {
       name: 'Room_13',
       map: './models/rooms/room-13.fbx',
       collisionMap: './models/rooms/room-13-collision.fbx',
-      position: new THREE.Vector3(0, 0, -96),
+      position: new THREE.Vector3(0, 0, -Overworld.step),
     });
   }
 }
