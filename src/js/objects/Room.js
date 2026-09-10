@@ -298,6 +298,15 @@ class Room extends SceneNode {
     return this._position;
   }
 
+  /**
+   * Has power override target.
+   * 
+   * @returns {boolean}
+   */
+  hasPower() {
+    return false;
+  }
+
   /** util: add object to LOD */
   _addToLOD(object, min=0, max=null) {
     if (!this._lod) {

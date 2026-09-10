@@ -28,6 +28,12 @@ class Door extends SceneNode {
 
     // get mesh
     const group = SharedAssets.requestAsset('door');
+    group.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
     this._object.add(group);
     this._map = MapObjectByName(group);
     this._addToScene(this._object);

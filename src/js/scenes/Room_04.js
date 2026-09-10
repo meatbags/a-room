@@ -52,7 +52,7 @@ class Room_04 extends Room {
     this.createState({
       ...(this.getState() || {}),
       hatch: true,
-    })
+    });
   }
 
   _init() {

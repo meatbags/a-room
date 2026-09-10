@@ -4,33 +4,38 @@ import { SceneNode, Carryable, Prompt } from 'engine';
 import * as THREE from 'three';
 import ExtractMeshes from '../util/ExtractMeshes';
 import SharedAssets from '../core/SharedAssets';
+import ObjectBaseNode from './ObjectBaseNode';
 
-class Ball extends SceneNode {
+class Ball extends ObjectBaseNode {
   static ATTACH_RADIUS = 2;
   static socketCache = null;
   
   constructor(props={}) {
-    super({ name: props.name ?? 'Ball' });
+    super({ ...props, name: props.name ?? 'Ball' });
     
     // props
     this.isBall = true;
-    this._position = props.position || new THREE.Vector3();
     this._emissiveTarget = 0;
   }
 
+  /**
+   * Initialise.
+   */
   _init() {
     // get mesh
     this._mesh = SharedAssets.requestAsset('sphere');
     this._mesh.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
       if (obj.material) {
         obj.material = SharedAssets.getEmissiveMaterial( 0x00FF00 );
       }
     });
     this._mesh.position.copy(this._position);
-    this._mesh.castShadow = true;
-    this._mesh.receiveShadow = true;
-
-    // build socket cache once
+    
+    // build static socket cache
     if ( ! Ball.socketCache ) {
       Ball.rebuildSocketCache();
     }
@@ -65,7 +70,12 @@ class Ball extends SceneNode {
     this.add(this._carryable);
   }
 
-  /** attach to socket */
+  /**
+   * Attach ball to socket.
+   * 
+   * @param {Socket} socket
+   * @param {boolean} warp - warp to socket
+   */
   attach(socket, warp=false) {
     socket.attach( this );
     this._carryable.attach( socket.position, null, true );
@@ -75,13 +85,19 @@ class Ball extends SceneNode {
     this._emissiveTarget = 1;
   }
 
-  /** detach */
+  /**
+   * Detach ball from socket.
+   * 
+   * @param {Socket} socket
+   */
   detach( socket ) {
     socket.detach();
     this._emissiveTarget = 0;
   }
   
-  /** update */
+  /**
+   * Update.
+   */
   _update() {
     // update carrying animation
     if (this._carryable.isCarrying) {
@@ -97,7 +113,7 @@ class Ball extends SceneNode {
           dir.y * fwd + cross.y * side,
           dir.z * fwd + cross.z * side
         );
-        if (!this._prompt) {
+        if ( ! this._prompt ) {
           this._createPrompt('[e] place', 'bottom');
         }
       } else {
@@ -106,25 +122,6 @@ class Ball extends SceneNode {
       }
     } else {
       this._destroyPrompt();
-    }
-  }
-
-  /** create prompt */
-  _createPrompt(text, modifier='') {
-    this._destroyPrompt();
-    this._prompt = new Prompt({
-      name: this.name + '_Prompt',
-      text: text,
-      modifier: modifier,
-    });
-    this.add(this._prompt);
-  }
-
-  /** destroy prompt */
-  _destroyPrompt() {
-    if (this._prompt) {
-      this._prompt.destroy();
-      this._prompt = null;
     }
   }
 
