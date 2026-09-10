@@ -355,6 +355,5 @@ class ScreenSpaceVolumetricFogNode extends TempNode {
 }
 
 export const ssvf = (depthNode, camera, props={}) => {
-  console.log(props);
   return new ScreenSpaceVolumetricFogNode(depthNode, camera, props);
 };

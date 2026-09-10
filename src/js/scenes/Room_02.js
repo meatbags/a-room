@@ -18,7 +18,10 @@ class Room_02 extends Room {
           [[1.75, 1.25, -1.3125], [-1, 1, 0]],
           [[-3, 0.53125, 0], [0, 1, 0]], 
         ],
-        doors: [ [[0, 2.125, -5.5], [0, 0, -1] ] ],
+        doors: [ 
+          [ [0, 2.125, -5.5], [0, 0, -1] ],
+          [ [0, 2.125, 5.5], [0, 0, 1] ]
+        ],
         dataSticks: [ [
           [2.875, 1.25, 4.188], 
           'Completed post-cryo psychological exam of the crew. Hallucinations, cognitive decline, paranoia within acceptable parameters. Anti-psychotics prescribed as necessary.'
@@ -73,7 +76,8 @@ class Room_02 extends Room {
   /** on state changed */
   _onStateChanged(changed) {
     const state = this.getState();
-    const door = this._map.Room_02_Door_1;
+    const door1 = this._map.Room_02_Door_1;
+    const door2 = this._map.Room_02_Door_2;
     
     // progression ladders
     let p1 = this._getNextProgression( state.progression_1, state.power_1, state.power_2, state.power_3 );
@@ -86,8 +90,9 @@ class Room_02 extends Room {
       this.setState({ progression_1: p1, progression_2: p2 });
     }
 
-    // set door
-    door.setOpen( state.power_4 && p1 + p2 === 4 );
+    // set door/s
+    door1.setOpen( state.power_4 && p1 + p2 === 4 );
+    door2.setOpen( true );
 
     // set visual
     this._target.scale_1 = Math.max(0.25, p1);

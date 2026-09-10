@@ -8,7 +8,7 @@ import Config from '../config/Config';
 import SharedAssets from '../core/SharedAssets';
 
 class Overworld extends SceneNode {
-  static step = 40;
+  static step = 36;
 
   constructor() {
     super({ name: 'Overworld' });
@@ -139,6 +139,7 @@ class Overworld extends SceneNode {
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const manifest = {
       bridge: [
+        // outer bridges
         [ new THREE.Vector3(Overworld.step * 1.5, 0, 0), halfPi],
         [ new THREE.Vector3(-Overworld.step * 1.5, 0, 0), halfPi],
         [ new THREE.Vector3(0, 0, Overworld.step * 1.5), 0],
@@ -147,9 +148,8 @@ class Overworld extends SceneNode {
         [ new THREE.Vector3(Overworld.step, 0, Overworld.step * 0.5), 0],
         [ new THREE.Vector3(Overworld.step, 0, -Overworld.step * 0.5), 0],
         [ new THREE.Vector3(Overworld.step * 0.5), halfPi],
-        [ new THREE.Vector3(-Overworld.step * 0.5, 0, -Overworld.step), halfPi]
-      ],
-      bridge_large: [
+        [ new THREE.Vector3(-Overworld.step * 0.5, 0, -Overworld.step), halfPi],
+        // central 4 bridges
         [ new THREE.Vector3(Overworld.step * 0.5, 0, 0), halfPi],
         [ new THREE.Vector3(-Overworld.step * 0.5, 0, 0), halfPi * 3],
         [ new THREE.Vector3(0, 0, Overworld.step * 0.5), 0],

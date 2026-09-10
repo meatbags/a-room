@@ -29,7 +29,7 @@ import Room_12 from '../scenes/Room_12';
 import Room_13 from '../scenes/Room_13';
 
 const FALL_THRESHOLD = -32;
-const RESET_POSITION = { x: 3, y: 0, z: 77 };
+const RESET_POSITION = { x: 3, y: 0, z: Overworld.step * 2 - 3 };
 const RESET_DIRECTION = { pitch: 0.06, yaw: 2.35 };
 
 class Game extends SceneNode {

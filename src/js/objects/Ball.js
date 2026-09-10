@@ -27,6 +27,8 @@ class Ball extends SceneNode {
       }
     });
     this._mesh.position.copy(this._position);
+    this._mesh.castShadow = true;
+    this._mesh.receiveShadow = true;
 
     // build socket cache once
     if ( ! Ball.socketCache ) {

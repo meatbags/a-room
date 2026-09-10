@@ -8,19 +8,21 @@ import { CSMShadowNode } from 'three/addons/csm/CSMShadowNode';
 import * as WebGPU from 'three/webgpu';
 import * as THREE from 'three';
 import LOD from '../util/LOD';
+import Overworld from '../scenes/Overworld';
 
 class Lighting extends SceneNode {
-  static lodRadius = 20;
+  static lodRadius = Overworld.step / 2;
   static lodFadeDistance = 10;
   static roomAmbientRadius = 20;
   static roomAmbientFade = 15;
   static roomAmbientFadeStartSqr = Math.pow(Lighting.roomAmbientRadius - Lighting.roomAmbientFade, 2);
   static roomAmbientFadeStopSqr = Math.pow(Lighting.roomAmbientRadius, 2);
   static roomAmbientFadeRange = Lighting.roomAmbientFadeStopSqr - Lighting.roomAmbientFadeStartSqr;
-  static roomAmbientColorMin = {r:0, g:0, b:1};
+  static roomAmbientColorMin = {r:1, g:0, b:0};
   static roomAmbientColorMax = {r:1, g:1, b:1};
-  static roomAmbientMin = 0.05;
+  static roomAmbientMin = 0.1;
   static roomAmbientMax = 0.5;
+  static roomAmbientBlendFactor = 0.01;
   static roomAmbientRange = Lighting.roomAmbientMax - Lighting.roomAmbientMin;
 
   constructor() {
@@ -61,7 +63,9 @@ class Lighting extends SceneNode {
     this.shadowLights = [];
 
     // global ambience
-    this.lights._globalAmbient = new THREE.AmbientLight(0xFFFFFF, 0);
+    this.lights._globalAmbient = new THREE.AmbientLight(0xFFFFFF, Lighting.roomAmbientMin);
+    const c = Lighting.roomAmbientColorMin;
+    this.lights._globalAmbient.color.setRGB(c.r, c.g, c.b);
     this.lights._globalAmbient.userData.target = 0;
     scene.add(this.lights._globalAmbient);
 
@@ -202,7 +206,7 @@ class Lighting extends SceneNode {
    */
   _update(delta) {
     if (this.lights._globalAmbient.intensity !== this.lights._globalAmbient.userData.target) {
-      this.lights._globalAmbient.intensity += (this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) * 0.035;
+      this.lights._globalAmbient.intensity += (this.lights._globalAmbient.userData.target - this.lights._globalAmbient.intensity) * Lighting.roomAmbientBlendFactor;
       const t = (this.lights._globalAmbient.intensity - Lighting.roomAmbientMin) / Lighting.roomAmbientRange;
       this.lights._globalAmbient.color.setRGB(
         Blend(Lighting.roomAmbientColorMin.r, Lighting.roomAmbientColorMax.r, t),

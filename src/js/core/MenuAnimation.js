@@ -10,7 +10,7 @@ class MenuAnimation extends SceneNode {
     this._age = 0;
     this._phase = Math.PI * 0.25;
     this._rotationSpeed = 0.0008;
-    this._distance = 400;
+    this._distance = 250;
     this._y = -50;
     this._ready = false;
     this._origin = new THREE.Vector3();
