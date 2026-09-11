@@ -48,6 +48,14 @@ class Door extends SceneNode {
       = physics.createFixedCollider(shape, this._position);
     this._collider = collider;
 
+    // for raycasting
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), SharedAssets.getWireframeMaterial( 0x0000FF ));
+    mesh.name = this.name + '_mesh';
+    this._object.add(mesh);
+    mesh.visible = false;
+    mesh.userData.rigidBody = rigidBody;
+    mesh.userData.collider = collider;
+
     // events
     SceneNode.getSceneNode('Camera').addEventListener('move', position => {
       this._nearCamera = Math.abs(position.x - this._position.x) < Door.distance &&
