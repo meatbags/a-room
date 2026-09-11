@@ -139,23 +139,45 @@ class Overworld extends SceneNode {
     const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const manifest = {
       bridge: [
-        // outer bridges
-        [ new THREE.Vector3(Overworld.step * 1.5, 0, 0), halfPi],
-        [ new THREE.Vector3(-Overworld.step * 1.5, 0, 0), halfPi],
-        [ new THREE.Vector3(0, 0, Overworld.step * 1.5), 0],
-        [ new THREE.Vector3(0, 0, -Overworld.step * 1.5), 0],
-        [ new THREE.Vector3(-Overworld.step, 0, Overworld.step * 0.5), 0],
+        [ new THREE.Vector3(0, 0, Overworld.step * 1.5), 0], // room 1 -> 2 (0)
+        [ new THREE.Vector3(0, 0, Overworld.step * 0.5), 0], // room 2 -> 3 (1)
+        [ new THREE.Vector3(-Overworld.step * 0.5, 0, 0), halfPi], // room 3 -> 4 (2)
+        [ new THREE.Vector3(-Overworld.step, 0, Overworld.step * 0.5), 0], // room 4 -> 5 (3)
+        //
+        [ new THREE.Vector3(Overworld.step * 1.5, 0, 0), halfPi], // 
+        [ new THREE.Vector3(-Overworld.step * 1.5, 0, 0), halfPi], // 1
+        [ new THREE.Vector3(0, 0, -Overworld.step * 1.5), 0], // 3
         [ new THREE.Vector3(Overworld.step, 0, Overworld.step * 0.5), 0],
         [ new THREE.Vector3(Overworld.step, 0, -Overworld.step * 0.5), 0],
         [ new THREE.Vector3(Overworld.step * 0.5), halfPi],
         [ new THREE.Vector3(-Overworld.step * 0.5, 0, -Overworld.step), halfPi],
-        // central 4 bridges
         [ new THREE.Vector3(Overworld.step * 0.5, 0, 0), halfPi],
-        [ new THREE.Vector3(-Overworld.step * 0.5, 0, 0), halfPi * 3],
-        [ new THREE.Vector3(0, 0, Overworld.step * 0.5), 0],
-        [ new THREE.Vector3(0, 0, -Overworld.step * 0.5), Math.PI],
-      ]
+        [ new THREE.Vector3(0, 0, -Overworld.step * 0.5), 0],
+      ],
+      pod: [],
+      pod_bulkhead: [],
     };
+
+    // dynamically create pods / pod bulkheads
+    const podLocations = {
+      1: { w: true, e: true },
+      2: { n: true }
+    };
+    manifest.bridge.forEach( (b, i) => {
+      const p = b[0];
+      const r = b[1];
+      if (r == 0) {
+        const west = podLocations[i] && podLocations[i].w ? manifest.pod : manifest.pod_bulkhead;
+        const east = podLocations[i] && podLocations[i].e ? manifest.pod : manifest.pod_bulkhead;
+        west.push( [ p, -halfPi ] );
+        east.push( [ p, halfPi ] );
+      } else {
+        const north = podLocations[i] && podLocations[i].n ? manifest.pod : manifest.pod_bulkhead;
+        const south = podLocations[i] && podLocations[i].s ? manifest.pod : manifest.pod_bulkhead;
+        north.push( [ p, Math.PI ] );
+        south.push( [ p, 0 ] );
+      }
+    });
 
     // create instanced meshes, collisions
     for (const key in manifest) {

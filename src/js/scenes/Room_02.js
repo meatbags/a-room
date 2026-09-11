@@ -1,6 +1,6 @@
 /** Demo Room */
 
-import { MapObjectByName } from 'engine';
+import { MapObjectByName, CentrePivot } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
 import Button from '../objects/Button';
@@ -15,7 +15,7 @@ class Room_02 extends Room {
       manifest: {
         balls: [ 
           [ -3.5, 0.25, 2.5 ],
-          [ -3.5, 0.25, -2.5 ]
+          [ 4, 2.5, 0 ]
         ],
         sockets: [
           [[-2.1213, 0.5, -2.1213], [0, 1, 0]],
@@ -36,6 +36,7 @@ class Room_02 extends Room {
     this.createState({
       ...(this.getState() || {}),
       code: 0b0101,
+      solved: false,
     });
 
     // extend state
@@ -62,26 +63,39 @@ class Room_02 extends Room {
       const position = new THREE.Vector3().fromArray(p).add(this._position);
       const size = [0.5, 0.5, 0.5];
       const orientation = new THREE.Vector3(-1, 0, 0);
-      const b = new Button({ name, position, size, visible: false, orientation });
+      const b = new Button({ name, position, size, visible: false, orientation, promptText: '[e]' });
       let xor = 0;
       if (i == 0) xor = 0b0011;
       else if (i == 1) xor = 0b0111;
       else if (i == 2) xor = 0b1110;
       else xor = 0b1100;
       b.addEventListener('press', () => {
-        const code = this.getState('code');
-        this.setState({ code: code ^ xor });
+        const code = this.getState('code') ^ xor;
+        const solved = this.getState('solved') || code == 0b1111;
+        this.setState({ code, solved });
       });
       this.add( b );
     });
+
+    // helper arrows
+    for (let i=0; i<4; i++) {
+      const obj = this._mapped[`bit_${i}`];
+      if (!obj) continue;
+      CentrePivot( obj );
+      const dir = new THREE.Vector3(4, 2.25, 0).sub(obj.position);
+      const len = dir.length();
+      const arrowHelper = new THREE.ArrowHelper(dir.normalize(), new THREE.Vector3(), len, 0x0000FF);
+      obj.add(arrowHelper);
+    }
   }
 
   /**
    * After init.
    */
   _afterInit() {
-    // set initial ball state
+    // configure initial ball state/s
     this._map.Room_02_Ball_1.attach( this._map.Room_02_Socket_2, true );
+    this._map.Room_02_Ball_2.accessible = false;
   }
 
   /** on state changed */
@@ -92,35 +106,23 @@ class Room_02 extends Room {
     this._map.Room_02_Door_1.setOpen( state.power_1 );
     this._map.Room_02_Door_2.setOpen( state.power_2 );
 
+    // switches
+    this._mapped.switch_0.material = SharedAssets.getEmissiveMaterial( state.power_1 ? 0x00FF00 : 0xFF0000 );
+    this._mapped.switch_1.material = SharedAssets.getEmissiveMaterial( state.power_1 ? 0x00FF00 : 0xFF0000 );
+    this._mapped.switch_2.material = SharedAssets.getEmissiveMaterial( state.power_1 ? 0x00FF00 : 0xFF0000 );
+    this._mapped.switch_3.material = SharedAssets.getEmissiveMaterial( state.power_1 ? 0x00FF00 : 0xFF0000 );
+
     // code boxes
     this._mapped.bit_0.material = SharedAssets.getEmissiveMaterial( state.power_1 && (state.code & 0b0001) ? 0xFFFFFF : 0x0 );
     this._mapped.bit_1.material = SharedAssets.getEmissiveMaterial( state.power_1 && (state.code & 0b0010) ? 0xFFFFFF : 0x0 );
     this._mapped.bit_2.material = SharedAssets.getEmissiveMaterial( state.power_1 && (state.code & 0b0100) ? 0xFFFFFF : 0x0 );
     this._mapped.bit_3.material = SharedAssets.getEmissiveMaterial( state.power_1 && (state.code & 0b1000) ? 0xFFFFFF : 0x0 );
 
-    return;
-
-    const door1 = this._map.Room_02_Door_1;
-    const door2 = this._map.Room_02_Door_2;
-    
-    // progression ladders
-    let p1 = this._getNextProgression( state.progression_1, state.power_1, state.power_2, state.power_3 );
-    let p2 = this._getNextProgression( state.progression_2, state.power_3, state.power_2, state.power_1 );
-    while (p1 + p2 > 4) {
-      p1 -= 0.5;
-      p2 -= 0.5;
+    // check solution
+    if (state.solved) {
+      this._map.Room_02_Ball_2.accessible = true;
+      this._mapped.platform_glass.visible = false;
     }
-    if (p1 !== state.progression_1 || p2 !== state.progression_2) {
-      this.setState({ progression_1: p1, progression_2: p2 });
-    }
-
-    // set door/s
-    door1.setOpen( state.power_4 && p1 + p2 === 4 );
-    door2.setOpen( true );
-
-    // set visual
-    this._target.scale_1 = Math.max(0.25, p1);
-    this._target.scale_2 = Math.max(0.25, p2);
   }
 
   /**

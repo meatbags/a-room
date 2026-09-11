@@ -33,6 +33,18 @@ export default class Menu extends SceneNode {
           localStorage.clear();
           window.location.reload();
         },
+        'reset dev': () => {
+          const key = SceneNode.getSceneNode('History').localStorageKey;
+          const state = JSON.parse(localStorage.getItem(key));
+          for (const key in state.autosave) {
+            if (key !== 'Player' && key !== 'Camera') {
+              delete state.autosave[key];
+            }
+          }
+          // console.log(state);
+          localStorage.setItem(key, JSON.stringify(state));
+          window.location.reload();
+        },
       },
     });
     overlay.createScreen('controls', {

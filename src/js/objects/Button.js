@@ -17,6 +17,7 @@ class Button extends ObjectBaseNode {
       ? new THREE.Vector3().fromArray(size) 
       : new THREE.Vector3().setScalar(size);
     this._visible = props.visible ?? false;
+    this._promptText = props.promptText ?? '[e] press';
     this._enabled = true;
   }
 
@@ -48,7 +49,7 @@ class Button extends ObjectBaseNode {
       radius: 2,
       onHover: () => {
         if ( ! this._canInteract() ) return;
-        this._createPrompt('[e] press', 'button');
+        this._createPrompt(this._promptText, 'button');
       },
       onHoverEnd: () => {
         if ( ! this._canInteract() ) return;

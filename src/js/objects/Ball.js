@@ -125,12 +125,29 @@ class Ball extends ObjectBaseNode {
     }
   }
 
-  /** get carryable */
+  /**
+   * Get carryable.
+   * 
+   * @return {Carryable}
+   */
   get carryable() {
     return this._carryable;
   }
 
-  /** get json */
+  /** 
+   * Set accessible.
+   * 
+   * @param {boolean} value
+   */
+  set accessible(value) {
+    this._carryable.accessible = value;
+  }
+
+  /**
+   * Get JSON state.
+   * 
+   * @return {object}
+   */
   toJSON() {
     return {
       position: [
@@ -141,7 +158,11 @@ class Ball extends ObjectBaseNode {
     };
   }
 
-  /** set from json */
+  /**
+   * Set from JSON state.
+   * 
+   * @param {object} json
+   */
   fromJSON(json) {
     this._carryable.warp(
       new THREE.Vector3(
