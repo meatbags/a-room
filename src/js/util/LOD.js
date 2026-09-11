@@ -14,6 +14,7 @@ class LOD {
     this._position = position;
     this._objects = [];
     this._useLoadingScreen = props.useLoadingScreen ?? false;
+    this._use2DRadius = props.use2DRadius ?? false;
     
     // create shared loading screen
     if (!LOD.loadingScreen) {
@@ -95,7 +96,11 @@ class LOD {
    * @param {Vector3} position
    */
   setVisible(position) {
-    const distSqr = this._position.distanceToSquared(position);
+    const distSqr = this._use2DRadius
+      ? Math.pow(this._position.x - position.x, 2) + Math.pow(this._position.z - position.z, 2)
+      : this._position.distanceToSquared(position);
+
+    // process LOD objects
     this._objects.forEach(item => {
       if ( item.locked ) {
         return;

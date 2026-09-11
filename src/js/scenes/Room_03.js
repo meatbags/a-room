@@ -14,7 +14,6 @@ class Room_03 extends Room {
       manifest: {
         balls: [
           [ 2.25, .25, .675 ],
-          [ 0.5, 1.25, 21.5 ],
         ],
         sockets: [
           [[ 0, 1, 2.5 ], [0, 1, 1]],
@@ -75,7 +74,7 @@ class Room_03 extends Room {
   }
 
   _afterInit() {
-    this._map.Room_03_Ball_1.attach( this._map.Room_03_Socket_2, true );
+    this._map.Room_03_Ball_1.attach( this._map.Room_03_Socket_1, true );
   }
 
   _onStateChanged(changed) {

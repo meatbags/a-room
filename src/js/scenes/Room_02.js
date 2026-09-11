@@ -74,7 +74,7 @@ class Room_02 extends Room {
         const solved = this.getState('solved') || code == 0b1111;
         this.setState({ code, solved });
       });
-      this.add( b );
+      this.add(b);
     });
 
     // helper arrows

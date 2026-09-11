@@ -312,6 +312,7 @@ class Room extends SceneNode {
     if (!this._lod) {
       this._lod = new LOD(this._position.clone(), {
         useLoadingScreen: true,
+        use2DRadius: true,
       });
     }
     this._lod.add(object, min, max ?? Room.LOD_DISTANCE);
