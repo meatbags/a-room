@@ -13,6 +13,16 @@ class HUD extends SceneNode {
 
     // props
     this._needsUpdate = true;
+    this._mapActive = false;
+    this._mapRelative = true;
+    const scale = 2.25;
+    const scaleMax = 2.5;
+    this._mapScale =  {
+      value: scale,
+      target: scale,
+      min: scale,
+      max: scaleMax,
+    };
   }
 
   /**
@@ -53,8 +63,11 @@ class HUD extends SceneNode {
     this.onResize();
     this._getSceneNode('UserInterface')
       .addEventListener('key', keyboard => {
+        if (document.querySelector('.engine__menu.active')) return;
         if (keyboard.isKeyDown('m')) {
           this._element.dataset.active = this._element.dataset.active == 1 ? 0 : 1;
+          this._mapActive = this._element.dataset.active == 1;
+          this._mapScale.target = this._mapActive ? this._mapScale.max : this._mapScale.min;
         }
       });
   }
@@ -92,78 +105,28 @@ class HUD extends SceneNode {
       ...Overworld.manifest.platforms.platform, 
       ...Overworld.manifest.platforms.platform_circular,
     ].map(arr => arr[0]);
-  }
 
-  /**
-   * Util: world position to map coord.
-   * 
-   * @param {Vector3} position
-   * @return {object}
-   */
-  _world2Map(position) {
-    return {
-      x: this._canvas.width / 2 + position.x * this._world2MapScale,
-      y: this._canvas.height / 2 + position.z * this._world2MapScale
-    };
-  }
+    // bridge positions
+    this._refBridges = [
+      ...Overworld.manifest.bridges.bridge
+    ].map(arr => ({
+      p: arr[0],
+      size: { 
+        x: arr[1] == 0 ? 2 : Overworld.step - 12,
+        y: arr[1] == 0 ? Overworld.step - 12 : 2,
+      },
+    }));
 
-  /**
-   * Draw. Returns true if needs another draw.
-   * 
-   * @return {boolean}
-   */
-  _drawMap() {
-    let needsUpdate = false;
-
-    // clear
-    this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height);
-
-    // draw platforms
-    this._ctx.fillStyle = '#FFF';
-    this._refPlatforms.forEach(p => {
-      const { x, y } = this._world2Map(p);
-      this._ctx.fillRect(x - 1, y - 1, 2, 2);
-    });
-
-    // draw rooms
-    const r = 6 * this._world2MapScale;
-    this._refRooms.forEach(room => {
-      this._ctx.strokeStyle = room.hasPower() ? '#FFF' : '#F00';
-      const { x, y } = this._world2Map(room.position);
-      this._ctx.beginPath();
-      for (let i=0; i<7; i++) {
-        const theta = Math.PI / 4 * (i + 0.5);
-        const x2 = x + r * Math.cos(theta);
-        const y2 = y + r * Math.sin(theta);
-        if (i=0) {
-          this._ctx.moveTo(x2, y2);
-        } else {
-          this._ctx.lineTo(x2, y2);
-        }
+    // pod positions
+    this._refPods = [
+      ...Overworld.manifest.bridges.pod
+    ].map(arr => ({
+      p: arr[0],
+      offset: {
+        x: Math.sin( arr[1] ),
+        y: Math.cos( arr[1] )
       }
-      this._ctx.closePath();
-      this._ctx.stroke();
-    });
-
-    // draw player
-    this._refCamera.getWorldDirection(this._cameraWorldDirection);
-    const vec2 = new THREE.Vector2(this._cameraWorldDirection.x, this._cameraWorldDirection.z).normalize();
-    const { x, y } = this._world2Map( this._refPlayer.getPosition() );
-    const size = 5;
-    const cwx = vec2.x * this._world2MapScale;
-    const cwy = vec2.y * this._world2MapScale;
-    const px = x - cwx * size * 2/4;
-    const py = y - cwy * size * 2/4;
-    this._ctx.fillStyle = '#00FF00';
-    this._ctx.beginPath();
-    this._ctx.moveTo( px + cwx * size/4, py + cwy * size/4 );
-    this._ctx.lineTo( px - cwy * size/2, py + cwx * size/2 );
-    this._ctx.lineTo( px + cwx * size, py + cwy * size );
-    this._ctx.lineTo( px + cwy * size/2, py - cwx * size/2 );
-    this._ctx.closePath();
-    this._ctx.fill();
-
-    return needsUpdate;
+    }));
   }
 
   /**
@@ -180,12 +143,145 @@ class HUD extends SceneNode {
   }
 
   /**
+   * Util: world position to map coord.
+   * 
+   * @param {Vector3} position
+   * @return {object}
+   */
+  _world2Map(position) {
+    return {
+      x: position.x * this._world2MapScale,
+      y: position.z * this._world2MapScale
+    };
+  }
+
+  /**
+   * Util: trace octagon path.
+   * 
+   * @param {number} x
+   * @param {number} y
+   * @param {number} r
+   */
+  _octagon(x, y, r) {
+    this._ctx.beginPath();
+    for (let i=0; i<8; i++) {
+      const theta = Math.PI / 4 * (i + 0.5);
+      const x2 = x + r * Math.cos(theta);
+      const y2 = y + r * Math.sin(theta);
+      if (i == 0) {
+        this._ctx.moveTo(x2, y2);
+      } else {
+        this._ctx.lineTo(x2, y2);
+      }
+    }
+    this._ctx.closePath();
+  }
+
+  /**
+   * Draw. Returns true if needs another draw.
+   * 
+   * @return {boolean}
+   */
+  _drawMap() {
+    let needsUpdate = false;
+
+    // unit helpers
+    const u1 = 1 * this._world2MapScale;
+    const u2 = 2 * this._world2MapScale;
+    const u4 = 4 * this._world2MapScale;
+    const u6 = 6 * this._world2MapScale;
+    const u8 = 8 * this._world2MapScale;
+
+    // clear
+    this._ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height);
+
+    // do player transform
+    this._refCamera.getWorldDirection(this._cameraWorldDirection);
+    const vec2 = new THREE.Vector2(this._cameraWorldDirection.x, this._cameraWorldDirection.z).normalize();
+    const { x, y } = this._world2Map( this._refPlayer.getPosition() );
+    if (this._mapRelative) {
+      const rot = Math.atan2( - vec2.y, vec2.x ) - Math.PI / 2;
+      this._ctx.translate( this._canvas.width / 2, this._canvas.height / 2 );
+      this._ctx.scale( this._mapScale.value, this._mapScale.value );
+      this._ctx.rotate( rot );
+      this._ctx.translate( -x, -y );
+    } else {
+      this._ctx.translate(this._canvas.width / 2, this._canvas.height / 2);
+    }
+
+    // style
+    this._ctx.lineWidth = 1;
+
+    // draw platforms
+    this._ctx.fillStyle = '#FFF';
+    this._refPlatforms.forEach(p => {
+      const { x, y } = this._world2Map(p);
+      this._ctx.fillRect(x - 1, y - 1, 2, 2);
+    });
+
+    // draw rooms
+    this._refRooms.forEach(room => {
+      this._ctx.strokeStyle = room.hasPower() ? '#FFF' : '#F00';
+      const { x, y } = this._world2Map(room.position);
+      this._octagon(x, y, u6);
+      this._ctx.stroke();
+    });
+
+    // draw bridges
+    this._ctx.strokeStyle = '#FFF';
+    this._refBridges.forEach(bridge => {
+      const { x, y } = this._world2Map(bridge.p);
+      const w = bridge.size.x * this._world2MapScale;
+      const h = bridge.size.y * this._world2MapScale;
+      this._ctx.strokeRect(x - w/2, y - h/2, w, h);
+    });
+
+    // draw pods
+    this._ctx.strokeStyle = '#FFF';
+    this._refPods.forEach(pod => {
+      const { x, y } = this._world2Map(pod.p);
+      this._ctx.beginPath();
+      this._ctx.moveTo(x + pod.offset.x * u1, y + pod.offset.y * u1);
+      this._ctx.lineTo(x + pod.offset.x * u4, y + pod.offset.y * u4);
+      this._ctx.stroke();
+      this._octagon(x + pod.offset.x * u8, y + pod.offset.y * u8, u4);
+      this._ctx.stroke();
+    });
+
+    // draw player
+    /*
+    const size = 5;
+    const cwx = vec2.x * this._world2MapScale;
+    const cwy = vec2.y * this._world2MapScale;
+    const px = x - cwx * size/4;
+    const py = y - cwy * size/4;
+    this._ctx.fillStyle = '#00FF00';
+    this._ctx.beginPath();
+    this._ctx.moveTo( px + cwx * size/4, py + cwy * size/4 );
+    this._ctx.lineTo( px - cwy * size/2, py + cwx * size/2 );
+    this._ctx.lineTo( px + cwx * size, py + cwy * size );
+    this._ctx.lineTo( px + cwy * size/2, py - cwx * size/2 );
+    this._ctx.closePath();
+    this._ctx.fill();
+    */
+
+    return needsUpdate;
+  }
+
+  /**
    * Update.
    * 
    * @param {number} delta 
    */
   _update(delta) {
-    if (!this._needsUpdate) return;
+    if ( this._mapScale.value == this._mapScale.target && ( ! this._mapActive || ! this._needsUpdate ) ) {
+      return;
+    }
+    this._mapScale.value += (this._mapScale.target - this._mapScale.value) * 0.1;
+    if (Math.abs(this._mapScale.target - this._mapScale.value) < 0.001) {
+      this._mapScale.value = this._mapScale.target;
+    }
     this._needsUpdate = this._drawMap();
   }
 }

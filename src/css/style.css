@@ -216,8 +216,12 @@ body {
 
         .Map__inner {
           .Map__canvas {
+            transition: 0.3s;
+            opacity: 0.5;
+            
             canvas {
               position: absolute;
+              background-color: #00440088;
             }
           }
 
@@ -230,13 +234,12 @@ body {
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            border: 1px solid red;
           }
         }
 
         &:not([data-active='1']) {
           .Map__canvas {
-            opacity: 1;
+            opacity: 0;
           }
 
           .Map__prompt {
@@ -258,7 +261,10 @@ body {
       /** hide map on menu active */
       &:has(.engine__menu.active) {
         .Map {
-          display: none;
+          /* display: none; */
+          .Map__prompt {
+            display: none;
+          }
         }
       }
 
