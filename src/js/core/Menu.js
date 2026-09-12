@@ -53,6 +53,7 @@ export default class Menu extends SceneNode {
         interact ~ <span>e</span><br>
         pan camera ~ <span>mouse</span><br>
         move ~ <span>wsad</span> or <span>arrow keys</span><br>
+        open map ~ <span>m<br>
         sprint ~ <span>hold shift</span><br>
         exit to menu ~ <span>esc</span>
       `,

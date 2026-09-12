@@ -9,6 +9,7 @@ import SharedAssets from '../core/SharedAssets';
 
 class Overworld extends SceneNode {
   static step = 36;
+  static manifest = {};
 
   constructor() {
     super({ name: 'Overworld' });
@@ -88,6 +89,9 @@ class Overworld extends SceneNode {
       this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, true), manifest[key] );
       this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, true), manifest[key] );
     }
+
+    // create ref
+    Overworld.manifest.modules = manifest;
   }
 
   /** create platforms */
@@ -130,6 +134,9 @@ class Overworld extends SceneNode {
       this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, false), transforms );
       this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, false), transforms );
     }
+
+    // create ref
+    Overworld.manifest.platforms = manifest;
   }
 
   /** create bridges */
@@ -185,6 +192,9 @@ class Overworld extends SceneNode {
       this._createInstancedMeshes( SharedAssets.requestAsset(`${key}_cosmetic`, false), transforms );
       this._createCollisions( SharedAssets.requestAsset(`${key}_collision`, false), transforms );
     }
+
+    // create reference
+    Overworld.manifest.bridges = manifest;
   }
 
   /** create asteroid field */

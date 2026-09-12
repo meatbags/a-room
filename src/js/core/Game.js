@@ -11,6 +11,7 @@ import Fog from '../scenes/Fog';
 import SharedAssets from './SharedAssets';
 import Frustum from '../util/Frustum';
 import { optimisationMaterial } from '../util/CreateInstancedMeshes';
+import HUD from './HUD';
 
 // scene
 import Overworld from '../scenes/Overworld';
@@ -40,6 +41,9 @@ class Game extends SceneNode {
     this.add( new SoundLibrary() );
     this.add( new Footsteps() );
     this.add( new Music() );
+
+    // hud
+    this.add( new HUD() );
 
     // environment
     this.add( new Lighting() );

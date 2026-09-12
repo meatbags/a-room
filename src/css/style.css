@@ -204,6 +204,64 @@ body {
         }
       }
 
+      /** hud map object */
+      .Map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        user-select: none;
+
+        .Map__inner {
+          .Map__canvas {
+            canvas {
+              position: absolute;
+            }
+          }
+
+          .Map__prompt {
+            position: absolute;
+            bottom: 60px;
+            right: 100px;
+            transform: translate(50%, 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border: 1px solid red;
+          }
+        }
+
+        &:not([data-active='1']) {
+          .Map__canvas {
+            opacity: 1;
+          }
+
+          .Map__prompt {
+            .Map__prompt-close {
+              display: none;
+            }
+          }
+        }
+        
+        &[data-active='1'] {
+          .Map__prompt {
+            .Map__prompt-open {
+              display: none;
+            }
+          }
+        }
+      }
+      
+      /** hide map on menu active */
+      &:has(.engine__menu.active) {
+        .Map {
+          display: none;
+        }
+      }
+
       &:has(.prompt[data-modifier='data-stick-message']) {
         .cursor {
           opacity: 0;
