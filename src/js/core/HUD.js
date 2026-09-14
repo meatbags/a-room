@@ -15,13 +15,16 @@ class HUD extends SceneNode {
     this._needsUpdate = true;
     this._mapActive = false;
     this._mapRelative = true;
-    const scale = 2.25;
-    const scaleMax = 2.5;
     this._mapScale =  {
-      value: scale,
-      target: scale,
-      min: scale,
-      max: scaleMax,
+      value: 1,
+      target: 1,
+      animateOut: 2.25,
+      animateIn: 2.5,
+      scrollable: {
+        min: 1,
+        max: 4,
+        step: 0.125,
+      },
     };
   }
 
@@ -61,13 +64,25 @@ class HUD extends SceneNode {
     // events
     window.addEventListener('resize', () => this.onResize());
     this.onResize();
+    window.addEventListener('wheel', e => {
+      if (this._mapActive && e.deltaY) {
+        // zoom in
+        if (e.deltaY > 0) {
+          this._mapScale.target = Math.max(this._mapScale.target - this._mapScale.scrollable.step, this._mapScale.scrollable.min);
+        
+        // zoom out
+        } else {
+          this._mapScale.target = Math.min(this._mapScale.target + this._mapScale.scrollable.step, this._mapScale.scrollable.max);
+        }
+      }
+    });
     this._getSceneNode('UserInterface')
       .addEventListener('key', keyboard => {
         if (document.querySelector('.engine__menu.active')) return;
         if (keyboard.isKeyDown('m')) {
           this._element.dataset.active = this._element.dataset.active == 1 ? 0 : 1;
           this._mapActive = this._element.dataset.active == 1;
-          this._mapScale.target = this._mapActive ? this._mapScale.max : this._mapScale.min;
+          this._mapScale.target = this._mapActive ? this._mapScale.animateIn : this._mapScale.animateOut;
         }
       });
   }
@@ -112,8 +127,8 @@ class HUD extends SceneNode {
     ].map(arr => ({
       p: arr[0],
       size: { 
-        x: arr[1] == 0 ? 2 : Overworld.step - 12,
-        y: arr[1] == 0 ? Overworld.step - 12 : 2,
+        x: arr[1] == 0 ? 3 : Overworld.step - 12,
+        y: arr[1] == 0 ? Overworld.step - 12 : 3,
       },
     }));
 
@@ -210,12 +225,16 @@ class HUD extends SceneNode {
       this._ctx.translate(this._canvas.width / 2, this._canvas.height / 2);
     }
 
+    // current room
+    let currentLocation = null;
+    const player = { x, y };
+
     // style
     this._ctx.lineWidth = 1;
 
     // draw platforms
     this._ctx.fillStyle = '#FFF';
-    this._refPlatforms.forEach(p => {
+    this._refPlatforms.forEach((p, i) => {
       const { x, y } = this._world2Map(p);
       this._ctx.fillRect(x - 1, y - 1, 2, 2);
     });
@@ -226,37 +245,61 @@ class HUD extends SceneNode {
       const { x, y } = this._world2Map(room.position);
       this._octagon(x, y, u6);
       this._ctx.stroke();
+
+      // check in room
+      if (
+        ! currentLocation && 
+        (Math.pow(player.x - x, 2) + Math.pow(player.y - y, 2)) < u6 * u6
+      ) {
+        currentLocation = room.name;
+      }
     });
 
     // draw bridges
     this._ctx.strokeStyle = '#FFF';
-    this._refBridges.forEach(bridge => {
+    this._refBridges.forEach((bridge, i) => {
       const { x, y } = this._world2Map(bridge.p);
       const w = bridge.size.x * this._world2MapScale;
       const h = bridge.size.y * this._world2MapScale;
       this._ctx.strokeRect(x - w/2, y - h/2, w, h);
+
+      // check in bridge
+      if ( ! currentLocation && 
+        Math.abs(player.x - x) < w/2 &&
+        Math.abs(player.y - y) < h/2
+      ) {
+        currentLocation = `bridge ${i}`;
+      }
     });
 
     // draw pods
     this._ctx.strokeStyle = '#FFF';
-    this._refPods.forEach(pod => {
+    this._refPods.forEach((pod, i) => {
       const { x, y } = this._world2Map(pod.p);
       this._ctx.beginPath();
-      this._ctx.moveTo(x + pod.offset.x * u1, y + pod.offset.y * u1);
+      this._ctx.moveTo(x + pod.offset.x * u2, y + pod.offset.y * u2);
       this._ctx.lineTo(x + pod.offset.x * u4, y + pod.offset.y * u4);
       this._ctx.stroke();
       this._octagon(x + pod.offset.x * u8, y + pod.offset.y * u8, u4);
       this._ctx.stroke();
+
+      // check in pod
+      if (
+        ! currentLocation && 
+        Math.pow(player.x - (x + pod.offset.x * u8), 2) + 
+          Math.pow(player.y - (y + pod.offset.y * u8), 2) < u6 * u6
+      ) {
+        currentLocation = `pod ${i}`;
+      }
     });
 
     // draw player
-    /*
-    const size = 5;
+    const size = u1 / 2;
     const cwx = vec2.x * this._world2MapScale;
     const cwy = vec2.y * this._world2MapScale;
-    const px = x - cwx * size/4;
-    const py = y - cwy * size/4;
-    this._ctx.fillStyle = '#00FF00';
+    const px = x - cwx * size / 2;
+    const py = y - cwy * size / 2;
+    this._ctx.fillStyle = '#FFFFFF';
     this._ctx.beginPath();
     this._ctx.moveTo( px + cwx * size/4, py + cwy * size/4 );
     this._ctx.lineTo( px - cwy * size/2, py + cwx * size/2 );
@@ -264,7 +307,13 @@ class HUD extends SceneNode {
     this._ctx.lineTo( px + cwy * size/2, py - cwx * size/2 );
     this._ctx.closePath();
     this._ctx.fill();
-    */
+
+    // draww
+    if (currentLocation) {
+      this._ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this._ctx.fillStyle = '#FFF';
+      this._ctx.fillText('Location: ' + currentLocation, 10, 20);
+    }
 
     return needsUpdate;
   }

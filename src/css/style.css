@@ -257,9 +257,19 @@ body {
           }
         }
       }
+
+      /** hide cursor on map active */
+      &:has(.Map[data-active='1']){
+        .cursor {
+          display: none;
+        }
+      }
       
-      /** hide map on menu active */
+      /** hide elements on menu active */
       &:has(.engine__menu.active) {
+        .prompt, .cursor {
+          display: none;
+        }
         .Map {
           /* display: none; */
           .Map__prompt {

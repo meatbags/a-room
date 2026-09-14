@@ -50,12 +50,12 @@ export default class Menu extends SceneNode {
     overlay.createScreen('controls', {
       title: 'controls',
       content: `
+        movement ~ <span>wsad</span> or <span>arrow keys</span><br>
         interact ~ <span>e</span><br>
-        pan camera ~ <span>mouse</span><br>
-        move ~ <span>wsad</span> or <span>arrow keys</span><br>
-        open map ~ <span>m<br>
+        map ~ <span>m<br>
+        map zoom ~ <span>mouse wheel<br>
         sprint ~ <span>hold shift</span><br>
-        exit to menu ~ <span>esc</span>
+        exit ~ <span>esc</span>
       `,
       buttons: {
         '&larr; back': () => overlay.openScreen('home'),

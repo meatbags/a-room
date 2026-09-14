@@ -33,7 +33,7 @@ class Room_04 extends Room {
           [ [0, 2.125, -5.5], [0, 0, 1] ], // to airlock
           [ [-5.5, 2.125, 0], [-1, 0, 0] ], // to engineering
         ],
-        sockets: [ [[3.125, 1.625, -3.125], [-1, 0, 1]] ],
+        sockets: [ [[3, 1.625, -3], [-1, 0, 1]] ],
         balls: [ [1, 0.25, 0] ],
         airlocks: [
           [[0, 0, -6.5], [0, 0, -1], [3, 4, 5, 6]]
@@ -260,6 +260,20 @@ class Room_04 extends Room {
     }
   }
 
+  /**
+   * Assert room has power.
+   * 
+   * @param {boolean}
+   */
+  hasPower() {
+    return this.getState('power_1') == 1;
+  }
+  
+  /**
+   * Update.
+   * 
+   * @param {number} delta 
+   */
   _update(delta) {
     this._fans.forEach(fan => {
       if ( ! fan.meshes ) {
