@@ -32,6 +32,7 @@ class Room_04 extends Room {
           [ [5.5, 2.125, 0], [-1, 0, 0] ], // to hub
           [ [0, 2.125, -5.5], [0, 0, 1] ], // to airlock
           [ [-5.5, 2.125, 0], [-1, 0, 0] ], // to engineering
+          [ [0, 10.125, 5.5], [0, 0, -1] ], // to pod
         ],
         sockets: [ [[3, 1.625, -3], [-1, 0, 1]] ],
         balls: [ [1, 0.25, 0] ],
@@ -42,7 +43,7 @@ class Room_04 extends Room {
           [ [4, 8.875, 0], Math.PI ]
         ],
         dataSticks: [ [[3.3125, 9.25, 1.5], 
-          `I've rewired the CO₂ scrubbers to the door controls; should make it harder for the others to move about. Sleep with the hatch closed. We'll get through this.`
+          `I've rewired the CO₂ scrubbers to the door controls; should make it harder for the others to move about. Sleep with the hatch closed.`
         ] ],
         buttons,
       }
@@ -253,6 +254,7 @@ class Room_04 extends Room {
     this._map.Room_04_Door_2.setOpen( this._doorCondition(2, power, total, state) );
     this._map.Room_04_Door_3.setOpen( this._doorCondition(3, power, total, state) );
     this._map.Room_04_Door_4.setOpen( this._doorCondition(4, power, total, state) );
+    this._map.Room_04_Door_5.setOpen( power );
 
     // set hatch
     if (changed.hatch) {

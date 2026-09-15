@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import Footsteps from '../audio/Footsteps';
 import Music from '../audio/Music';
 import SoundLibrary from '../audio/SoundLibrary';
-import Map from '../scenes/Map';
 import Lighting from './Lighting';
 import Fog from '../scenes/Fog';
 import SharedAssets from './SharedAssets';

@@ -143,7 +143,7 @@ class Overworld extends SceneNode {
   createBridges() {
     // manifest
     const halfPi = Math.PI / 2;
-    const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
+    // const rand = (a, b) => a + Math.floor(Math.random()*(b-a+1));
     const manifest = {
       bridge: [
         [ new THREE.Vector3(0, 0, Overworld.step * 1.5), 0], // room 1 -> 2 (0)
@@ -161,7 +161,9 @@ class Overworld extends SceneNode {
         [ new THREE.Vector3(Overworld.step * 0.5, 0, 0), halfPi],
         [ new THREE.Vector3(0, 0, -Overworld.step * 0.5), 0],
       ],
-      pod: [],
+      pod: [
+        [ new THREE.Vector3(-Overworld.step, 8, 4.5), 0 ]
+      ],
       pod_bulkhead: [],
     };
 
