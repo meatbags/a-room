@@ -5,7 +5,6 @@ import * as THREE from 'three';
 const getPointLight = () => {
   return null;
   const light = new THREE.PointLight(0x0000FF, 0.25, 10);
-  //light.castShadow = true;
   return light;
 }
 
@@ -107,7 +106,7 @@ export default {
     positionDampingVertical: 0.2,
     jumpEnabled: true,
     crouchEnabled: true,
-    playerLight: null, // getPointLight(),
+    playerLight: getPointLight(),
   },
   Renderer: {
     localClippingEnabled: false,

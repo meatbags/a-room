@@ -1,6 +1,6 @@
 /** Demo Room */
 
-import { Animation, Blend, CentrePivot, MapObjectByName, SetPivot, Clamp } from 'engine';
+import { Animation, Blend, CentrePivot, MapObjectByName, SetPivot, Clamp, SceneNode } from 'engine';
 import * as THREE from 'three';
 import Room from '../objects/Room';
 import { CloneMaterial } from '../util/MaterialUtils';

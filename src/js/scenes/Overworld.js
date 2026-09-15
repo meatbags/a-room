@@ -27,12 +27,17 @@ class Overworld extends SceneNode {
       mesh.castShadow = true;
     });
     this._addToScene( background );
-
+    
     // create structure
     this.createModules();
     this.createPlatforms();
     this.createBridges();
     this.createAsteroidField();
+
+    const test = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), SharedAssets.getWireframeMaterial(0x00FF00));
+    test.geometry.rotateX(-Math.PI /2);
+    this._addToScene(test);
+    this._addObjectToPhysicsWorld(test);
   }
 
   /** create modules */

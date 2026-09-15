@@ -3,6 +3,7 @@
 import { SceneNode, MapObjectByName, SharedMaterials, ApplyCallbackToMaterial } from 'engine';
 import * as THREE from 'three';
 import { CreateInstancedMeshes, optimisationInteractiveMaterial } from '../util/CreateInstancedMeshes';
+import { iridescence } from 'three/src/nodes/core/PropertyNode.js';
 
 class SharedAssets extends SceneNode {
   static _instance = null;
@@ -13,6 +14,7 @@ class SharedAssets extends SceneNode {
     super({ name: 'SharedAssets' });
 
     // load assets
+    this.load('materials_group', './models/materials_group.fbx');
     this.load('objects_group', './models/objects_group.fbx');
     this.load('rooms_group', './models/rooms_group.fbx');
     this.load('modules_group', './models/modules_group.fbx');

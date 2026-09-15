@@ -40,6 +40,21 @@ class Room_03 extends Room {
   _init() {
     super._init();
 
+    // TEST
+    const temp = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 32),
+      new THREE.MeshPhysicalMaterial({
+        color: 0xFFFFFF,
+        clearcoat: 1,
+        clearcoatRoughness: 0.1,
+        iridescence: 1,
+        roughness: 1,
+        metalness: 0,
+      })
+    );
+    temp.position.set(0, 2, 0);
+    this._addToScene(temp);
+
     // create map visualiser
     this._materialInactive = SharedAssets.getEmissiveMaterial( 0x888888 );
     this._materialActive1 = SharedAssets.getEmissiveMaterial( 0xFFFFFF );
