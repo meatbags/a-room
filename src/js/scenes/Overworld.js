@@ -114,8 +114,7 @@ class Overworld extends SceneNode {
         [ new THREE.Vector3(0, 0, 0), 0 ], // room 03 - hub
         [ new THREE.Vector3(-Overworld.step, 0, 0), 0 ], // room 04 - quarters
         [ new THREE.Vector3(-Overworld.step * 2, 0, 0), 0 ], // room 06 - engineering
-      ],
-      platform: [
+      
         [ new THREE.Vector3(0, 0, Overworld.step), 0 ], // room 02 - medical
         [ new THREE.Vector3(-Overworld.step, 0, Overworld.step), 0 ], // room 05 - greenhouse
         [ new THREE.Vector3(Overworld.step, 0, 0), 0 ], // room 07 - 

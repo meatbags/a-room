@@ -117,7 +117,7 @@ class HUD extends SceneNode {
 
     // platforms position
     this._refPlatforms = [
-      ...Overworld.manifest.platforms.platform, 
+      // ...Overworld.manifest.platforms.platform, 
       ...Overworld.manifest.platforms.platform_circular,
     ].map(arr => arr[0]);
 

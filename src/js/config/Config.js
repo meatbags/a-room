@@ -29,7 +29,7 @@ export default {
   },
   Graphics: {
     fog: {
-      hex: 0x444249,
+      hex: 0x444252,
       density: 0.0125,
     },
     backgroundBlurriness: 0,
@@ -93,7 +93,7 @@ export default {
     // warmupFrames: 15,
   },
   Physics: {
-    gravity: -2.3,
+    gravity: -9.8,
     stepHeight: 0.5,
     maxSlopeClimb: Math.PI * 0.3,
     minSlopeClimb: Math.PI * 0.3,
@@ -105,7 +105,7 @@ export default {
     speedNoclip: 64,
     shape: 'cylinder',
     positionDampingVertical: 0.2,
-    jumpEnabled: false,
+    jumpEnabled: true,
     crouchEnabled: true,
     playerLight: null, // getPointLight(),
   },

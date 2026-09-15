@@ -67,8 +67,9 @@ body {
         font-size: 32px;
         line-height: 1.25;
         user-select: none;
-        color: var(--colour);
-        text-shadow: 1px 1px 1px #aaa7c4;
+        color: var(--white);
+        background: linear-gradient(to top, #000000AA, #403fd688);
+        /* text-shadow: 1px 1px 1px #aaa7c4; */
 
         &:not(.active) {
           display: none;
@@ -142,6 +143,7 @@ body {
         &[data-pause-screen='1'] {
           color: white;
           background-color: #00000088;
+          background: #00000088;
           text-shadow: none;
         }
       }
